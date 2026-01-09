@@ -1,0 +1,1692 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#f0f4f9">
+    <title>电商管理设计工具 - AI智能引导</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Google+Sans+Text:wght@400;500;700&family=Google+Sans:wght@400;500;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* Gemini Light Mode 精确色值 */
+            --gemini-bg: #f0f4f9;
+            --gemini-surface: #ffffff;
+            --gemini-surface-container: #f0f4f9;
+            --gemini-surface-container-high: #e9eef6;
+            --gemini-on-surface: #1f1f1f;
+            --gemini-on-surface-variant: #5f6368;
+            --gemini-outline: #dadce0;
+            --gemini-primary: #1a73e8;
+            --gemini-primary-container: #d3e3fd;
+            --sidebar-width: 280px;
+        }
+
+        body {
+            font-family: 'Google Sans Text', 'Google Sans', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--gemini-bg);
+            color: var(--gemini-on-surface);
+            min-height: 100vh;
+            display: flex;
+            font-size: 15px;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            letter-spacing: 0.01em;
+        }
+
+        /* ========== 左侧边栏 - Gemini 风格 ========== */
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: var(--gemini-surface);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 100;
+            transition: transform 0.3s cubic-bezier(0.2, 0, 0, 1);
+            border-right: 1px solid var(--gemini-outline);
+        }
+
+        .sidebar.collapsed {
+            transform: translateX(-100%);
+        }
+
+        .sidebar-header {
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .hamburger-btn {
+            width: 48px;
+            height: 48px;
+            border: none;
+            border-radius: 50%;
+            background: transparent;
+            color: var(--gemini-on-surface-variant);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+
+        .hamburger-btn:hover {
+            background: rgba(0, 0, 0, 0.04);
+        }
+
+        .hamburger-btn svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .new-chat-btn {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0 20px;
+            height: 48px;
+            background: var(--gemini-surface-container-high);
+            border: none;
+            border-radius: 24px;
+            color: var(--gemini-on-surface);
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .new-chat-btn:hover {
+            background: #dde3ea;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .new-chat-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* 智能体列表 */
+        .gems-section {
+            padding: 8px 12px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .section-label {
+            padding: 12px 16px 8px;
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--gemini-on-surface-variant);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .gem-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 24px;
+            cursor: pointer;
+            transition: background 0.15s;
+            text-decoration: none;
+            color: var(--gemini-on-surface);
+        }
+
+        .gem-item:hover {
+            background: rgba(0, 0, 0, 0.04);
+        }
+
+        .gem-item-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .gem-item-text {
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .gem-item-name {
+            font-size: 14px;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .gem-item-desc {
+            font-size: 12px;
+            color: var(--gemini-on-surface-variant);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* 侧边栏底部 */
+        .sidebar-footer {
+            padding: 8px 12px;
+            border-top: 1px solid var(--gemini-outline);
+        }
+
+        .sidebar-footer-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 24px;
+            background: transparent;
+            color: var(--gemini-on-surface-variant);
+            font-family: inherit;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .sidebar-footer-btn:hover {
+            background: rgba(0, 0, 0, 0.04);
+            color: var(--gemini-on-surface);
+        }
+
+        .sidebar-footer-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* ========== 主内容区 ========== */
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background: var(--gemini-bg);
+            transition: margin-left 0.3s cubic-bezier(0.2, 0, 0, 1);
+        }
+
+        .main-content.sidebar-collapsed {
+            margin-left: 0;
+        }
+
+        /* 顶部导航 - Gemini 风格 */
+        .top-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 16px;
+            background: var(--gemini-bg);
+            min-height: 56px;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-hamburger {
+            display: none;
+            width: 48px;
+            height: 48px;
+            border: none;
+            border-radius: 50%;
+            background: transparent;
+            color: var(--gemini-on-surface-variant);
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-hamburger:hover {
+            background: rgba(0, 0, 0, 0.04);
+        }
+
+        .nav-hamburger svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 22px;
+            font-weight: 400;
+            color: var(--gemini-on-surface);
+            letter-spacing: -0.02em;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-link {
+            padding: 8px 12px;
+            color: var(--gemini-on-surface);
+            text-decoration: none;
+            font-size: 14px;
+            border-radius: 20px;
+            transition: background 0.2s;
+        }
+
+        .nav-link:hover {
+            background: rgba(0, 0, 0, 0.04);
+        }
+
+        .login-btn {
+            padding: 10px 24px;
+            background: var(--gemini-primary);
+            color: white;
+            border: none;
+            border-radius: 24px;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .login-btn:hover {
+            background: #1557b0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        /* 用户信息（已登录） */
+        .user-info {
+            display: none;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-info.show {
+            display: flex;
+        }
+
+        .user-credits {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background: var(--gemini-surface);
+            border-radius: 20px;
+            font-size: 13px;
+            color: var(--gemini-primary);
+            font-weight: 500;
+        }
+
+        .user-credits svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4285f4, #9b72cb, #d96570);
+            background-size: 200% 200%;
+            animation: gradient-shift 8s ease infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 500;
+            color: white;
+            cursor: pointer;
+        }
+
+        @keyframes gradient-shift {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        .logout-btn {
+            padding: 8px 16px;
+            background: transparent;
+            color: var(--gemini-on-surface-variant);
+            border: none;
+            border-radius: 20px;
+            font-family: inherit;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(0, 0, 0, 0.04);
+            color: var(--gemini-on-surface);
+        }
+
+        .redeem-btn {
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #4285f4, #9b72cb);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .redeem-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(66, 133, 244, 0.3);
+        }
+
+        /* 中央内容 */
+        .center-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 24px 160px;
+            max-width: 900px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* Hero 区域 */
+        .hero {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        .hero-title {
+            font-size: 56px;
+            font-weight: 400;
+            letter-spacing: -1.5px;
+            margin-bottom: 16px;
+            color: var(--gemini-on-surface);
+        }
+
+        .hero-subtitle {
+            font-size: 18px;
+            color: var(--gemini-on-surface-variant);
+            font-weight: 400;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .hero-subtitle .sparkle {
+            display: inline-flex;
+        }
+
+        .hero-subtitle .sparkle svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* 智能体选择卡片 */
+        .gems-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            width: 100%;
+            margin-bottom: 32px;
+        }
+
+        .gem-card {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 20px;
+            background: var(--gemini-surface);
+            border: 1px solid var(--gemini-outline);
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            color: var(--gemini-on-surface);
+        }
+
+        .gem-card:hover {
+            background: var(--gemini-surface);
+            border-color: var(--gemini-primary);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .gem-card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .gem-card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .gem-card-title {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .gem-card-desc {
+            font-size: 14px;
+            color: var(--gemini-on-surface-variant);
+            line-height: 1.5;
+        }
+
+        /* ========== 底部输入区 ========== */
+        .input-area {
+            position: fixed;
+            bottom: 0;
+            left: var(--sidebar-width);
+            right: 0;
+            padding: 16px 24px 24px;
+            background: linear-gradient(to top, var(--gemini-bg) 70%, transparent);
+            transition: left 0.3s cubic-bezier(0.2, 0, 0, 1);
+        }
+
+        .input-area.sidebar-collapsed {
+            left: 0;
+        }
+
+        .input-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .input-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            background: var(--gemini-surface);
+            border: 1px solid var(--gemini-outline);
+            border-radius: 28px;
+            transition: all 0.2s;
+        }
+
+        .input-wrapper:hover {
+            background: var(--gemini-surface);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .input-wrapper:focus-within {
+            border-color: var(--gemini-primary);
+            box-shadow: 0 0 0 1px var(--gemini-primary);
+        }
+
+        .input-icon {
+            color: var(--gemini-on-surface-variant);
+            flex-shrink: 0;
+        }
+
+        .input-icon svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .input-text {
+            flex: 1;
+            font-size: 16px;
+            color: var(--gemini-on-surface-variant);
+            padding: 8px 0;
+        }
+
+        .input-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .model-selector {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 6px 12px;
+            background: transparent;
+            border: none;
+            border-radius: 16px;
+            color: var(--gemini-on-surface);
+            font-family: inherit;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .model-selector:hover {
+            background: rgba(0, 0, 0, 0.04);
+        }
+
+        .model-selector .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--gemini-primary);
+        }
+
+        .model-selector svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .mic-btn {
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 50%;
+            background: transparent;
+            color: var(--gemini-on-surface-variant);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .mic-btn:hover {
+            background: rgba(0, 0, 0, 0.04);
+        }
+
+        .mic-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* 底部提示 */
+        .disclaimer {
+            text-align: center;
+            font-size: 12px;
+            color: var(--gemini-on-surface-variant);
+            margin-top: 12px;
+        }
+
+        .disclaimer a {
+            color: var(--gemini-on-surface-variant);
+            text-decoration: underline;
+        }
+
+        /* ========== 登录弹窗 ========== */
+        .auth-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .auth-modal.show {
+            display: flex;
+        }
+
+        .auth-overlay {
+            position: absolute;
+            inset: 0;
+        }
+
+        .auth-box {
+            position: relative;
+            background: var(--gemini-surface);
+            border-radius: 28px;
+            padding: 32px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            animation: modal-slide-in 0.3s ease;
+        }
+
+        @keyframes modal-slide-in {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .auth-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 50%;
+            background: transparent;
+            color: var(--gemini-on-surface-variant);
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .auth-close:hover {
+            background: rgba(0, 0, 0, 0.04);
+        }
+
+        .auth-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .auth-header svg {
+            width: 32px;
+            height: 32px;
+        }
+
+        .auth-form h2 {
+            font-size: 24px;
+            font-weight: 400;
+            color: var(--gemini-on-surface);
+        }
+
+        .auth-subtitle {
+            font-size: 14px;
+            color: var(--gemini-on-surface-variant);
+            margin-bottom: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--gemini-on-surface-variant);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--gemini-surface-container);
+            border: 1px solid var(--gemini-outline);
+            border-radius: 12px;
+            color: var(--gemini-on-surface);
+            font-family: inherit;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--gemini-primary);
+            box-shadow: 0 0 0 1px var(--gemini-primary);
+        }
+
+        .form-group input::placeholder {
+            color: var(--gemini-on-surface-variant);
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 14px 24px;
+            background: var(--gemini-primary);
+            border: none;
+            border-radius: 24px;
+            color: white;
+            font-family: inherit;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 8px;
+        }
+
+        .btn-submit:hover {
+            background: #1557b0;
+        }
+
+        .btn-submit:disabled {
+            background: #dadce0;
+            color: #9aa0a6;
+            cursor: not-allowed;
+        }
+
+        .auth-switch {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: var(--gemini-on-surface-variant);
+        }
+
+        .auth-switch a {
+            color: var(--gemini-primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .auth-switch a:hover {
+            text-decoration: underline;
+        }
+
+        /* 用户类型选择器样式 */
+        .user-type-selector {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .user-type-option {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            background: var(--gemini-surface-container);
+            border: 2px solid var(--gemini-outline);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .user-type-option:hover {
+            border-color: var(--gemini-primary);
+            background: rgba(26, 115, 232, 0.04);
+        }
+
+        .user-type-option.selected {
+            border-color: var(--gemini-primary);
+            background: rgba(26, 115, 232, 0.08);
+        }
+
+        .user-type-option .type-icon {
+            font-size: 28px;
+            flex-shrink: 0;
+        }
+
+        .user-type-option .type-info {
+            flex: 1;
+        }
+
+        .user-type-option .type-name {
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--gemini-on-surface);
+        }
+
+        .user-type-option .type-desc {
+            font-size: 12px;
+            color: var(--gemini-on-surface-variant);
+            margin-top: 2px;
+        }
+
+        .user-type-option .type-check {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--gemini-primary);
+            color: white;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .user-type-option.selected .type-check {
+            display: flex;
+        }
+
+        /* 猫币输入提示 */
+        .cat-coin-hint {
+            margin-top: 8px;
+            font-size: 12px;
+            color: var(--gemini-on-surface-variant);
+        }
+
+        .cat-coin-hint .hint-rule {
+            display: block;
+            color: #9ca3af;
+        }
+
+        .cat-coin-hint .hint-preview {
+            display: block;
+            margin-top: 6px;
+            padding: 8px 12px;
+            background: rgba(52, 168, 83, 0.1);
+            color: #34a853;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        .auth-message {
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            margin-top: 16px;
+            text-align: center;
+        }
+
+        .auth-message.success {
+            background: rgba(52, 168, 83, 0.1);
+            color: #34a853;
+        }
+
+        .auth-message.error {
+            background: rgba(234, 67, 53, 0.1);
+            color: #ea4335;
+        }
+
+        /* ========== 响应式 ========== */
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .input-area {
+                left: 0;
+            }
+
+            .nav-hamburger {
+                display: flex;
+            }
+
+            .nav-links {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 40px;
+            }
+
+            .gems-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .center-content {
+                padding: 24px 16px 160px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero-title {
+                font-size: 28px;
+                white-space: nowrap;
+            }
+
+            .hero-subtitle {
+                font-size: 14px;
+                flex-wrap: wrap;
+                text-align: center;
+            }
+
+            .gems-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .gem-card {
+                padding: 16px;
+            }
+
+            .input-wrapper {
+                padding: 10px 16px;
+            }
+
+            .input-text {
+                font-size: 14px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .auth-box {
+                padding: 24px;
+                border-radius: 20px;
+            }
+
+            .nav-brand {
+                font-size: 16px;
+                white-space: nowrap;
+            }
+
+            .nav-right {
+                gap: 8px;
+            }
+
+            .logout-btn {
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+
+            .user-credits {
+                padding: 6px 10px;
+                font-size: 12px;
+            }
+
+            .user-avatar {
+                width: 28px;
+                height: 28px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- SVG 渐变定义 -->
+    <svg style="position:absolute;width:0;height:0">
+        <defs>
+            <linearGradient id="sparkle-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#4285f4" />
+                <stop offset="33%" style="stop-color:#9b72cb" />
+                <stop offset="66%" style="stop-color:#d96570" />
+                <stop offset="100%" style="stop-color:#4285f4" />
+            </linearGradient>
+        </defs>
+    </svg>
+
+    <!-- 左侧边栏 -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <button class="hamburger-btn" onclick="toggleSidebar()">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" />
+                </svg>
+            </button>
+            <button class="new-chat-btn" onclick="window.location.href='/'">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                        d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
+                </svg>
+                新对话
+            </button>
+        </div>
+
+        <!-- 智能体列表 -->
+        <div class="gems-section">
+            <div class="section-label">智能体</div>
+            {% for module_id, module in modules.items() %}
+            <a href="/chat/{{ module_id }}" class="gem-item">
+                <div class="gem-item-icon" style="background: {{ module.color }}15;">
+                    {{ module.icon }}
+                </div>
+                <div class="gem-item-text">
+                    <div class="gem-item-name">{{ module.name }}</div>
+                    <div class="gem-item-desc">{{ module.description }}</div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+
+        <!-- 底部 -->
+        <div class="sidebar-footer">
+            <button class="sidebar-footer-btn" onclick="toggleSidebar()">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                        d="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z" />
+                </svg>
+                设置
+            </button>
+        </div>
+    </aside>
+
+    <!-- 主内容区 -->
+    <main class="main-content" id="mainContent">
+        <!-- 顶部导航 -->
+        <nav class="top-nav">
+            <div class="nav-left">
+                <button class="nav-hamburger" onclick="toggleSidebar()">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" />
+                    </svg>
+                </button>
+                <div class="nav-brand">电商管理设计工具</div>
+            </div>
+            <div class="nav-right">
+                <div class="nav-links">
+                    <a href="#" class="nav-link">关于</a>
+                    <a href="#" class="nav-link">帮助</a>
+                </div>
+                <!-- 未登录 -->
+                <div id="guestArea">
+                    <button class="login-btn" onclick="showAuthModal('login')">登录</button>
+                </div>
+                <!-- 已登录 -->
+                <div class="user-info" id="loggedArea">
+                    <span class="user-credits" onclick="showRedeemModal()" style="cursor:pointer;" title="点击兑换积分">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 0L14.59 8.41L23 11L14.59 13.59L12 22L9.41 13.59L1 11L9.41 8.41L12 0Z" />
+                        </svg>
+                        <span id="creditsCount">0</span>
+                    </span>
+                    <button class="redeem-btn" onclick="showRedeemModal()">兑换</button>
+                    <div class="user-avatar" id="userAvatar">U</div>
+                    <button class="logout-btn" onclick="logout()">退出</button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- 中央内容 -->
+        <div class="center-content">
+            <section class="hero">
+                <h1 class="hero-title">与 AI 对话</h1>
+                <p class="hero-subtitle">
+                    <span class="sparkle">
+                        <svg viewBox="0 0 24 24" fill="url(#sparkle-gradient)">
+                            <path d="M12 0L14.59 8.41L23 11L14.59 13.59L12 22L9.41 13.59L1 11L9.41 8.41L12 0Z" />
+                        </svg>
+                    </span>
+                    选择下方智能体，开始设计您的管理体系
+                </p>
+            </section>
+
+            <!-- 智能体卡片 -->
+            <div class="gems-grid">
+                {% for module_id, module in modules.items() %}
+                <a href="/chat/{{ module_id }}" class="gem-card">
+                    <div class="gem-card-header">
+                        <div class="gem-card-icon" style="background: {{ module.color }}15; color: {{ module.color }};">
+                            {{ module.icon }}
+                        </div>
+                        <span class="gem-card-title">{{ module.name }}</span>
+                    </div>
+                    <span class="gem-card-desc">{{ module.description }}</span>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </main>
+
+    <!-- 底部输入区 -->
+    <div class="input-area" id="inputArea">
+        <div class="input-container">
+            <div class="input-wrapper">
+                <div class="input-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                </div>
+                <span class="input-text">选择上方智能体开始对话</span>
+                <div class="input-right">
+                    <button class="model-selector">
+                        <span class="dot"></span>
+                        快速
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M7 10l5 5 5-5z" />
+                        </svg>
+                    </button>
+                    <button class="mic-btn">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path
+                                d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.91-3c-.49 0-.9.36-.98.85C16.52 14.2 14.47 16 12 16s-4.52-1.8-4.93-4.15c-.08-.49-.49-.85-.98-.85-.61 0-1.09.54-1 1.14.49 3 2.89 5.35 5.91 5.78V20c0 .55.45 1 1 1s1-.45 1-1v-2.08c3.02-.43 5.42-2.78 5.91-5.78.1-.6-.39-1.14-1-1.14z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <p class="disclaimer">AI 生成的内容可能存在不准确之处，请核实重要信息</p>
+        </div>
+    </div>
+
+    <!-- 登录弹窗 -->
+    <div class="auth-modal" id="authModal">
+        <div class="auth-overlay" onclick="hideAuthModal()"></div>
+        <div class="auth-box">
+            <button class="auth-close" onclick="hideAuthModal()">&times;</button>
+
+            <!-- 登录表单 -->
+            <div class="auth-form" id="loginForm">
+                <div class="auth-header">
+                    <svg viewBox="0 0 24 24" fill="url(#sparkle-gradient)">
+                        <path d="M12 0L14.59 8.41L23 11L14.59 13.59L12 22L9.41 13.59L1 11L9.41 8.41L12 0Z" />
+                    </svg>
+                    <h2>登录</h2>
+                </div>
+                <p class="auth-subtitle">登录后可追踪积分消耗</p>
+                <div class="form-group">
+                    <label>姓名</label>
+                    <input type="text" id="loginUsername" placeholder="您的姓名"
+                        onkeydown="if(event.key==='Enter')document.getElementById('loginPassword').focus()">
+                </div>
+                <div class="form-group">
+                    <label>密码</label>
+                    <input type="password" id="loginPassword" placeholder="输入密码"
+                        onkeydown="if(event.key==='Enter')handleLogin()">
+                </div>
+                <button class="btn-submit" onclick="handleLogin()">登录</button>
+                <p class="auth-switch">没有账号？<a href="#" onclick="showAuthModal('register')">立即注册</a></p>
+            </div>
+
+            <!-- 注册表单 -->
+            <div class="auth-form" id="registerForm" style="display: none;">
+                <div class="auth-header">
+                    <svg viewBox="0 0 24 24" fill="url(#sparkle-gradient)">
+                        <path d="M12 0L14.59 8.41L23 11L14.59 13.59L12 22L9.41 13.59L1 11L9.41 8.41L12 0Z" />
+                    </svg>
+                    <h2>注册</h2>
+                </div>
+                <p class="auth-subtitle">注册后可使用兑换码获取积分</p>
+
+                <div class="form-group">
+                    <label>姓名</label>
+                    <input type="text" id="registerUsername" placeholder="您的姓名">
+                </div>
+                <div class="form-group">
+                    <label>公司名称</label>
+                    <input type="text" id="registerCompany" placeholder="您的公司名称">
+                </div>
+                <div class="form-group">
+                    <label>职位</label>
+                    <input type="text" id="registerPosition" placeholder="如：运营总监、店长">
+                </div>
+                <div class="form-group">
+                    <label>密码</label>
+                    <input type="password" id="registerPassword" placeholder="至少6位密码">
+                </div>
+                <div class="form-group">
+                    <label>确认密码</label>
+                    <input type="password" id="registerPasswordConfirm" placeholder="再次输入密码"
+                        onkeydown="if(event.key==='Enter')handleRegister()">
+                </div>
+                <button class="btn-submit" onclick="handleRegister()">注册</button>
+                <p class="auth-switch">已有账号？<a href="#" onclick="showAuthModal('login')">立即登录</a></p>
+            </div>
+
+            <div class="auth-message" id="authMessage" style="display: none;"></div>
+        </div>
+    </div>
+
+    <!-- 兑换码弹窗 -->
+    <div class="auth-modal" id="redeemModal">
+        <div class="auth-overlay" onclick="hideRedeemModal()"></div>
+        <div class="auth-box" style="max-width: 480px;">
+            <button class="auth-close" onclick="hideRedeemModal()">&times;</button>
+            <div class="auth-header">
+                <svg viewBox="0 0 24 24" fill="url(#sparkle-gradient)" width="32" height="32">
+                    <path d="M12 0L14.59 8.41L23 11L14.59 13.59L12 22L9.41 13.59L1 11L9.41 8.41L12 0Z" />
+                </svg>
+                <h2>我的积分</h2>
+            </div>
+
+            <!-- 积分余额显示 -->
+            <div style="text-align:center;padding:16px;background:linear-gradient(135deg, rgba(66,133,244,0.1), rgba(155,114,203,0.1));border-radius:16px;margin-bottom:20px;">
+                <div style="font-size:12px;color:var(--gemini-on-surface-variant);margin-bottom:4px;">当前积分</div>
+                <div style="font-size:36px;font-weight:600;color:var(--gemini-primary);" id="modalCreditsCount">0</div>
+                <div style="font-size:12px;color:var(--gemini-on-surface-variant);">约 <span id="modalAnswerCount">0</span> 次回答机会</div>
+            </div>
+
+            <!-- 兑换码输入 -->
+            <div class="form-group">
+                <label>兑换码</label>
+                <div style="display:flex;gap:8px;">
+                    <input type="text" id="redeemCodeInput" placeholder="输入8位兑换码"
+                        style="text-transform:uppercase;letter-spacing:2px;font-family:monospace;flex:1;"
+                        onkeydown="if(event.key==='Enter')handleRedeem()">
+                    <button class="btn-submit" onclick="handleRedeem()" style="width:auto;padding:14px 20px;">兑换</button>
+                </div>
+            </div>
+            <div class="auth-message" id="redeemMessage" style="display: none;"></div>
+
+            <!-- 积分记录 -->
+            <div style="margin-top:20px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                    <label style="margin:0;font-size:12px;font-weight:500;color:var(--gemini-on-surface-variant);text-transform:uppercase;letter-spacing:0.5px;">积分记录</label>
+                    <button onclick="loadCreditLogs()" style="background:none;border:none;color:var(--gemini-primary);font-size:12px;cursor:pointer;">刷新</button>
+                </div>
+                <div id="creditLogsList" style="max-height:200px;overflow-y:auto;background:var(--gemini-surface-container);border-radius:12px;padding:8px;">
+                    <div style="text-align:center;color:var(--gemini-on-surface-variant);padding:16px;font-size:13px;">加载中...</div>
+                </div>
+            </div>
+
+            <p class="auth-subtitle" style="margin-top:16px;font-size:12px;">
+                积分不足？请联系微信 <strong>huohuo1616</strong> 获取兑换码
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // 侧边栏切换
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            const inputArea = document.getElementById('inputArea');
+
+            sidebar.classList.toggle('collapsed');
+            sidebar.classList.toggle('open');
+            mainContent.classList.toggle('sidebar-collapsed');
+            inputArea.classList.toggle('sidebar-collapsed');
+        }
+
+        // 页面加载时检查登录状态
+        document.addEventListener('DOMContentLoaded', () => {
+            checkLoginStatus();
+
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('need_login') === '1') {
+                showAuthModal('login');
+                window.history.replaceState({}, document.title, '/');
+            }
+
+            // 移动端默认收起侧边栏
+            if (window.innerWidth <= 1024) {
+                document.getElementById('sidebar').classList.add('collapsed');
+                document.getElementById('mainContent').classList.add('sidebar-collapsed');
+                document.getElementById('inputArea').classList.add('sidebar-collapsed');
+            }
+        });
+
+        async function checkLoginStatus() {
+            try {
+                const res = await fetch('/api/auth/me');
+                const data = await res.json();
+
+                if (data.success) {
+                    showLoggedState(data.data);
+                }
+            } catch (e) {
+                console.log('未登录');
+            }
+        }
+
+        function showLoggedState(userData) {
+            isUserLoggedIn = true;
+            document.getElementById('guestArea').style.display = 'none';
+            document.getElementById('loggedArea').classList.add('show');
+            const name = userData.username || userData.email || 'U';
+            document.getElementById('userAvatar').textContent = name.charAt(0).toUpperCase();
+            document.getElementById('creditsCount').textContent = (userData.profile && userData.profile.credits) || 0;
+        }
+
+        function showGuestState() {
+            isUserLoggedIn = false;
+            document.getElementById('guestArea').style.display = 'block';
+            document.getElementById('loggedArea').classList.remove('show');
+        }
+
+        function showAuthModal(type) {
+            document.getElementById('authMessage').style.display = 'none';
+
+            if (type === 'redeem') {
+                // 显示兑换码弹窗
+                document.getElementById('authModal').classList.remove('show');
+                showRedeemModal();
+            } else {
+                document.getElementById('authModal').classList.add('show');
+                if (type === 'login') {
+                    document.getElementById('loginForm').style.display = 'block';
+                    document.getElementById('registerForm').style.display = 'none';
+                } else {
+                    document.getElementById('loginForm').style.display = 'none';
+                    document.getElementById('registerForm').style.display = 'block';
+                }
+            }
+        }
+
+
+
+        function hideAuthModal() {
+            document.getElementById('authModal').classList.remove('show');
+        }
+
+        function showMessage(msg, isError = false) {
+            const el = document.getElementById('authMessage');
+            el.textContent = msg;
+            el.className = 'auth-message ' + (isError ? 'error' : 'success');
+            el.style.display = 'block';
+        }
+
+        async function handleLogin() {
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+            const submitBtn = document.querySelector('#loginForm .btn-submit');
+
+            if (!username || !password) {
+                showMessage('请填写姓名和密码', true);
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = '登录中...';
+
+            try {
+                const res = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await res.json();
+
+                if (data.success) {
+                    showMessage('登录成功！');
+                    setTimeout(() => {
+                        hideAuthModal();
+                        showLoggedState(data.data);
+                    }, 1000);
+                } else {
+                    showMessage(data.message, true);
+                }
+            } catch (e) {
+                showMessage('网络错误，请重试', true);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = '登录';
+            }
+        }
+
+        async function handleRegister() {
+            const username = document.getElementById('registerUsername').value;
+            const company = document.getElementById('registerCompany').value;
+            const position = document.getElementById('registerPosition').value;
+            const password = document.getElementById('registerPassword').value;
+            const passwordConfirm = document.getElementById('registerPasswordConfirm').value;
+            const submitBtn = document.querySelector('#registerForm .btn-submit');
+
+            if (!username || !company || !position || !password) {
+                showMessage('请填写所有必填项', true);
+                return;
+            }
+
+            if (password.length < 6) {
+                showMessage('密码至少6位', true);
+                return;
+            }
+
+            if (password !== passwordConfirm) {
+                showMessage('两次输入的密码不一致', true);
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = '注册中...';
+
+            try {
+                const res = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username,
+                        password,
+                        company,
+                        position
+                    })
+                });
+
+                const data = await res.json();
+
+                if (data.success) {
+                    showMessage('注册成功！正在自动登录...');
+                    try {
+                        const loginRes = await fetch('/api/auth/login', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ username, password })
+                        });
+                        const loginData = await loginRes.json();
+                        if (loginData.success) {
+                            hideAuthModal();
+                            showLoggedState(loginData.data);
+                        } else {
+                            showMessage('自动登录失败，请手动登录', true);
+                            setTimeout(() => showAuthModal('login'), 1500);
+                        }
+                    } catch (loginErr) {
+                        showMessage('自动登录失败，请手动登录', true);
+                        setTimeout(() => showAuthModal('login'), 1500);
+                    }
+                } else {
+                    showMessage(data.error || data.message, true);
+                }
+            } catch (e) {
+                showMessage('网络错误，请重试', true);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = '注册';
+            }
+        }
+
+        async function logout() {
+            try {
+                await fetch('/api/auth/logout', { method: 'POST' });
+                showGuestState();
+            } catch (e) {
+                console.error('登出失败');
+            }
+        }
+
+        // 动态刷新模块列表
+        async function refreshModules() {
+            try {
+                const res = await fetch('/api/modules');
+                const data = await res.json();
+
+                if (data.success && data.modules) {
+                    // 更新侧边栏智能体列表
+                    const sidebarList = document.querySelector('.gems-section');
+                    if (sidebarList) {
+                        const label = sidebarList.querySelector('.section-label');
+                        let sidebarHtml = label ? label.outerHTML : '<div class="section-label">智能体</div>';
+                        data.modules.forEach(m => {
+                            sidebarHtml += `
+                                <a href="/chat/${m.id}" class="gem-item">
+                                    <div class="gem-item-icon" style="background: ${m.color}15;">
+                                        ${m.icon}
+                                    </div>
+                                    <div class="gem-item-text">
+                                        <div class="gem-item-name">${m.name}</div>
+                                        <div class="gem-item-desc">${m.description}</div>
+                                    </div>
+                                </a>
+                            `;
+                        });
+                        sidebarList.innerHTML = sidebarHtml;
+                    }
+
+                    // 更新中央卡片区域
+                    const cardsGrid = document.querySelector('.gems-grid');
+                    if (cardsGrid) {
+                        let cardsHtml = '';
+                        data.modules.forEach(m => {
+                            cardsHtml += `
+                                <a href="/chat/${m.id}" class="gem-card">
+                                    <div class="gem-card-header">
+                                        <div class="gem-card-icon" style="background: ${m.color}15; color: ${m.color};">
+                                            ${m.icon}
+                                        </div>
+                                        <span class="gem-card-title">${m.name}</span>
+                                    </div>
+                                    <span class="gem-card-desc">${m.description}</span>
+                                </a>
+                            `;
+                        });
+                        cardsGrid.innerHTML = cardsHtml;
+                    }
+                }
+            } catch (e) {
+                console.log('刷新模块列表失败:', e);
+            }
+        }
+
+        // 页面可见时刷新模块列表
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') {
+                refreshModules();
+            }
+        });
+
+        // 兑换码功能
+        let isUserLoggedIn = false;
+
+        function showRedeemModal() {
+            // 检查是否已登录
+            if (!isUserLoggedIn) {
+                alert('请先登录后再使用兑换码');
+                showAuthModal('login');
+                return;
+            }
+
+            document.getElementById('redeemModal').classList.add('show');
+            document.getElementById('redeemMessage').style.display = 'none';
+            document.getElementById('redeemCodeInput').value = '';
+
+            // 更新积分显示
+            const credits = parseInt(document.getElementById('creditsCount').textContent) || 0;
+            document.getElementById('modalCreditsCount').textContent = credits;
+            document.getElementById('modalAnswerCount').textContent = Math.floor(credits / 2);
+
+            // 加载积分记录
+            loadCreditLogs();
+        }
+
+        function hideRedeemModal() {
+            document.getElementById('redeemModal').classList.remove('show');
+        }
+
+        function showRedeemMessage(msg, isError = false) {
+            const el = document.getElementById('redeemMessage');
+            el.textContent = msg;
+            el.className = 'auth-message ' + (isError ? 'error' : 'success');
+            el.style.display = 'block';
+        }
+
+        async function loadCreditLogs() {
+            const container = document.getElementById('creditLogsList');
+            container.innerHTML = '<div style="text-align:center;color:var(--gemini-on-surface-variant);padding:16px;font-size:13px;">加载中...</div>';
+
+            try {
+                const res = await fetch('/api/credits/logs');
+                const data = await res.json();
+
+                if (data.success && data.logs) {
+                    if (data.logs.length === 0) {
+                        container.innerHTML = '<div style="text-align:center;color:var(--gemini-on-surface-variant);padding:16px;font-size:13px;">暂无记录</div>';
+                        return;
+                    }
+
+                    container.innerHTML = data.logs.map(log => {
+                        const isPositive = log.amount > 0;
+                        const date = new Date(log.created_at);
+                        const dateStr = date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' });
+                        const timeStr = date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+
+                        return `
+                            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-bottom:1px solid var(--gemini-outline);">
+                                <div>
+                                    <div style="font-size:13px;color:var(--gemini-on-surface);">${escapeHtml(log.reason)}</div>
+                                    <div style="font-size:11px;color:var(--gemini-on-surface-variant);">${dateStr} ${timeStr}</div>
+                                </div>
+                                <div style="font-size:14px;font-weight:600;color:${isPositive ? '#34a853' : '#ea4335'};">
+                                    ${isPositive ? '+' : ''}${log.amount}
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    container.innerHTML = '<div style="text-align:center;color:var(--gemini-on-surface-variant);padding:16px;font-size:13px;">加载失败</div>';
+                }
+            } catch (e) {
+                container.innerHTML = '<div style="text-align:center;color:var(--gemini-on-surface-variant);padding:16px;font-size:13px;">请先登录</div>';
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        async function handleRedeem() {
+            const code = document.getElementById('redeemCodeInput').value.trim().toUpperCase();
+            if (!code) {
+                showRedeemMessage('请输入兑换码', true);
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/redeem', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    showRedeemMessage(data.message);
+                    document.getElementById('creditsCount').textContent = data.new_balance;
+                    document.getElementById('modalCreditsCount').textContent = data.new_balance;
+                    document.getElementById('modalAnswerCount').textContent = Math.floor(data.new_balance / 2);
+                    document.getElementById('redeemCodeInput').value = '';
+                    // 刷新积分记录
+                    loadCreditLogs();
+                } else {
+                    showRedeemMessage(data.error, true);
+                }
+            } catch (e) {
+                showRedeemMessage('网络错误，请重试', true);
+            }
+        }
+    </script>
+</body>
+
+</html>

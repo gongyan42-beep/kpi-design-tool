@@ -1,0 +1,1205 @@
+/**
+ * Gemini M3 设计系统
+ * Material Design 3 + Google AI Brand Aesthetics
+ *
+ * 特性：
+ * - 全息渐变 (Holographic Gradients)
+ * - 大圆角 (Pill Shape)
+ * - 磨砂玻璃 (Frosted Glass)
+ * - Sparkle 动画
+ * - Google Sans 字体
+ */
+
+/* ========================================
+   M3 Design Tokens - Gemini Light Mode 色彩系统
+   ======================================== */
+:root {
+    /* 表面色 (Surfaces) - 白天模式 */
+    --md-sys-color-surface: #ffffff;
+    --md-sys-color-surface-dim: #f5f5f5;
+    --md-sys-color-surface-bright: #ffffff;
+    --md-sys-color-surface-container-lowest: #ffffff;
+    --md-sys-color-surface-container-low: #f8f9fa;
+    --md-sys-color-surface-container: #f0f4f9;
+    --md-sys-color-surface-container-high: #e9eef6;
+    --md-sys-color-surface-container-highest: #dde3ea;
+
+    /* 主色 (Primary) - Gemini Blue */
+    --md-sys-color-primary: #1a73e8;
+    --md-sys-color-primary-container: #d3e3fd;
+    --md-sys-color-on-primary: #ffffff;
+    --md-sys-color-on-primary-container: #041e49;
+
+    /* 次要色 (Secondary) */
+    --md-sys-color-secondary: #5f6368;
+    --md-sys-color-secondary-container: #e8eaed;
+    --md-sys-color-on-secondary: #ffffff;
+    --md-sys-color-on-secondary-container: #1f1f1f;
+
+    /* 第三色 (Tertiary) - 用于 AI 渐变 */
+    --md-sys-color-tertiary: #7c4dff;
+    --md-sys-color-tertiary-container: #e8def8;
+
+    /* 错误色 */
+    --md-sys-color-error: #d93025;
+    --md-sys-color-error-container: #fce8e6;
+    --md-sys-color-on-error: #ffffff;
+
+    /* 文字色 */
+    --md-sys-color-on-surface: #1f1f1f;
+    --md-sys-color-on-surface-variant: #5f6368;
+    --md-sys-color-outline: #dadce0;
+    --md-sys-color-outline-variant: #e8eaed;
+
+    /* AI 品牌渐变色 */
+    --gemini-gradient-1: #4285f4;  /* 蓝 */
+    --gemini-gradient-2: #9b72cb;  /* 紫 */
+    --gemini-gradient-3: #d96570;  /* 粉红 */
+    --gemini-gradient-4: #34a853;  /* 绿 */
+
+    /* 全息渐变 */
+    --gemini-holographic: linear-gradient(
+        135deg,
+        #4285f4 0%,
+        #9b72cb 25%,
+        #d96570 50%,
+        #9b72cb 75%,
+        #4285f4 100%
+    );
+
+    --gemini-holographic-subtle: linear-gradient(
+        135deg,
+        rgba(66, 133, 244, 0.3) 0%,
+        rgba(155, 114, 203, 0.3) 25%,
+        rgba(217, 101, 112, 0.3) 50%,
+        rgba(155, 114, 203, 0.3) 75%,
+        rgba(66, 133, 244, 0.3) 100%
+    );
+
+    /* M3 圆角 */
+    --md-sys-shape-corner-none: 0;
+    --md-sys-shape-corner-extra-small: 4px;
+    --md-sys-shape-corner-small: 8px;
+    --md-sys-shape-corner-medium: 12px;
+    --md-sys-shape-corner-large: 16px;
+    --md-sys-shape-corner-extra-large: 28px;
+    --md-sys-shape-corner-full: 9999px;
+
+    /* M3 阴影 */
+    --md-sys-elevation-1: 0 1px 2px rgba(0,0,0,0.3), 0 1px 3px 1px rgba(0,0,0,0.15);
+    --md-sys-elevation-2: 0 1px 2px rgba(0,0,0,0.3), 0 2px 6px 2px rgba(0,0,0,0.15);
+    --md-sys-elevation-3: 0 4px 8px 3px rgba(0,0,0,0.15), 0 1px 3px rgba(0,0,0,0.3);
+    --md-sys-elevation-4: 0 6px 10px 4px rgba(0,0,0,0.15), 0 2px 3px rgba(0,0,0,0.3);
+    --md-sys-elevation-5: 0 8px 12px 6px rgba(0,0,0,0.15), 0 4px 4px rgba(0,0,0,0.3);
+
+    /* 过渡 */
+    --md-sys-motion-duration-short: 150ms;
+    --md-sys-motion-duration-medium: 250ms;
+    --md-sys-motion-duration-long: 400ms;
+    --md-sys-motion-easing-standard: cubic-bezier(0.2, 0, 0, 1);
+    --md-sys-motion-easing-emphasized: cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* ========================================
+   字体系统 - Inter (Gemini 复刻版使用)
+   ======================================== */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200');
+
+/* ========================================
+   环境光感系统 - Ambient Glow (Light Mode)
+   ======================================== */
+body {
+    font-family: 'Inter', 'Outfit', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-size: 16px;
+    line-height: 1.7;
+    /* 白天模式 - 纯白背景 */
+    background: #ffffff;
+    min-height: 100vh;
+    color: var(--md-sys-color-on-surface);
+}
+
+/* 物理运动引擎 - 全局 MD3 Emphasized Decelerate */
+* {
+    transition-timing-function: var(--md-sys-motion-easing-emphasized) !important;
+}
+
+/* 全局滚动条 - 浅色极简 */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #dadce0;
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #bdc1c6;
+}
+
+/* 输入框光标颜色 */
+input, textarea {
+    caret-color: #1a73e8;
+}
+
+/* ========================================
+   磨砂玻璃质感 - Glassmorphism (Light Mode)
+   ======================================== */
+.glass-navbar {
+    background-color: rgba(255, 255, 255, 0.85) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+.glass-input {
+    background-color: rgba(255, 255, 255, 0.9) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+}
+
+.glass-sidebar {
+    background-color: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+}
+
+/* ========================================
+   品牌渐变系统 - Gemini Gradients
+   ======================================== */
+.gemini-gradient-text {
+    background: linear-gradient(74deg, #4285F4 0%, #9B72CB 9%, #D96570 20%, #E3E3E3 35%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.gemini-gradient-text-animated {
+    background: linear-gradient(74deg, #4285F4 0%, #9B72CB 15%, #D96570 30%, #E3E3E3 45%, #4285F4 60%, #9B72CB 75%, #D96570 90%, #E3E3E3 100%);
+    background-size: 300% 100%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: gradient-flow 8s linear infinite;
+}
+
+@keyframes gradient-flow {
+    0% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* ========================================
+   State Layers - MD3 交互反馈
+   ======================================== */
+.state-layer {
+    position: relative;
+    overflow: hidden;
+}
+
+.state-layer::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: currentColor;
+    opacity: 0;
+    transition: opacity 0.2s var(--md-sys-motion-easing-emphasized);
+    pointer-events: none;
+    border-radius: inherit;
+}
+
+.state-layer:hover::after {
+    opacity: 0.08;
+}
+
+.state-layer:active::after {
+    opacity: 0.12;
+}
+
+/* 水波纹效果 */
+.ripple {
+    position: relative;
+    overflow: hidden;
+}
+
+.ripple::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, rgba(0,0,0,0.1) 0%, transparent 60%);
+    transform: scale(0);
+    opacity: 0;
+    transition: transform 0.5s, opacity 0.3s;
+    pointer-events: none;
+}
+
+.ripple:active::before {
+    transform: scale(2);
+    opacity: 1;
+    transition: transform 0s, opacity 0s;
+}
+
+/* ========================================
+   底部免责声明
+   ======================================== */
+.disclaimer-fixed {
+    position: fixed;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 11px;
+    color: var(--md-sys-color-on-surface-variant);
+    opacity: 0.6;
+    z-index: 50;
+    white-space: nowrap;
+}
+
+/* ========================================
+   Sparkle 图标 - Google AI 核心符号
+   ======================================== */
+.sparkle-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.sparkle-icon svg {
+    width: 24px;
+    height: 24px;
+}
+
+/* 静态 Sparkle SVG */
+.sparkle-static {
+    fill: url(#sparkle-gradient);
+}
+
+/* 动态 Sparkle - 发光效果 */
+.sparkle-animated {
+    animation: sparkle-pulse 2s ease-in-out infinite;
+}
+
+@keyframes sparkle-pulse {
+    0%, 100% {
+        filter: drop-shadow(0 0 4px rgba(138, 180, 248, 0.6));
+        transform: scale(1);
+    }
+    50% {
+        filter: drop-shadow(0 0 12px rgba(138, 180, 248, 0.9));
+        transform: scale(1.1);
+    }
+}
+
+/* Sparkle 渐变定义（需要在 HTML 中包含） */
+.sparkle-gradient-defs {
+    position: absolute;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+}
+
+/* ========================================
+   全息渐变效果 - Holographic
+   ======================================== */
+.holographic-text {
+    background: var(--gemini-holographic);
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: holographic-shift 8s ease infinite;
+}
+
+@keyframes holographic-shift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* 全息渐变边框 */
+.holographic-border {
+    position: relative;
+    background: var(--md-sys-color-surface-container);
+    border-radius: var(--md-sys-shape-corner-extra-large);
+}
+
+.holographic-border::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    background: var(--gemini-holographic);
+    background-size: 200% 200%;
+    border-radius: inherit;
+    z-index: -1;
+    animation: holographic-shift 8s ease infinite;
+    opacity: 0;
+    transition: opacity var(--md-sys-motion-duration-medium) var(--md-sys-motion-easing-standard);
+}
+
+.holographic-border:hover::before,
+.holographic-border:focus-within::before {
+    opacity: 1;
+}
+
+/* 全息渐变背景光晕 */
+.holographic-glow {
+    position: relative;
+}
+
+.holographic-glow::after {
+    content: '';
+    position: absolute;
+    inset: -50%;
+    background: radial-gradient(
+        circle at 50% 50%,
+        rgba(138, 180, 248, 0.15) 0%,
+        rgba(155, 114, 203, 0.1) 30%,
+        transparent 70%
+    );
+    pointer-events: none;
+    animation: glow-float 6s ease-in-out infinite;
+}
+
+@keyframes glow-float {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(10px, -10px) scale(1.05); }
+    66% { transform: translate(-10px, 10px) scale(0.95); }
+}
+
+/* ========================================
+   磨砂玻璃效果 - Frosted Glass (Light Mode)
+   ======================================== */
+.glass-surface {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.glass-surface-elevated {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: var(--md-sys-elevation-3);
+}
+
+/* ========================================
+   M3 按钮系统 - Pill Shape
+   ======================================== */
+
+/* Filled Button - 主要操作 */
+.md-filled-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 40px;
+    padding: 0 24px;
+    border: none;
+    border-radius: var(--md-sys-shape-corner-full);
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.1px;
+    cursor: pointer;
+    transition: all var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-standard);
+    position: relative;
+    overflow: hidden;
+}
+
+.md-filled-button::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: currentColor;
+    opacity: 0;
+    transition: opacity var(--md-sys-motion-duration-short);
+}
+
+.md-filled-button:hover::before {
+    opacity: 0.08;
+}
+
+.md-filled-button:active::before {
+    opacity: 0.12;
+}
+
+.md-filled-button:disabled {
+    background: rgba(227, 227, 227, 0.12);
+    color: rgba(227, 227, 227, 0.38);
+    cursor: not-allowed;
+}
+
+/* Filled Tonal Button - 次要操作 */
+.md-filled-tonal-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 40px;
+    padding: 0 24px;
+    border: none;
+    border-radius: var(--md-sys-shape-corner-full);
+    background: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.1px;
+    cursor: pointer;
+    transition: all var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-standard);
+    position: relative;
+    overflow: hidden;
+}
+
+.md-filled-tonal-button:hover {
+    box-shadow: var(--md-sys-elevation-1);
+}
+
+/* Outlined Button */
+.md-outlined-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 40px;
+    padding: 0 24px;
+    border: 1px solid var(--md-sys-color-outline);
+    border-radius: var(--md-sys-shape-corner-full);
+    background: transparent;
+    color: var(--md-sys-color-primary);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.1px;
+    cursor: pointer;
+    transition: all var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-standard);
+}
+
+.md-outlined-button:hover {
+    background: rgba(138, 180, 248, 0.08);
+}
+
+/* Text Button */
+.md-text-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 40px;
+    padding: 0 16px;
+    border: none;
+    border-radius: var(--md-sys-shape-corner-full);
+    background: transparent;
+    color: var(--md-sys-color-primary);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.1px;
+    cursor: pointer;
+    transition: all var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-standard);
+}
+
+.md-text-button:hover {
+    background: rgba(138, 180, 248, 0.08);
+}
+
+/* Icon Button */
+.md-icon-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: var(--md-sys-shape-corner-full);
+    background: transparent;
+    color: var(--md-sys-color-on-surface-variant);
+    cursor: pointer;
+    transition: all var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-standard);
+}
+
+.md-icon-button:hover {
+    background: rgba(0, 0, 0, 0.06);
+    color: var(--md-sys-color-on-surface);
+}
+
+.md-icon-button svg {
+    width: 24px;
+    height: 24px;
+}
+
+/* FAB - Floating Action Button */
+.md-fab {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 56px;
+    height: 56px;
+    padding: 0 16px;
+    border: none;
+    border-radius: var(--md-sys-shape-corner-large);
+    background: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    box-shadow: var(--md-sys-elevation-3);
+    transition: all var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-standard);
+}
+
+.md-fab:hover {
+    box-shadow: var(--md-sys-elevation-4);
+}
+
+/* ========================================
+   M3 输入框系统 - Pill Shape
+   ======================================== */
+.md-text-field {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.md-text-field-container {
+    display: flex;
+    align-items: center;
+    min-height: 56px;
+    padding: 0 16px;
+    background: var(--md-sys-color-surface-container-highest);
+    border-radius: var(--md-sys-shape-corner-extra-small) var(--md-sys-shape-corner-extra-small) 0 0;
+    border-bottom: 1px solid var(--md-sys-color-on-surface-variant);
+    transition: all var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-standard);
+}
+
+.md-text-field-container:hover {
+    background: var(--md-sys-color-surface-container-highest);
+    border-bottom-color: var(--md-sys-color-on-surface);
+}
+
+.md-text-field-container:focus-within {
+    border-bottom: 2px solid var(--md-sys-color-primary);
+}
+
+.md-text-field input {
+    flex: 1;
+    padding: 8px 0;
+    border: none;
+    background: transparent;
+    color: var(--md-sys-color-on-surface);
+    font-family: inherit;
+    font-size: 16px;
+    outline: none;
+}
+
+.md-text-field input::placeholder {
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+/* Outlined Text Field */
+.md-outlined-text-field {
+    position: relative;
+}
+
+.md-outlined-text-field-container {
+    display: flex;
+    align-items: center;
+    min-height: 56px;
+    padding: 0 16px;
+    background: transparent;
+    border: 1px solid var(--md-sys-color-outline);
+    border-radius: var(--md-sys-shape-corner-extra-small);
+    transition: all var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-standard);
+}
+
+.md-outlined-text-field-container:hover {
+    border-color: var(--md-sys-color-on-surface);
+}
+
+.md-outlined-text-field-container:focus-within {
+    border: 2px solid var(--md-sys-color-primary);
+}
+
+/* Gemini Style Search Box - 大圆角 */
+.gemini-search-box {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 56px;
+    padding: 8px 24px;
+    background: var(--md-sys-color-surface-container);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: var(--md-sys-shape-corner-extra-large);
+    transition: all var(--md-sys-motion-duration-medium) var(--md-sys-motion-easing-standard);
+}
+
+.gemini-search-box:hover {
+    background: var(--md-sys-color-surface-container-high);
+    border-color: var(--md-sys-color-outline);
+}
+
+.gemini-search-box:focus-within {
+    background: var(--md-sys-color-surface-container-high);
+    border-color: var(--md-sys-color-primary);
+    box-shadow: 0 0 0 2px rgba(138, 180, 248, 0.2);
+}
+
+.gemini-search-box input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    color: var(--md-sys-color-on-surface);
+    font-family: inherit;
+    font-size: 16px;
+    outline: none;
+}
+
+.gemini-search-box input::placeholder {
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+/* ========================================
+   M3 卡片系统
+   ======================================== */
+.md-card {
+    background: var(--md-sys-color-surface-container);
+    border-radius: var(--md-sys-shape-corner-medium);
+    overflow: hidden;
+}
+
+.md-card-elevated {
+    background: var(--md-sys-color-surface-container-low);
+    border-radius: var(--md-sys-shape-corner-medium);
+    box-shadow: var(--md-sys-elevation-1);
+    transition: box-shadow var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-standard);
+}
+
+.md-card-elevated:hover {
+    box-shadow: var(--md-sys-elevation-2);
+}
+
+.md-card-outlined {
+    background: var(--md-sys-color-surface);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: var(--md-sys-shape-corner-medium);
+}
+
+/* Gemini Gem Card - 特殊样式 */
+.gem-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 20px 16px;
+    background: var(--md-sys-color-surface-container);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: var(--md-sys-shape-corner-large);
+    cursor: pointer;
+    transition: all var(--md-sys-motion-duration-medium) var(--md-sys-motion-easing-emphasized);
+    text-decoration: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.gem-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--gemini-holographic-subtle);
+    background-size: 200% 200%;
+    opacity: 0;
+    transition: opacity var(--md-sys-motion-duration-medium);
+}
+
+.gem-card:hover {
+    background: var(--md-sys-color-surface-container-high);
+    border-color: var(--md-sys-color-primary);
+    transform: translateY(-4px);
+    box-shadow: var(--md-sys-elevation-2);
+}
+
+.gem-card:hover::before {
+    opacity: 1;
+    animation: holographic-shift 4s ease infinite;
+}
+
+.gem-card-icon {
+    position: relative;
+    z-index: 1;
+    width: 56px;
+    height: 56px;
+    border-radius: var(--md-sys-shape-corner-medium);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    transition: transform var(--md-sys-motion-duration-medium) var(--md-sys-motion-easing-emphasized);
+}
+
+.gem-card:hover .gem-card-icon {
+    transform: scale(1.1);
+}
+
+.gem-card-title {
+    position: relative;
+    z-index: 1;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--md-sys-color-on-surface);
+    text-align: center;
+}
+
+.gem-card-desc {
+    position: relative;
+    z-index: 1;
+    font-size: 12px;
+    color: var(--md-sys-color-on-surface-variant);
+    text-align: center;
+    line-height: 1.4;
+}
+
+/* ========================================
+   M3 Chip 系统
+   ======================================== */
+.md-assist-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 32px;
+    padding: 0 16px;
+    border: 1px solid var(--md-sys-color-outline);
+    border-radius: var(--md-sys-shape-corner-small);
+    background: transparent;
+    color: var(--md-sys-color-on-surface);
+    font-family: inherit;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-standard);
+}
+
+.md-assist-chip:hover {
+    background: rgba(0, 0, 0, 0.06);
+}
+
+.md-filter-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 32px;
+    padding: 0 16px;
+    border: 1px solid var(--md-sys-color-outline);
+    border-radius: var(--md-sys-shape-corner-small);
+    background: transparent;
+    color: var(--md-sys-color-on-surface-variant);
+    font-family: inherit;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all var(--md-sys-motion-duration-short) var(--md-sys-motion-easing-standard);
+}
+
+.md-filter-chip.selected {
+    background: var(--md-sys-color-secondary-container);
+    border-color: transparent;
+    color: var(--md-sys-color-on-secondary-container);
+}
+
+/* ========================================
+   Gemini 输入区域 - 大圆角容器
+   ======================================== */
+.gemini-input-area {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 16px 24px 24px;
+    background: linear-gradient(to top, var(--md-sys-color-surface) 80%, transparent);
+    z-index: 100;
+}
+
+.gemini-input-container {
+    max-width: 900px;
+    margin: 0 auto;
+    position: relative;
+}
+
+.gemini-input-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px 20px;
+    background: var(--md-sys-color-surface-container);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: var(--md-sys-shape-corner-extra-large);
+    transition: all var(--md-sys-motion-duration-medium) var(--md-sys-motion-easing-standard);
+}
+
+.gemini-input-wrapper:focus-within {
+    border-color: var(--md-sys-color-primary);
+    box-shadow: 0 0 0 1px var(--md-sys-color-primary);
+}
+
+.gemini-input-wrapper textarea {
+    width: 100%;
+    min-height: 24px;
+    max-height: 200px;
+    padding: 8px 0;
+    border: none;
+    background: transparent;
+    color: var(--md-sys-color-on-surface);
+    font-family: inherit;
+    font-size: 16px;
+    line-height: 1.5;
+    resize: none;
+    outline: none;
+}
+
+.gemini-input-wrapper textarea::placeholder {
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.gemini-input-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.gemini-input-tools {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.gemini-input-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* ========================================
+   Gemini Logo 渐变动画
+   ======================================== */
+.gemini-logo {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.gemini-logo-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--md-sys-shape-corner-small);
+    background: var(--gemini-holographic);
+    background-size: 200% 200%;
+    animation: holographic-shift 8s ease infinite;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: white;
+    box-shadow: 0 2px 8px rgba(138, 180, 248, 0.3);
+}
+
+.gemini-logo-text {
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--md-sys-color-on-surface);
+}
+
+/* ========================================
+   AI 响应加载动画 - Gemini 风格
+   ======================================== */
+.gemini-loading {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 0;
+}
+
+.gemini-loading-dots {
+    display: flex;
+    gap: 6px;
+}
+
+.gemini-loading-dots span {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    animation: gemini-dot-pulse 1.4s ease-in-out infinite;
+}
+
+.gemini-loading-dots span:nth-child(1) {
+    background: var(--gemini-gradient-1);
+    animation-delay: 0s;
+}
+
+.gemini-loading-dots span:nth-child(2) {
+    background: var(--gemini-gradient-2);
+    animation-delay: 0.2s;
+}
+
+.gemini-loading-dots span:nth-child(3) {
+    background: var(--gemini-gradient-3);
+    animation-delay: 0.4s;
+}
+
+@keyframes gemini-dot-pulse {
+    0%, 80%, 100% {
+        transform: scale(0.6);
+        opacity: 0.5;
+    }
+    40% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* 流式光标 */
+.gemini-cursor {
+    display: inline-block;
+    width: 2px;
+    height: 1.2em;
+    background: var(--md-sys-color-primary);
+    margin-left: 2px;
+    animation: gemini-cursor-blink 1s step-end infinite;
+    vertical-align: text-bottom;
+}
+
+@keyframes gemini-cursor-blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+}
+
+/* ========================================
+   消息气泡 - Gemini 风格
+   ======================================== */
+.gemini-message {
+    display: flex;
+    gap: 16px;
+    max-width: 100%;
+    animation: message-slide-in 0.4s var(--md-sys-motion-easing-emphasized);
+}
+
+@keyframes message-slide-in {
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.gemini-message-user {
+    flex-direction: row-reverse;
+}
+
+.gemini-message-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 16px;
+    font-weight: 500;
+    color: white;
+}
+
+.gemini-message-ai .gemini-message-avatar {
+    background: var(--gemini-holographic);
+    background-size: 200% 200%;
+    animation: holographic-shift 8s ease infinite;
+}
+
+.gemini-message-user .gemini-message-avatar {
+    display: none;
+}
+
+.gemini-message-content {
+    max-width: 80%;
+    font-size: 16px;
+    line-height: 1.7;
+}
+
+.gemini-message-ai .gemini-message-content {
+    padding: 0;
+    color: var(--md-sys-color-on-surface);
+}
+
+.gemini-message-user .gemini-message-content {
+    padding: 14px 20px;
+    background: var(--md-sys-color-surface-container-high);
+    border-radius: var(--md-sys-shape-corner-extra-large);
+    color: var(--md-sys-color-on-surface);
+}
+
+/* ========================================
+   Toast 通知 - M3 Snackbar
+   ======================================== */
+.md-snackbar {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 280px;
+    padding: 14px 16px;
+    background: var(--md-sys-color-surface-container-highest);
+    border-radius: var(--md-sys-shape-corner-extra-small);
+    box-shadow: var(--md-sys-elevation-3);
+    color: var(--md-sys-color-on-surface);
+    font-size: 14px;
+    animation: snackbar-slide-up 0.3s var(--md-sys-motion-easing-emphasized);
+    z-index: 10000;
+}
+
+@keyframes snackbar-slide-up {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+.md-snackbar-success {
+    background: rgba(52, 168, 83, 0.9);
+    color: white;
+}
+
+.md-snackbar-error {
+    background: rgba(234, 67, 53, 0.9);
+    color: white;
+}
+
+/* ========================================
+   对话框 - M3 Dialog
+   ======================================== */
+.md-dialog-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    animation: dialog-fade-in 0.2s var(--md-sys-motion-easing-standard);
+}
+
+@keyframes dialog-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.md-dialog {
+    background: var(--md-sys-color-surface-container-high);
+    border-radius: var(--md-sys-shape-corner-extra-large);
+    padding: 24px;
+    min-width: 280px;
+    max-width: 560px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: var(--md-sys-elevation-5);
+    animation: dialog-scale-in 0.3s var(--md-sys-motion-easing-emphasized);
+}
+
+@keyframes dialog-scale-in {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.md-dialog-header {
+    margin-bottom: 16px;
+}
+
+.md-dialog-title {
+    font-size: 24px;
+    font-weight: 400;
+    color: var(--md-sys-color-on-surface);
+    margin: 0;
+}
+
+.md-dialog-content {
+    color: var(--md-sys-color-on-surface-variant);
+    font-size: 14px;
+    line-height: 1.5;
+    margin-bottom: 24px;
+}
+
+.md-dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+/* ========================================
+   响应式适配
+   ======================================== */
+@media (max-width: 768px) {
+    .gemini-input-area {
+        padding: 12px 16px 20px;
+    }
+
+    .gemini-input-wrapper {
+        padding: 12px 16px;
+        border-radius: var(--md-sys-shape-corner-large);
+    }
+
+    .gemini-message-content {
+        max-width: 90%;
+    }
+
+    .gem-card {
+        padding: 16px 12px;
+    }
+
+    .gem-card-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 24px;
+    }
+}
+
+@media (max-width: 480px) {
+    .md-filled-button,
+    .md-filled-tonal-button,
+    .md-outlined-button {
+        min-height: 36px;
+        padding: 0 16px;
+        font-size: 13px;
+    }
+
+    .gemini-message-avatar {
+        width: 32px;
+        height: 32px;
+        font-size: 14px;
+    }
+}

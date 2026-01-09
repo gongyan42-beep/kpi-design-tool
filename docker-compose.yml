@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  kpi-design-tool:
+    build: .
+    container_name: kpi-design-tool
+    restart: unless-stopped
+    ports:
+      - "3014:3014"
+    environment:
+      - KPI_PORT=3014
+      - PORT=3014
+      - FLASK_ENV=production
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data

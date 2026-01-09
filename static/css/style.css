@@ -1,0 +1,608 @@
+/**
+ * KPI设计工具 - Gemini 深色主题
+ * 所有黄色已替换为 Gemini 蓝色
+ */
+
+/* ========================================
+   CSS变量 - Gemini 色彩系统
+   ======================================== */
+:root {
+    /* Gemini 主色调 */
+    --bg-primary: #131314;
+    --bg-secondary: #1e1f20;
+    --bg-tertiary: #282a2c;
+    --bg-hover: #37393b;
+
+    /* 边框 */
+    --border-color: #3c4043;
+
+    /* 文字 */
+    --text-primary: #e3e3e3;
+    --text-secondary: #9aa0a6;
+    --text-tertiary: #5f6368;
+
+    /* 强调色 - Gemini 蓝 (不是黄色!) */
+    --accent-blue: #8ab4f8;
+    --accent-blue-hover: #aecbfa;
+    --accent-green: #34a853;
+    --accent-red: #ea4335;
+
+    /* 圆角 */
+    --radius-sm: 8px;
+    --radius-md: 16px;
+    --radius-lg: 24px;
+    --radius-xl: 28px;
+    --radius-full: 9999px;
+
+    /* 过渡 */
+    --transition: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ========================================
+   基础重置
+   ======================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ========================================
+   深色主题 (兼容旧代码)
+   ======================================== */
+.dark-theme {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+/* 隐藏旧的星空背景 */
+.stars-container,
+.stars,
+.stars2,
+.stars3,
+.aurora {
+    display: none !important;
+}
+
+/* ========================================
+   容器布局
+   ======================================== */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px;
+    min-height: 100vh;
+}
+
+/* ========================================
+   头部导航 - Gemini 风格
+   ======================================== */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 0;
+    margin-bottom: 40px;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo-image {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-sm);
+}
+
+.logo-text {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.user-area {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.user-guest {
+    display: flex;
+    gap: 12px;
+}
+
+.btn-login,
+.btn-register {
+    padding: 10px 20px;
+    border: none;
+    border-radius: var(--radius-full);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn-login {
+    background: transparent;
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.btn-login:hover {
+    background: var(--bg-tertiary);
+}
+
+/* 注册按钮 - 使用蓝色，不是黄色！ */
+.btn-register {
+    background: var(--accent-blue);
+    color: var(--bg-primary);
+}
+
+.btn-register:hover {
+    background: var(--accent-blue-hover);
+}
+
+.user-logged {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.user-credits {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-full);
+    font-size: 13px;
+    color: var(--accent-blue);
+}
+
+.user-email {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.btn-logout {
+    padding: 8px 16px;
+    background: transparent;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-full);
+    color: var(--text-secondary);
+    font-size: 13px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn-logout:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+/* ========================================
+   Hero 区域 - Gemini 风格
+   ======================================== */
+.hero {
+    text-align: center;
+    padding: 60px 0 40px;
+}
+
+.hero-content {
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-full);
+    font-size: 13px;
+    color: var(--accent-blue);
+    margin-bottom: 24px;
+}
+
+.hero-badge svg {
+    width: 16px;
+    height: 16px;
+}
+
+.hero-title {
+    font-size: 48px;
+    font-weight: 400;
+    letter-spacing: -1px;
+    margin-bottom: 16px;
+    color: var(--text-primary);
+}
+
+.hero-title span {
+    background: linear-gradient(135deg, #4285f4, #34a853, #fbbc05, #ea4335);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.hero-desc {
+    font-size: 18px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+/* ========================================
+   模块区域 - Gemini Gems 风格
+   ======================================== */
+.modules-section {
+    padding: 40px 0;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.section-title {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.section-count {
+    font-size: 13px;
+    color: var(--text-tertiary);
+}
+
+.modules-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 16px;
+}
+
+/* 模块卡片 - Gemini 风格 */
+.module-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+}
+
+.module-card:hover {
+    background: var(--bg-tertiary);
+    border-color: var(--accent-blue);
+    transform: translateY(-2px);
+}
+
+/* 隐藏旧的发光效果 */
+.card-glow {
+    display: none;
+}
+
+.module-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+}
+
+.module-icon-wrapper {
+    /* 移除旧的样式 */
+}
+
+.module-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+}
+
+.module-number {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    font-weight: 500;
+}
+
+.module-content {
+    margin-bottom: 16px;
+}
+
+.module-name {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+
+.module-desc {
+    font-size: 13px;
+    color: var(--text-tertiary);
+    line-height: 1.5;
+}
+
+/* 开始按钮 - 使用蓝色，不是黄色！ */
+.module-action {
+    margin-top: auto;
+}
+
+.btn-start {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 20px;
+    background: var(--accent-blue);
+    border: none;
+    border-radius: var(--radius-full);
+    color: var(--bg-primary);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn-start:hover {
+    background: var(--accent-blue-hover);
+}
+
+.btn-start svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* ========================================
+   底部区域
+   ======================================== */
+.footer {
+    padding: 40px 0;
+    text-align: center;
+}
+
+.footer-tips {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.footer-tip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-tertiary);
+}
+
+.footer-tip-icon {
+    font-size: 16px;
+}
+
+.footer-note {
+    font-size: 13px;
+    color: var(--text-tertiary);
+}
+
+/* ========================================
+   登录弹窗 - Gemini 深色风格
+   ======================================== */
+.auth-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.8);
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(8px);
+}
+
+.auth-overlay {
+    position: absolute;
+    inset: 0;
+}
+
+/* 弹窗主体 - 深色背景！不是白色！ */
+.auth-box {
+    position: relative;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 40px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.auth-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: var(--radius-full);
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+}
+
+.auth-close:hover {
+    background: var(--bg-tertiary);
+}
+
+.auth-form h2 {
+    font-size: 24px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: var(--text-primary);
+    text-align: center;
+}
+
+.auth-subtitle {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: 24px;
+    text-align: center;
+}
+
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+}
+
+.form-group label .required {
+    color: var(--accent-red);
+}
+
+/* 输入框 - 深色背景，蓝色聚焦边框！不是黄色！ */
+.form-group input {
+    width: 100%;
+    padding: 12px 16px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-size: 15px;
+    transition: border-color 0.2s;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--accent-blue);
+}
+
+.form-group input::placeholder {
+    color: var(--text-tertiary);
+}
+
+/* 提交按钮 - 蓝色！不是黄色！ */
+.btn-submit {
+    width: 100%;
+    padding: 14px;
+    background: var(--accent-blue);
+    border: none;
+    border-radius: var(--radius-sm);
+    color: var(--bg-primary);
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    margin-top: 8px;
+}
+
+.btn-submit:hover {
+    background: var(--accent-blue-hover);
+}
+
+.btn-submit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.auth-switch {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.auth-switch a {
+    color: var(--accent-blue);
+    text-decoration: none;
+}
+
+.auth-switch a:hover {
+    text-decoration: underline;
+}
+
+.auth-message {
+    padding: 12px 16px;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    margin-top: 16px;
+    text-align: center;
+}
+
+.auth-message.success {
+    background: rgba(52, 168, 83, 0.15);
+    border: 1px solid var(--accent-green);
+    color: var(--accent-green);
+}
+
+.auth-message.error {
+    background: rgba(234, 67, 53, 0.15);
+    border: 1px solid var(--accent-red);
+    color: var(--accent-red);
+}
+
+/* ========================================
+   响应式
+   ======================================== */
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 32px;
+    }
+
+    .hero-desc {
+        font-size: 16px;
+    }
+
+    .modules-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .footer-tips {
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .modules-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .module-card {
+        padding: 20px;
+    }
+
+    .auth-box {
+        padding: 32px 24px;
+    }
+}
