@@ -15,6 +15,7 @@ from modules.memory_service import memory_service
 from modules.prompt_service import prompt_service
 from modules.infographic_service import infographic_service
 from modules.redeem_service import redeem_service
+from modules.admin_user_service import admin_user_service
 
 
 # ========================================
@@ -244,9 +245,9 @@ def chat_api():
     if current_credits < credits_cost:
         return jsonify({
             'success': False,
-            'error': f'积分不足！当前积分: {current_credits}，需要: {credits_cost}。请联系微信 huohuo1616 进行充值。',
+            'error': f'积分不足！当前积分: {current_credits}，需要: {credits_cost}。请联系猫课工作人员进行充值。',
             'credits_exhausted': True,
-            'admin_wechat': 'huohuo1616'
+            'admin_wechat': '猫课工作人员'
         }), 402
 
     # 保存用户消息
@@ -347,9 +348,9 @@ def chat_stream_api():
     if current_credits < credits_cost:
         return jsonify({
             'success': False,
-            'error': f'积分不足！当前积分: {current_credits}，需要: {credits_cost}。请联系微信 huohuo1616 进行充值。',
+            'error': f'积分不足！当前积分: {current_credits}，需要: {credits_cost}。请联系猫课工作人员进行充值。',
             'credits_exhausted': True,
-            'admin_wechat': 'huohuo1616'
+            'admin_wechat': '猫课工作人员'
         }), 402
 
     # 保存用户消息（如果有图片，附带标记）
@@ -765,7 +766,7 @@ def admin_page():
 
 @app.route('/api/admin/login', methods=['POST'])
 def admin_login():
-    """管理员登录"""
+    """管理员登录 - 支持主管理员和普通管理员"""
     data = request.get_json()
     if not data:
         return jsonify({'success': False, 'error': '无效的请求数据'}), 400
@@ -773,7 +774,15 @@ def admin_login():
     username = data.get('username', '').strip()
     password = data.get('password', '')
 
-    # 从环境变量读取管理员账号（格式：user1:pass1,user2:pass2）
+    # 从环境变量读取主管理员账号
+    super_admins_str = os.getenv('SUPER_ADMINS', '')
+    super_admins = {}
+    for pair in super_admins_str.split(','):
+        if ':' in pair:
+            u, p = pair.split(':', 1)
+            super_admins[u.strip()] = p.strip()
+
+    # 从环境变量读取普通管理员账号（作为备用）
     admin_users_str = os.getenv('ADMIN_USERS', '')
     admin_users = {}
     for pair in admin_users_str.split(','):
@@ -781,12 +790,57 @@ def admin_login():
             u, p = pair.split(':', 1)
             admin_users[u.strip()] = p.strip()
 
+    # 检查是否为主管理员
+    if username in super_admins and super_admins[username] == password:
+        session['is_admin'] = True
+        session['admin_username'] = username
+        session['admin_role'] = 'super'  # 主管理员
+        return jsonify({
+            'success': True,
+            'message': '登录成功',
+            'role': 'super',
+            'username': username
+        })
+
+    # 检查是否为 Supabase 中的普通管理员
+    is_valid, admin_data = admin_user_service.verify_admin(username, password)
+    if is_valid:
+        session['is_admin'] = True
+        session['admin_username'] = username
+        session['admin_role'] = 'normal'  # 普通管理员
+        return jsonify({
+            'success': True,
+            'message': '登录成功',
+            'role': 'normal',
+            'username': username
+        })
+
+    # 检查是否为 .env 中的普通管理员（备用）
     if username in admin_users and admin_users[username] == password:
         session['is_admin'] = True
         session['admin_username'] = username
-        return jsonify({'success': True, 'message': '登录成功'})
-    else:
-        return jsonify({'success': False, 'error': '用户名或密码错误'}), 401
+        session['admin_role'] = 'normal'  # 普通管理员
+        return jsonify({
+            'success': True,
+            'message': '登录成功',
+            'role': 'normal',
+            'username': username
+        })
+
+    return jsonify({'success': False, 'error': '用户名或密码错误'}), 401
+
+
+@app.route('/api/admin/me', methods=['GET'])
+def admin_get_me():
+    """获取当前管理员信息"""
+    if not session.get('is_admin'):
+        return jsonify({'success': False, 'error': '未登录'}), 401
+
+    return jsonify({
+        'success': True,
+        'username': session.get('admin_username'),
+        'role': session.get('admin_role', 'normal')
+    })
 
 
 @app.route('/api/admin/sessions', methods=['GET'])
@@ -1152,6 +1206,83 @@ def admin_delete_redeem_code(code_id):
         return jsonify({'success': False, 'error': '请先登录管理后台'}), 401
 
     success, message = redeem_service.delete_code(code_id)
+
+    if success:
+        return jsonify({'success': True, 'message': message})
+    else:
+        return jsonify({'success': False, 'error': message}), 400
+
+
+# ========================================
+# 管理员用户管理 API（仅主管理员可用）
+# ========================================
+
+def require_super_admin():
+    """检查是否为主管理员"""
+    if not session.get('is_admin'):
+        return False, jsonify({'success': False, 'error': '请先登录管理后台'}), 401
+    if session.get('admin_role') != 'super':
+        return False, jsonify({'success': False, 'error': '权限不足，仅主管理员可操作'}), 403
+    return True, None, None
+
+
+@app.route('/api/admin/admins', methods=['GET'])
+def admin_get_admins():
+    """获取所有普通管理员列表（仅主管理员）"""
+    is_super, error_response, status_code = require_super_admin()
+    if not is_super:
+        return error_response, status_code
+
+    admins = admin_user_service.get_all_admins()
+    return jsonify({'success': True, 'admins': admins})
+
+
+@app.route('/api/admin/admins', methods=['POST'])
+def admin_create_admin():
+    """添加普通管理员（仅主管理员）"""
+    is_super, error_response, status_code = require_super_admin()
+    if not is_super:
+        return error_response, status_code
+
+    data = request.get_json()
+    username = data.get('username', '').strip()
+    note = data.get('note', '').strip()
+
+    if not username:
+        return jsonify({'success': False, 'error': '请输入用户名'}), 400
+
+    created_by = session.get('admin_username', 'admin')
+    success, message, admin_data = admin_user_service.add_admin(username, created_by, note)
+
+    if success:
+        return jsonify({'success': True, 'message': message, 'admin': admin_data})
+    else:
+        return jsonify({'success': False, 'error': message}), 400
+
+
+@app.route('/api/admin/admins/<admin_id>', methods=['DELETE'])
+def admin_delete_admin(admin_id):
+    """删除普通管理员（仅主管理员）"""
+    is_super, error_response, status_code = require_super_admin()
+    if not is_super:
+        return error_response, status_code
+
+    success, message = admin_user_service.delete_admin(admin_id)
+
+    if success:
+        return jsonify({'success': True, 'message': message})
+    else:
+        return jsonify({'success': False, 'error': message}), 400
+
+
+@app.route('/api/admin/admins/<admin_id>/reset-password', methods=['POST'])
+def admin_reset_admin_password(admin_id):
+    """重置管理员密码（仅主管理员）"""
+    is_super, error_response, status_code = require_super_admin()
+    if not is_super:
+        return error_response, status_code
+
+    success, message = admin_user_service.reset_password(admin_id)
 
     if success:
         return jsonify({'success': True, 'message': message})

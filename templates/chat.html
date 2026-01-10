@@ -161,9 +161,10 @@
             transition: left 0.4s cubic-bezier(0.2, 0, 0, 1), transform 0.4s cubic-bezier(0.2, 0, 0, 1);
         }
 
-        .main-content.sidebar-collapsed .input-area {
-            left: 0;
-            transform: translateX(-50%);
+        /* 侧边栏收起时，输入区居中于整个屏幕 */
+        .sidebar.collapsed ~ .main-content .input-area,
+        body:has(.sidebar.collapsed) .input-area {
+            left: 50%;
         }
 
         /* 侧边栏展开时的 tooltip 提示 */
@@ -380,6 +381,54 @@
             padding: 8px 16px;
             background: var(--gemini-surface);
             min-height: 56px;
+        }
+
+        /* 顶部导航左侧区域 */
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* 顶部导航的汉堡按钮（侧边栏收起时显示） */
+        .nav-hamburger-btn {
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 50%;
+            background: transparent;
+            color: var(--gemini-on-surface-variant);
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s cubic-bezier(0.2, 0, 0, 1);
+            flex-shrink: 0;
+        }
+
+        .nav-hamburger-btn:hover {
+            background: rgba(0, 0, 0, 0.04);
+        }
+
+        .nav-hamburger-btn:active {
+            background: rgba(0, 0, 0, 0.08);
+        }
+
+        .nav-hamburger-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* 侧边栏收起时显示顶部导航的汉堡按钮 */
+        .sidebar.collapsed ~ .main-content .nav-hamburger-btn {
+            display: flex;
+        }
+
+        /* 平板和手机端：始终显示汉堡按钮（因为侧边栏默认隐藏） */
+        @media (max-width: 900px) {
+            .nav-hamburger-btn {
+                display: flex !important;
+            }
         }
 
         .nav-brand {
@@ -754,11 +803,12 @@
         .input-area {
             position: fixed;
             bottom: 24px;
-            left: 50%;
-            transform: translateX(calc(-50% + var(--sidebar-width) / 2));
+            left: calc(var(--sidebar-width) + (100% - var(--sidebar-width)) / 2);
+            transform: translateX(-50%);
             width: 90%;
             max-width: 768px;
             z-index: 100;
+            transition: left 0.4s cubic-bezier(0.2, 0, 0, 1);
         }
 
         .input-container {
@@ -888,6 +938,8 @@
             border-radius: 16px;
             padding: 8px 0;
             min-width: 200px;
+            max-height: 70vh;
+            overflow-y: auto;
             box-shadow: 0 8px 24px rgba(0,0,0,0.15);
             z-index: 1000;
             opacity: 0;
@@ -895,6 +947,18 @@
             transform-origin: bottom left;
             pointer-events: none;
             transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+        }
+
+        /* 手机端：下拉菜单改为从上方弹出，但限制高度 */
+        @media (max-width: 600px) {
+            .model-dropdown {
+                bottom: auto;
+                top: 100%;
+                margin-top: 8px;
+                margin-bottom: 0;
+                transform-origin: top left;
+                max-height: 200px;
+            }
         }
 
         .model-dropdown.show {
@@ -1343,11 +1407,12 @@
             }
 
             .input-area {
-                left: 0;
-                transform: translateX(0);
-                width: 100%;
+                left: 50%;
+                transform: translateX(-50%);
+                width: calc(100% - 32px);
                 max-width: 100%;
-                padding: 12px 16px 20px;
+                padding: 0;
+                bottom: 20px;
             }
 
             .chat-area {
@@ -1536,6 +1601,19 @@
             display: none;
         }
 
+        /* 屏幕阅读器专用隐藏样式 */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
         /* 图片预览区域 */
         .image-preview-container {
             display: none;
@@ -1569,8 +1647,8 @@
             position: absolute;
             top: 4px;
             right: 4px;
-            width: 20px;
-            height: 20px;
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
             background: rgba(0, 0, 0, 0.6);
             color: white;
@@ -1579,7 +1657,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 12px;
+            font-size: 14px;
             line-height: 1;
             transition: background 0.2s;
         }
@@ -1837,22 +1915,30 @@
     <main class="main-content">
         <!-- 顶部导航 -->
         <nav class="top-nav">
-            <div class="nav-brand">
-                <div class="nav-brand-icon">
-                    <svg viewBox="0 0 24 24" fill="url(#sparkle-gradient)">
-                        <path d="M12 0L14.59 8.41L23 11L14.59 13.59L12 22L9.41 13.59L1 11L9.41 8.41L12 0Z"/>
+            <div class="nav-left">
+                <!-- 侧边栏收起时显示的汉堡按钮 -->
+                <button class="nav-hamburger-btn" onclick="toggleSidebar()" title="展开侧栏">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>
                     </svg>
+                </button>
+                <div class="nav-brand">
+                    <div class="nav-brand-icon">
+                        <svg viewBox="0 0 24 24" fill="url(#sparkle-gradient)">
+                            <path d="M12 0L14.59 8.41L23 11L14.59 13.59L12 22L9.41 13.59L1 11L9.41 8.41L12 0Z"/>
+                        </svg>
+                    </div>
+                    电商管理助手
                 </div>
-                电商管理助手
             </div>
             <div class="nav-right">
                 <span class="pro-badge">{{ module_info.name }}</span>
-                <span class="user-credits" id="userCredits" style="display: none;">
+                <a href="/" class="user-credits" id="userCredits" style="display: none; text-decoration: none; cursor: pointer;" title="点击兑换积分">
                     <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
                         <path d="M12 0L14.59 8.41L23 11L14.59 13.59L12 22L9.41 13.59L1 11L9.41 8.41L12 0Z"/>
                     </svg>
                     <span id="creditsCount">0</span>
-                </span>
+                </a>
                 <span class="user-name" id="userName" style="display: none;"></span>
                 <div class="user-avatar" id="userAvatar">G</div>
             </div>
@@ -1882,6 +1968,7 @@
                     <!-- 动态添加图片预览 -->
                 </div>
                 <div class="input-wrapper">
+                    <label for="message-input" class="sr-only">输入您的问题</label>
                     <textarea
                         id="message-input"
                         placeholder="输入您的问题..."
@@ -1889,6 +1976,7 @@
                         maxlength="5000"
                         onkeydown="handleKeyDown(event)"
                         oninput="autoResize(this); updateSendButton(this)"
+                        aria-label="输入您的问题"
                     ></textarea>
                     <div class="input-toolbar">
                         <div class="input-tools-left">
@@ -2373,7 +2461,7 @@
                     const err = await res.json();
                     // 检查是否是积分不足
                     if (err.credits_exhausted) {
-                        showCreditsExhaustedModal(err.admin_wechat || 'huohuo1616');
+                        showCreditsExhaustedModal(err.admin_wechat || '猫课工作人员');
                         throw new Error('积分不足');
                     }
                     throw new Error(err.error || '请求失败');
@@ -2451,7 +2539,7 @@
         function showImagePreview(src) {
             const overlay = document.createElement('div');
             overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:10000;display:flex;align-items:center;justify-content:center;cursor:pointer;';
-            overlay.onclick = () => overlay.remove();
+            overlay.onclick = () => closeImagePreview();
 
             const img = document.createElement('img');
             img.src = src;
@@ -2459,6 +2547,24 @@
 
             overlay.appendChild(img);
             document.body.appendChild(overlay);
+
+            // 锁定背景滚动
+            document.body.style.overflow = 'hidden';
+
+            // ESC 键关闭
+            const handleEsc = (e) => {
+                if (e.key === 'Escape') {
+                    closeImagePreview();
+                }
+            };
+            document.addEventListener('keydown', handleEsc);
+
+            // 关闭函数
+            function closeImagePreview() {
+                overlay.remove();
+                document.body.style.overflow = '';
+                document.removeEventListener('keydown', handleEsc);
+            }
         }
 
         // 创建流式消息
@@ -2670,10 +2776,13 @@
                         newSession();
                     }
                 } else {
-                    showToast('恢复失败: ' + (data.error || '未知错误'), 'error');
+                    // 会话不存在，刷新历史列表并提示
+                    showToast('该对话已被删除', 'error');
+                    loadHistory();  // 刷新列表，移除已删除的项
                 }
             } catch (e) {
-                showToast('恢复失败', 'error');
+                showToast('恢复失败，请刷新页面', 'error');
+                loadHistory();
             }
         }
 
@@ -2806,7 +2915,8 @@
             localStorage.setItem('chat_model_preference', model);
 
             document.querySelectorAll('.model-option').forEach(opt => {
-                opt.classList.toggle('active', opt.textContent.toLowerCase().includes(model));
+                const optName = opt.querySelector('.model-option-name').textContent.toLowerCase();
+                opt.classList.toggle('active', optName === (model === 'flash' ? 'flash' : 'pro'));
             });
         }
 
@@ -2932,7 +3042,11 @@
                     for (let i = e.resultIndex; i < e.results.length; i++) {
                         text += e.results[i][0].transcript;
                     }
-                    document.getElementById('message-input').value = text;
+                    // 追加而不是覆盖，保留用户已输入的内容
+                    const input = document.getElementById('message-input');
+                    const currentText = input.value;
+                    input.value = currentText ? currentText + ' ' + text : text;
+                    updateSendButton(input);
                 };
 
                 recognition.onerror = () => stopVoice();
@@ -2994,14 +3108,25 @@
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             const mainContent = document.querySelector('.main-content');
-            sidebar.classList.toggle('collapsed');
-            mainContent.classList.toggle('sidebar-collapsed');
+
+            // 检测是否是移动端/平板（宽度 <= 900px）
+            if (window.innerWidth <= 900) {
+                // 移动端：切换 open class
+                sidebar.classList.toggle('open');
+            } else {
+                // 桌面端：切换 collapsed class
+                sidebar.classList.toggle('collapsed');
+                mainContent.classList.toggle('sidebar-collapsed');
+            }
         }
 
-        // 更新发送按钮状态 - 有内容时高亮
+        // 更新发送按钮状态 - 有内容或有图片时高亮
         function updateSendButton(textarea) {
             const sendBtn = document.getElementById('sendBtn');
-            if (textarea.value.trim().length > 0) {
+            const hasText = textarea.value.trim().length > 0;
+            const hasImages = pendingImages.some(img => img !== null);
+
+            if (hasText || hasImages) {
                 sendBtn.disabled = false;
                 sendBtn.classList.add('active');
             } else {
@@ -3015,6 +3140,9 @@
             // 移除已存在的弹窗
             const existing = document.getElementById('creditsModal');
             if (existing) existing.remove();
+
+            // 锁定背景滚动
+            document.body.style.overflow = 'hidden';
 
             const modal = document.createElement('div');
             modal.id = 'creditsModal';
@@ -3041,6 +3169,8 @@
                             复制
                         </button>
                     </div>
+                    <p style="font-size: 13px; color: #888; margin-top: 12px;">已有兑换码？</p>
+                    <a href="/" class="credits-redeem-btn" style="display: inline-block; margin-top: 8px; padding: 10px 24px; background: linear-gradient(135deg, #4285f4, #9b72cb); color: white; border-radius: 20px; text-decoration: none; font-size: 14px; font-weight: 500;">去兑换积分</a>
                     <button class="credits-close-btn" onclick="closeCreditsModal()">知道了</button>
                 </div>
             `;
@@ -3057,7 +3187,11 @@
             const modal = document.getElementById('creditsModal');
             if (modal) {
                 modal.classList.remove('show');
-                setTimeout(() => modal.remove(), 300);
+                setTimeout(() => {
+                    modal.remove();
+                    // 恢复背景滚动
+                    document.body.style.overflow = '';
+                }, 300);
             }
         }
 

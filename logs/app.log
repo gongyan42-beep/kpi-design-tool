@@ -129,3 +129,414 @@ Port 5009 is in use by another program. Either identify and stop that program, o
 2026-01-09 16:03:08,712 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/modules?select=%2A&order=sort_order "HTTP/2 200 OK"
 2026-01-09 16:03:09,111 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/profiles?select=%2A&id=eq.89a378bf-ef0a-4072-a525-05ba3af8c6da "HTTP/2 200 OK"
 2026-01-10 02:03:30,414 [WARNING] app: 404 错误: http://localhost:5009/favicon.ico
+2026-01-10 09:53:05,363 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/modules?select=%2A&order=sort_order "HTTP/2 200 OK"
+2026-01-10 10:06:16,706 [WARNING] app: 404 错误: http://localhost:5009/favicon.ico
+2026-01-10 10:06:27,040 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/profiles?select=%2A&order=created_at.desc "HTTP/2 200 OK"
+2026-01-10 10:06:27,071 [INFO] app: 获取到 37 条会话记录
+2026-01-10 10:06:27,497 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/profiles?select=id%2Cemail%2Cnickname%2Ccompany%2Cposition "HTTP/2 200 OK"
+2026-01-10 10:06:27,500 [INFO] app: 获取到 60 个用户资料
+2026-01-10 10:06:31,408 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/admin_logs?select=%2A&order=created_at.desc&limit=100 "HTTP/2 404 Not Found"
+2026-01-10 10:06:34,016 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/admin_users?select=%2A&is_deleted=eq.False&order=created_at.desc "HTTP/2 200 OK"
+2026-01-10 10:08:33,590 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/profiles?select=%2A&order=created_at.desc "HTTP/2 200 OK"
+2026-01-10 10:08:33,615 [INFO] app: 获取到 37 条会话记录
+2026-01-10 10:08:34,016 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/profiles?select=id%2Cemail%2Cnickname%2Ccompany%2Cposition "HTTP/2 200 OK"
+2026-01-10 10:08:34,019 [INFO] app: 获取到 60 个用户资料
+2026-01-10 10:08:34,425 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/redeem_codes?select=%2A&order=created_at.desc&limit=100 "HTTP/2 200 OK"
+2026-01-10 10:08:35,985 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/admin_users?select=%2A&is_deleted=eq.False&order=created_at.desc "HTTP/2 200 OK"
+2026-01-10 10:08:36,546 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/redeem_codes?select=%2A&order=created_at.desc&limit=100 "HTTP/2 200 OK"
+2026-01-10 10:08:38,569 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/admin_users?select=%2A&is_deleted=eq.False&order=created_at.desc "HTTP/2 200 OK"
+2026-01-10 10:08:40,528 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/admin_logs?select=%2A&order=created_at.desc&limit=100 "HTTP/2 404 Not Found"
+2026-01-10 10:11:11,890 [ERROR] app: Exception on /api/admin/admins [GET]
+Traceback (most recent call last):
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/httpx/_transports/default.py", line 72, in map_httpcore_exceptions
+    yield
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/httpx/_transports/default.py", line 236, in handle_request
+    resp = self._pool.handle_request(req)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/httpcore/_sync/connection_pool.py", line 256, in handle_request
+    raise exc from None
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/httpcore/_sync/connection_pool.py", line 236, in handle_request
+    response = connection.handle_request(
+        pool_request.request
+    )
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/httpcore/_sync/http_proxy.py", line 316, in handle_request
+    stream = stream.start_tls(**kwargs)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/httpcore/_sync/http11.py", line 376, in start_tls
+    return self._stream.start_tls(ssl_context, server_hostname, timeout)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/httpcore/_backends/sync.py", line 154, in start_tls
+    with map_exceptions(exc_map):
+         ~~~~~~~~~~~~~~^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.2/Frameworks/Python.framework/Versions/3.14/lib/python3.14/contextlib.py", line 162, in __exit__
+    self.gen.throw(value)
+    ~~~~~~~~~~~~~~^^^^^^^
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/httpcore/_exceptions.py", line 14, in map_exceptions
+    raise to_exc(exc) from exc
+httpcore.ConnectError: [Errno 54] Connection reset by peer
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/gusuping/code/kpi-design-tool/modules/admin_user_service.py", line 31, in get_all_admins
+    response = self.client.table('admin_users').select('*').eq('is_deleted', False).order('created_at', desc=True).execute()
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/postgrest/_sync/request_builder.py", line 58, in execute
+    r = self.session.request(
+        self.http_method,
+    ...<3 lines>...
+        headers=self.headers,
+    )
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/httpx/_client.py", line 837, in request
+    return self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/httpx/_client.py", line 926, in send
+    response = self._send_handling_auth(
+        request,
+    ...<2 lines>...
+        history=[],
+    )
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/httpx/_client.py", line 954, in _send_handling_auth
+    response = self._send_handling_redirects(
+        request,
+        follow_redirects=follow_redirects,
+        history=history,
+    )
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/httpx/_client.py", line 991, in _send_handling_redirects
+    response = self._send_single_request(request)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/httpx/_client.py", line 1027, in _send_single_request
+    response = transport.handle_request(request)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/httpx/_transports/default.py", line 235, in handle_request
+    with map_httpcore_exceptions():
+         ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.2/Frameworks/Python.framework/Versions/3.14/lib/python3.14/contextlib.py", line 162, in __exit__
+    self.gen.throw(value)
+    ~~~~~~~~~~~~~~^^^^^^^
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/httpx/_transports/default.py", line 89, in map_httpcore_exceptions
+    raise mapped_exc(message) from exc
+httpx.ConnectError: [Errno 54] Connection reset by peer
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 2190, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 1486, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 1469, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/Users/gusuping/code/kpi-design-tool/app.py", line 1236, in admin_get_admins
+    admins = admin_user_service.get_all_admins()
+  File "/Users/gusuping/code/kpi-design-tool/modules/admin_user_service.py", line 34, in get_all_admins
+    print(f"获取管理员列表失败: {e}")
+    ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+OSError: [Errno 5] Input/output error
+2026-01-10 10:11:11,905 [ERROR] app: 500 错误: 500 Internal Server Error: The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.
+Traceback (most recent call last):
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/httpx/_transports/default.py", line 72, in map_httpcore_exceptions
+    yield
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/httpx/_transports/default.py", line 236, in handle_request
+    resp = self._pool.handle_request(req)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/httpcore/_sync/connection_pool.py", line 256, in handle_request
+    raise exc from None
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/httpcore/_sync/connection_pool.py", line 236, in handle_request
+    response = connection.handle_request(
+        pool_request.request
+    )
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/httpcore/_sync/http_proxy.py", line 316, in handle_request
+    stream = stream.start_tls(**kwargs)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/httpcore/_sync/http11.py", line 376, in start_tls
+    return self._stream.start_tls(ssl_context, server_hostname, timeout)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/httpcore/_backends/sync.py", line 154, in start_tls
+    with map_exceptions(exc_map):
+         ~~~~~~~~~~~~~~^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.2/Frameworks/Python.framework/Versions/3.14/lib/python3.14/contextlib.py", line 162, in __exit__
+    self.gen.throw(value)
+    ~~~~~~~~~~~~~~^^^^^^^
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/httpcore/_exceptions.py", line 14, in map_exceptions
+    raise to_exc(exc) from exc
+httpcore.ConnectError: [Errno 54] Connection reset by peer
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/gusuping/code/kpi-design-tool/modules/admin_user_service.py", line 31, in get_all_admins
+    response = self.client.table('admin_users').select('*').eq('is_deleted', False).order('created_at', desc=True).execute()
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/postgrest/_sync/request_builder.py", line 58, in execute
+    r = self.session.request(
+        self.http_method,
+    ...<3 lines>...
+        headers=self.headers,
+    )
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/httpx/_client.py", line 837, in request
+    return self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/httpx/_client.py", line 926, in send
+    response = self._send_handling_auth(
+        request,
+    ...<2 lines>...
+        history=[],
+    )
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/httpx/_client.py", line 954, in _send_handling_auth
+    response = self._send_handling_redirects(
+        request,
+        follow_redirects=follow_redirects,
+        history=history,
+    )
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/httpx/_client.py", line 991, in _send_handling_redirects
+    response = self._send_single_request(request)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/httpx/_client.py", line 1027, in _send_single_request
+    response = transport.handle_request(request)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/httpx/_transports/default.py", line 235, in handle_request
+    with map_httpcore_exceptions():
+         ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.2/Frameworks/Python.framework/Versions/3.14/lib/python3.14/contextlib.py", line 162, in __exit__
+    self.gen.throw(value)
+    ~~~~~~~~~~~~~~^^^^^^^
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/httpx/_transports/default.py", line 89, in map_httpcore_exceptions
+    raise mapped_exc(message) from exc
+httpx.ConnectError: [Errno 54] Connection reset by peer
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 2190, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 1486, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 1469, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/Users/gusuping/code/kpi-design-tool/app.py", line 1236, in admin_get_admins
+    admins = admin_user_service.get_all_admins()
+  File "/Users/gusuping/code/kpi-design-tool/modules/admin_user_service.py", line 34, in get_all_admins
+    print(f"获取管理员列表失败: {e}")
+    ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+OSError: [Errno 5] Input/output error
+2026-01-10 10:11:29,106 [INFO] app: 获取到 37 条会话记录
+2026-01-10 10:11:29,111 [WARNING] app: 获取用户信息失败（不影响会话列表）: [Errno 54] Connection reset by peer
+2026-01-10 10:11:32,699 [ERROR] app: Exception on /api/admin/admins [GET]
+Traceback (most recent call last):
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/httpx/_transports/default.py", line 72, in map_httpcore_exceptions
+    yield
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/httpx/_transports/default.py", line 236, in handle_request
+    resp = self._pool.handle_request(req)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/httpcore/_sync/connection_pool.py", line 256, in handle_request
+    raise exc from None
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/httpcore/_sync/connection_pool.py", line 236, in handle_request
+    response = connection.handle_request(
+        pool_request.request
+    )
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/httpcore/_sync/http_proxy.py", line 316, in handle_request
+    stream = stream.start_tls(**kwargs)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/httpcore/_sync/http11.py", line 376, in start_tls
+    return self._stream.start_tls(ssl_context, server_hostname, timeout)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/httpcore/_backends/sync.py", line 154, in start_tls
+    with map_exceptions(exc_map):
+         ~~~~~~~~~~~~~~^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.2/Frameworks/Python.framework/Versions/3.14/lib/python3.14/contextlib.py", line 162, in __exit__
+    self.gen.throw(value)
+    ~~~~~~~~~~~~~~^^^^^^^
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/httpcore/_exceptions.py", line 14, in map_exceptions
+    raise to_exc(exc) from exc
+httpcore.ConnectError: [Errno 54] Connection reset by peer
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/gusuping/code/kpi-design-tool/modules/admin_user_service.py", line 31, in get_all_admins
+    response = self.client.table('admin_users').select('*').eq('is_deleted', False).order('created_at', desc=True).execute()
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/postgrest/_sync/request_builder.py", line 58, in execute
+    r = self.session.request(
+        self.http_method,
+    ...<3 lines>...
+        headers=self.headers,
+    )
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/httpx/_client.py", line 837, in request
+    return self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/httpx/_client.py", line 926, in send
+    response = self._send_handling_auth(
+        request,
+    ...<2 lines>...
+        history=[],
+    )
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/httpx/_client.py", line 954, in _send_handling_auth
+    response = self._send_handling_redirects(
+        request,
+        follow_redirects=follow_redirects,
+        history=history,
+    )
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/httpx/_client.py", line 991, in _send_handling_redirects
+    response = self._send_single_request(request)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/httpx/_client.py", line 1027, in _send_single_request
+    response = transport.handle_request(request)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/httpx/_transports/default.py", line 235, in handle_request
+    with map_httpcore_exceptions():
+         ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.2/Frameworks/Python.framework/Versions/3.14/lib/python3.14/contextlib.py", line 162, in __exit__
+    self.gen.throw(value)
+    ~~~~~~~~~~~~~~^^^^^^^
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/httpx/_transports/default.py", line 89, in map_httpcore_exceptions
+    raise mapped_exc(message) from exc
+httpx.ConnectError: [Errno 54] Connection reset by peer
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 2190, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 1486, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 1469, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/Users/gusuping/code/kpi-design-tool/app.py", line 1236, in admin_get_admins
+    admins = admin_user_service.get_all_admins()
+  File "/Users/gusuping/code/kpi-design-tool/modules/admin_user_service.py", line 34, in get_all_admins
+    print(f"获取管理员列表失败: {e}")
+    ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+OSError: [Errno 5] Input/output error
+2026-01-10 10:11:32,725 [ERROR] app: 500 错误: 500 Internal Server Error: The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.
+Traceback (most recent call last):
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/httpx/_transports/default.py", line 72, in map_httpcore_exceptions
+    yield
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/httpx/_transports/default.py", line 236, in handle_request
+    resp = self._pool.handle_request(req)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/httpcore/_sync/connection_pool.py", line 256, in handle_request
+    raise exc from None
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/httpcore/_sync/connection_pool.py", line 236, in handle_request
+    response = connection.handle_request(
+        pool_request.request
+    )
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/httpcore/_sync/http_proxy.py", line 316, in handle_request
+    stream = stream.start_tls(**kwargs)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/httpcore/_sync/http11.py", line 376, in start_tls
+    return self._stream.start_tls(ssl_context, server_hostname, timeout)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/httpcore/_backends/sync.py", line 154, in start_tls
+    with map_exceptions(exc_map):
+         ~~~~~~~~~~~~~~^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.2/Frameworks/Python.framework/Versions/3.14/lib/python3.14/contextlib.py", line 162, in __exit__
+    self.gen.throw(value)
+    ~~~~~~~~~~~~~~^^^^^^^
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/httpcore/_exceptions.py", line 14, in map_exceptions
+    raise to_exc(exc) from exc
+httpcore.ConnectError: [Errno 54] Connection reset by peer
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/gusuping/code/kpi-design-tool/modules/admin_user_service.py", line 31, in get_all_admins
+    response = self.client.table('admin_users').select('*').eq('is_deleted', False).order('created_at', desc=True).execute()
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/postgrest/_sync/request_builder.py", line 58, in execute
+    r = self.session.request(
+        self.http_method,
+    ...<3 lines>...
+        headers=self.headers,
+    )
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/httpx/_client.py", line 837, in request
+    return self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/httpx/_client.py", line 926, in send
+    response = self._send_handling_auth(
+        request,
+    ...<2 lines>...
+        history=[],
+    )
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/httpx/_client.py", line 954, in _send_handling_auth
+    response = self._send_handling_redirects(
+        request,
+        follow_redirects=follow_redirects,
+        history=history,
+    )
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/httpx/_client.py", line 991, in _send_handling_redirects
+    response = self._send_single_request(request)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/httpx/_client.py", line 1027, in _send_single_request
+    response = transport.handle_request(request)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/httpx/_transports/default.py", line 235, in handle_request
+    with map_httpcore_exceptions():
+         ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.2/Frameworks/Python.framework/Versions/3.14/lib/python3.14/contextlib.py", line 162, in __exit__
+    self.gen.throw(value)
+    ~~~~~~~~~~~~~~^^^^^^^
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/httpx/_transports/default.py", line 89, in map_httpcore_exceptions
+    raise mapped_exc(message) from exc
+httpx.ConnectError: [Errno 54] Connection reset by peer
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 2190, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 1486, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 1469, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/Users/gusuping/code/kpi-design-tool/app.py", line 1236, in admin_get_admins
+    admins = admin_user_service.get_all_admins()
+  File "/Users/gusuping/code/kpi-design-tool/modules/admin_user_service.py", line 34, in get_all_admins
+    print(f"获取管理员列表失败: {e}")
+    ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+OSError: [Errno 5] Input/output error
+2026-01-10 12:53:51,605 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/admin_logs?select=%2A&order=created_at.desc&limit=100 "HTTP/2 404 Not Found"
+2026-01-10 12:54:16,767 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/profiles?select=%2A&order=created_at.desc "HTTP/2 200 OK"
+2026-01-10 12:54:16,789 [INFO] app: 获取到 37 条会话记录
+2026-01-10 12:54:19,097 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/profiles?select=id%2Cemail%2Cnickname%2Ccompany%2Cposition "HTTP/2 200 OK"
+2026-01-10 12:54:19,177 [INFO] app: 获取到 80 个用户资料
+2026-01-10 12:54:29,788 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/admin_users?select=%2A&is_deleted=eq.False&order=created_at.desc "HTTP/2 200 OK"
+2026-01-10 12:54:35,448 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/admin_logs?select=%2A&order=created_at.desc&limit=100 "HTTP/2 404 Not Found"
+2026-01-10 12:55:02,424 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/admin_logs?select=%2A&action_type=in.%28PROMPT_CREATE%2CPROMPT_UPDATE%2CPROMPT_DELETE%2CMODULE_CREATE%2CMODULE_DELETE%29&order=created_at.desc&limit=100 "HTTP/2 404 Not Found"
+2026-01-10 12:55:06,831 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/admin_logs?select=%2A&action_type=eq.REDEEM_USED&order=created_at.desc&limit=100 "HTTP/2 404 Not Found"
+2026-01-10 12:55:08,333 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/admin_logs?select=%2A&action_type=in.%28REDEEM_CREATE%2CCREDITS_ADD%2CREDEEM_USED%29&order=created_at.desc&limit=100 "HTTP/2 404 Not Found"
+2026-01-10 12:55:09,379 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/admin_logs?select=%2A&order=created_at.desc&limit=100 "HTTP/2 404 Not Found"
+2026-01-10 12:55:10,963 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/admin_logs?select=%2A&action_type=in.%28PROMPT_CREATE%2CPROMPT_UPDATE%2CPROMPT_DELETE%2CMODULE_CREATE%2CMODULE_DELETE%29&order=created_at.desc&limit=100 "HTTP/2 404 Not Found"
+2026-01-10 12:56:52,303 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/admin_logs?select=%2A&action_type=eq.REDEEM_USED&order=created_at.desc&limit=100 "HTTP/2 404 Not Found"
+2026-01-10 12:56:56,602 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/admin_logs?select=%2A&action_type=in.%28REDEEM_CREATE%2CCREDITS_ADD%2CREDEEM_USED%29&order=created_at.desc&limit=100 "HTTP/2 404 Not Found"
+2026-01-10 12:57:06,541 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/admin_logs?select=%2A&order=created_at.desc&limit=100 "HTTP/2 404 Not Found"
+2026-01-10 13:03:55,755 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/admin_logs?select=%2A&action_type=in.%28PROMPT_CREATE%2CPROMPT_UPDATE%2CPROMPT_DELETE%2CMODULE_CREATE%2CMODULE_DELETE%29&order=created_at.desc&limit=100 "HTTP/2 404 Not Found"
+2026-01-10 13:03:56,066 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/admin_logs?select=%2A&action_type=in.%28REDEEM_CREATE%2CCREDITS_ADD%2CREDEEM_USED%29&order=created_at.desc&limit=100 "HTTP/2 404 Not Found"
+2026-01-10 13:03:57,885 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/redeem_codes?select=%2A&order=created_at.desc&limit=100 "HTTP/2 200 OK"
+2026-01-10 13:04:01,288 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/admin_users?select=%2A&is_deleted=eq.False&order=created_at.desc "HTTP/2 200 OK"
+2026-01-10 13:04:07,687 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/admin_users?select=id&username=eq.%E8%8A%B1%E8%8A%B1&is_deleted=eq.False "HTTP/2 200 OK"
+2026-01-10 13:04:07,989 [INFO] httpx: HTTP Request: POST https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/admin_users "HTTP/2 201 Created"
+2026-01-10 13:04:08,259 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/admin_users?select=%2A&is_deleted=eq.False&order=created_at.desc "HTTP/2 200 OK"
+2026-01-10 13:04:37,762 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/admin_users?select=%2A&username=eq.%E8%8A%B1%E8%8A%B1&password_hash=eq.7f0eb3550eea0a0dedf9d6cff9ae78b2&is_deleted=eq.False "HTTP/2 200 OK"
+2026-01-10 13:04:38,743 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/redeem_codes?select=%2A&order=created_at.desc&limit=100 "HTTP/2 200 OK"
+2026-01-10 13:04:39,244 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/redeem_codes?select=%2A&order=created_at.desc&limit=100 "HTTP/2 200 OK"
+2026-01-10 13:07:30,285 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/modules?select=%2A&order=sort_order "HTTP/2 200 OK"
+2026-01-10 13:07:32,949 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/redeem_codes?select=%2A&order=created_at.desc&limit=100 "HTTP/2 200 OK"
+2026-01-10 13:07:51,276 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/admin_logs?select=%2A&order=created_at.desc&limit=100 "HTTP/2 404 Not Found"
+2026-01-10 13:12:24,132 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/profiles?select=%2A&order=created_at.desc "HTTP/2 200 OK"
+2026-01-10 13:12:24,157 [INFO] app: 获取到 37 条会话记录
+2026-01-10 13:12:24,644 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/profiles?select=id%2Cemail%2Cnickname%2Ccompany%2Cposition "HTTP/2 200 OK"
+2026-01-10 13:12:24,654 [INFO] app: 获取到 80 个用户资料
+2026-01-10 13:12:27,767 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/modules?select=%2A&order=sort_order "HTTP/2 200 OK"
+2026-01-10 13:12:29,477 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/redeem_codes?select=%2A&order=created_at.desc&limit=100 "HTTP/2 200 OK"
+2026-01-10 13:12:32,220 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/admin_users?select=%2A&is_deleted=eq.False&order=created_at.desc "HTTP/2 200 OK"
+2026-01-10 13:12:33,055 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/admin_logs?select=%2A&order=created_at.desc&limit=100 "HTTP/2 200 OK"
+2026-01-10 13:22:47,606 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/profiles?select=%2A&order=created_at.desc "HTTP/2 200 OK"
+2026-01-10 13:22:47,631 [INFO] app: 获取到 37 条会话记录
+2026-01-10 13:22:47,915 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/profiles?select=id%2Cemail%2Cnickname%2Ccompany%2Cposition "HTTP/2 200 OK"
+2026-01-10 13:22:47,931 [INFO] app: 获取到 80 个用户资料
+2026-01-10 13:33:16,367 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/admin_users?select=%2A&username=eq.huo%20huo&password_hash=eq.b917f4dd70c4f47854fbc337223e1086&is_deleted=eq.False "HTTP/2 200 OK"
+2026-01-10 13:33:18,399 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/admin_users?select=%2A&username=eq.huohuo&password_hash=eq.b917f4dd70c4f47854fbc337223e1086&is_deleted=eq.False "HTTP/2 200 OK"
+2026-01-10 13:33:23,920 [INFO] __main__: 获取到 37 条会话记录
+2026-01-10 13:33:25,256 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/profiles?select=id%2Cemail%2Cnickname%2Ccompany%2Cposition "HTTP/2 200 OK"
+2026-01-10 13:33:25,260 [INFO] __main__: 获取到 80 个用户资料
+2026-01-10 13:33:25,517 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/profiles?select=%2A&order=created_at.desc "HTTP/2 200 OK"
+2026-01-10 13:35:03,121 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/admin_users?select=%2A&is_deleted=eq.False&order=created_at.desc "HTTP/2 200 OK"
+2026-01-10 13:35:18,130 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/admin_logs?select=%2A&order=created_at.desc&limit=100 "HTTP/2 200 OK"
+2026-01-10 13:35:20,060 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/admin_logs?select=%2A&action_type=in.%28REDEEM_CREATE%2CCREDITS_ADD%2CREDEEM_USED%29&order=created_at.desc&limit=100 "HTTP/2 200 OK"
+2026-01-10 13:35:21,659 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/admin_logs?select=%2A&action_type=eq.REDEEM_USED&order=created_at.desc&limit=100 "HTTP/2 200 OK"
+2026-01-10 13:35:22,657 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/admin_logs?select=%2A&action_type=in.%28PROMPT_CREATE%2CPROMPT_UPDATE%2CPROMPT_DELETE%2CMODULE_CREATE%2CMODULE_DELETE%29&order=created_at.desc&limit=100 "HTTP/2 200 OK"
+2026-01-10 13:35:23,549 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/admin_logs?select=%2A&action_type=in.%28REDEEM_CREATE%2CCREDITS_ADD%2CREDEEM_USED%29&order=created_at.desc&limit=100 "HTTP/2 200 OK"

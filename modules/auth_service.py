@@ -4,7 +4,7 @@
 import hashlib
 import time
 from typing import Optional, Dict, Tuple
-from modules.supabase_client import get_client
+from modules.supabase_client import get_client, get_admin
 
 
 class AuthService:
@@ -13,14 +13,15 @@ class AuthService:
     # 配置：商学院用户初始积分
     BUSINESS_SCHOOL_CREDITS = 2000
     # 配置：普通用户默认积分（如果没有猫币）
-    DEFAULT_CREDITS = 10
+    DEFAULT_CREDITS = 2
     # 配置：每次对话消耗积分
     CREDITS_PER_CHAT = 2
     # 配置：管理员微信
-    ADMIN_WECHAT = "huohuo1616"
+    ADMIN_WECHAT = "猫课工作人员"
 
     def __init__(self):
         self.client = get_client()
+        self.admin_client = get_admin()  # 用于 profile 更新（绕过 RLS）
 
     @staticmethod
     def calculate_credits_from_cat_coins(cat_coins: int) -> int:
@@ -151,7 +152,7 @@ class AuthService:
                         position = user_meta.get('position', '') or profile.get('position', '')
                         if company or position:
                             try:
-                                self.client.table('profiles').update({
+                                self.admin_client.table('profiles').update({
                                     'company': company,
                                     'position': position
                                 }).eq('id', response.user.id).execute()
@@ -183,6 +184,8 @@ class AuthService:
                         user_type: str = 'normal', cat_coins: int = 0) -> Dict:
         """为用户创建或更新 profile（注册或首次登录时）"""
         try:
+            import time
+
             # 生成 email（如果没有提供）
             if not email:
                 email = f"{username.replace(' ', '_')}@kpi.local"
@@ -191,33 +194,56 @@ class AuthService:
             if initial_credits is None:
                 initial_credits = self.DEFAULT_CREDITS
 
-            # 基本数据（不包含可能不存在的字段）
+            # 🔴 等待 Supabase 触发器先创建 profile（触发器可能设置了错误的默认值）
+            time.sleep(0.3)
+
+            # 基本数据 - 只包含肯定存在的字段
             base_data = {
-                'nickname': username,  # 使用真实姓名
-                'credits': initial_credits,
-                'user_type': user_type,  # 用户类型
-                'cat_coins': cat_coins   # 猫币数量
+                'nickname': username,
+                'credits': initial_credits  # 强制覆盖数据库默认值
             }
 
-            # 尝试更新现有记录（Supabase Auth 可能已通过触发器创建了 profile）
-            try:
-                # 首先尝试只更新 nickname 和 credits
-                self.client.table('profiles').update(base_data).eq('id', user_id).execute()
-            except Exception as update_err:
-                # 如果更新失败，尝试插入新记录
-                print(f"更新 profile 失败，尝试插入: {update_err}")
-                try:
-                    insert_data = {
-                        'id': user_id,
-                        'email': email,
-                        'nickname': username,
-                        'credits': self.INITIAL_CREDITS
-                    }
-                    self.client.table('profiles').insert(insert_data).execute()
-                except Exception as insert_err:
-                    print(f"插入 profile 也失败（可能已存在）: {insert_err}")
+            # 使用重试机制确保更新成功
+            max_retries = 5
+            update_success = False
 
-            # 尝试更新 company/position（如果字段存在）
+            for attempt in range(max_retries):
+                try:
+                    if attempt > 0:
+                        time.sleep(0.3 * attempt)  # 递增等待
+
+                    # 用 admin_client 更新 profile（绕过 RLS）
+                    result = self.admin_client.table('profiles').update(base_data).eq('id', user_id).execute()
+
+                    if result.data:
+                        # 🔴 验证积分是否正确更新
+                        verify = self.admin_client.table('profiles').select('credits').eq('id', user_id).single().execute()
+                        if verify.data and verify.data.get('credits') == initial_credits:
+                            update_success = True
+                            print(f"[注册] 积分设置成功: {initial_credits}")
+                            break
+                        else:
+                            # 积分不对，再次更新
+                            print(f"[注册] 积分验证失败，重试... 当前值: {verify.data.get('credits') if verify.data else 'None'}")
+                            continue
+
+                except Exception as update_err:
+                    print(f"[注册] 更新 profile 尝试 {attempt+1} 失败: {update_err}")
+                    if attempt == max_retries - 1:
+                        # 最后一次尝试，尝试插入
+                        try:
+                            insert_data = {
+                                'id': user_id,
+                                'email': email,
+                                'nickname': username,
+                                'credits': initial_credits
+                            }
+                            self.admin_client.table('profiles').insert(insert_data).execute()
+                            update_success = True
+                        except Exception as insert_err:
+                            print(f"[注册] 插入 profile 也失败: {insert_err}")
+
+            # 尝试更新 company/position
             try:
                 if company or position:
                     update_fields = {}
@@ -226,21 +252,20 @@ class AuthService:
                     if position:
                         update_fields['position'] = position
                     if update_fields:
-                        self.client.table('profiles').update(update_fields).eq('id', user_id).execute()
+                        self.admin_client.table('profiles').update(update_fields).eq('id', user_id).execute()
             except Exception as field_err:
-                # 字段不存在或权限问题，忽略
-                print(f"更新 company/position 失败（可能字段不存在）: {field_err}")
+                print(f"更新 company/position 失败: {field_err}")
 
-            # 记录初始积分（忽略 RLS 权限错误，不影响主流程）
+            # 记录初始积分日志
             try:
-                self.client.table('credit_logs').insert({
+                self.admin_client.table('credit_logs').insert({
                     'user_id': user_id,
                     'amount': initial_credits,
                     'balance': initial_credits,
                     'reason': credit_reason
                 }).execute()
             except Exception as log_err:
-                print(f"记录初始积分日志失败（不影响注册）: {log_err}")
+                print(f"记录初始积分日志失败: {log_err}")
 
             return {
                 'id': user_id,
@@ -319,7 +344,7 @@ class AuthService:
 
                 # 使用乐观锁更新：只有当 credits 仍等于 current_credits 时才更新
                 # 这可以防止并发请求导致的双重扣费
-                response = self.client.table('profiles').update({
+                response = self.admin_client.table('profiles').update({
                     'credits': new_balance
                 }).eq('id', user_id).eq('credits', current_credits).execute()
 
@@ -334,7 +359,7 @@ class AuthService:
 
                 # 更新成功，记录积分变动（忽略 RLS 权限错误）
                 try:
-                    self.client.table('credit_logs').insert({
+                    self.admin_client.table('credit_logs').insert({
                         'user_id': user_id,
                         'amount': -amount,
                         'balance': new_balance,
@@ -362,13 +387,13 @@ class AuthService:
             new_balance = current_credits + amount
 
             # 更新积分
-            self.client.table('profiles').update({
+            self.admin_client.table('profiles').update({
                 'credits': new_balance
             }).eq('id', user_id).execute()
 
             # 记录积分变动（忽略 RLS 权限错误）
             try:
-                self.client.table('credit_logs').insert({
+                self.admin_client.table('credit_logs').insert({
                     'user_id': user_id,
                     'amount': amount,
                     'balance': new_balance,

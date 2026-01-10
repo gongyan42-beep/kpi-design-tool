@@ -35,6 +35,7 @@ class Config:
     # Supabase 配置
     SUPABASE_URL = os.getenv('SUPABASE_URL')
     SUPABASE_KEY = os.getenv('SUPABASE_KEY')
+    SUPABASE_SERVICE_KEY = os.getenv('SUPABASE_SERVICE_KEY')  # 管理员权限 key
 
     # 管理后台密码
     ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD', 'admin123')

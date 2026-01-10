@@ -1300,7 +1300,7 @@
             </div>
 
             <p class="auth-subtitle" style="margin-top:16px;font-size:12px;">
-                积分不足？请联系微信 <strong>huohuo1616</strong> 获取兑换码
+                积分不足？请联系<strong>猫课工作人员</strong>获取兑换码
             </p>
         </div>
     </div>
@@ -1487,6 +1487,10 @@
                         if (loginData.success) {
                             hideAuthModal();
                             showLoggedState(loginData.data);
+                            // 注册成功后自动弹出兑换码弹窗
+                            setTimeout(() => {
+                                showRedeemModalForNewUser();
+                            }, 500);
                         } else {
                             showMessage('自动登录失败，请手动登录', true);
                             setTimeout(() => showAuthModal('login'), 1500);
@@ -1496,7 +1500,13 @@
                         setTimeout(() => showAuthModal('login'), 1500);
                     }
                 } else {
-                    showMessage(data.error || data.message, true);
+                    // 优化用户名重复的提示
+                    const errorMsg = data.error || data.message || '注册失败';
+                    if (errorMsg.includes('已注册') || errorMsg.includes('already registered') || errorMsg.includes('exists')) {
+                        showMessage('该用户名已被使用，请换一个用户名', true);
+                    } else {
+                        showMessage(errorMsg, true);
+                    }
                 }
             } catch (e) {
                 showMessage('网络错误，请重试', true);
@@ -1590,6 +1600,10 @@
             document.getElementById('redeemMessage').style.display = 'none';
             document.getElementById('redeemCodeInput').value = '';
 
+            // 隐藏新用户欢迎提示（如果有的话）
+            const welcomeHint = document.getElementById('newUserWelcomeHint');
+            if (welcomeHint) welcomeHint.style.display = 'none';
+
             // 更新积分显示
             const credits = parseInt(document.getElementById('creditsCount').textContent) || 0;
             document.getElementById('modalCreditsCount').textContent = credits;
@@ -1597,6 +1611,45 @@
 
             // 加载积分记录
             loadCreditLogs();
+        }
+
+        // 新用户注册后专用的兑换码弹窗
+        function showRedeemModalForNewUser() {
+            isUserLoggedIn = true; // 确保已登录状态
+            document.getElementById('redeemModal').classList.add('show');
+            document.getElementById('redeemMessage').style.display = 'none';
+            document.getElementById('redeemCodeInput').value = '';
+
+            // 显示新用户欢迎提示
+            let welcomeHint = document.getElementById('newUserWelcomeHint');
+            if (!welcomeHint) {
+                // 创建欢迎提示元素
+                const modalBox = document.querySelector('#redeemModal .auth-box');
+                const firstChild = modalBox.querySelector('.auth-header');
+                welcomeHint = document.createElement('div');
+                welcomeHint.id = 'newUserWelcomeHint';
+                welcomeHint.style.cssText = 'background:linear-gradient(135deg, rgba(52,168,83,0.15), rgba(66,133,244,0.15));border-radius:12px;padding:16px;margin-bottom:16px;text-align:center;';
+                welcomeHint.innerHTML = `
+                    <div style="font-size:24px;margin-bottom:8px;">🎉</div>
+                    <div style="font-size:15px;font-weight:500;color:#1f1f1f;margin-bottom:4px;">注册成功！</div>
+                    <div style="font-size:13px;color:#5f6368;">请输入兑换码获取积分，开始使用 AI 助手</div>
+                `;
+                firstChild.after(welcomeHint);
+            }
+            welcomeHint.style.display = 'block';
+
+            // 更新积分显示
+            const credits = parseInt(document.getElementById('creditsCount').textContent) || 0;
+            document.getElementById('modalCreditsCount').textContent = credits;
+            document.getElementById('modalAnswerCount').textContent = Math.floor(credits / 2);
+
+            // 加载积分记录
+            loadCreditLogs();
+
+            // 聚焦到兑换码输入框
+            setTimeout(() => {
+                document.getElementById('redeemCodeInput').focus();
+            }, 300);
         }
 
         function hideRedeemModal() {
