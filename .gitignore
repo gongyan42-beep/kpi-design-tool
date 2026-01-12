@@ -19,3 +19,7 @@ claude.md
 credentials.json
 secrets.json
 
+# 运行时日志
+server.log
+*.log
+
