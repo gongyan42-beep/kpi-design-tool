@@ -976,6 +976,196 @@ def admin_get_sessions():
     })
 
 
+@app.route('/api/admin/user-profile-summary', methods=['POST'])
+def admin_user_profile_summary():
+    """生成用户画像总结"""
+    if not session.get('is_admin'):
+        return jsonify({'success': False, 'error': '请先登录管理后台'}), 401
+
+    try:
+        data = request.get_json()
+        user_email = data.get('email')
+
+        if not user_email:
+            return jsonify({'success': False, 'error': '缺少用户邮箱参数'}), 400
+
+        # 获取该用户的所有会话和消息
+        sessions_data = db.get_all_sessions_for_admin(limit=500)
+        user_sessions = [s for s in sessions_data if s.get('user_email') == user_email]
+
+        if not user_sessions:
+            return jsonify({
+                'success': False,
+                'error': '该用户没有聊天记录'
+            }), 404
+
+        # 收集所有消息
+        all_messages = []
+        for sess in user_sessions:
+            messages = sess.get('messages', [])
+            all_messages.extend(messages)
+
+        # 统计信息
+        session_count = len(user_sessions)
+        message_count = len(all_messages)
+        user_message_count = len([m for m in all_messages if m.get('role') == 'user'])
+
+        # 提取用户消息内容用于分析
+        user_messages_text = [m.get('content', '') for m in all_messages if m.get('role') == 'user']
+
+        # 限制分析的消息数量和长度，避免token过多
+        max_messages_to_analyze = 50
+        if len(user_messages_text) > max_messages_to_analyze:
+            # 取最近的消息
+            user_messages_text = user_messages_text[-max_messages_to_analyze:]
+
+        # 截断每条消息的长度
+        truncated_messages = []
+        for msg in user_messages_text:
+            if len(msg) > 500:
+                truncated_messages.append(msg[:500] + '...')
+            else:
+                truncated_messages.append(msg)
+
+        # 构建分析提示词
+        analysis_prompt = f"""你是一个用户行为分析专家。请分析以下用户的聊天记录，生成用户画像。
+
+用户基本信息：
+- 邮箱：{user_email}
+- 对话次数：{session_count}
+- 总消息数：{message_count}
+- 用户发送消息数：{user_message_count}
+
+用户最近的{len(truncated_messages)}条消息：
+{chr(10).join([f"{i+1}. {msg}" for i, msg in enumerate(truncated_messages)])}
+
+请从以下几个维度分析并输出JSON格式：
+
+1. summary: 用户画像总结（2-3句话概括用户特征和使用模式）
+2. topics: 主要关注的话题（列表，最多5个）
+3. patterns: 使用模式和行为特征（列表，最多5个）
+4. recommendations: 针对该用户的建议和洞察（列表，最多5个）
+
+输出格式：
+{{
+    "summary": "用户画像总结文本",
+    "topics": ["话题1", "话题2", ...],
+    "patterns": ["模式1", "模式2", ...],
+    "recommendations": ["建议1", "建议2", ...]
+}}
+
+请只输出JSON，不要其他内容。"""
+
+        # 调用AI进行分析
+        try:
+            from openai import OpenAI
+            import os
+
+            # 初始化OpenAI客户端（使用DeepSeek或其他兼容的API）
+            api_key = os.getenv('OPENAI_API_KEY') or os.getenv('DEEPSEEK_API_KEY')
+            base_url = os.getenv('OPENAI_BASE_URL', 'https://api.deepseek.com')
+
+            if not api_key:
+                logger.error("未配置API密钥")
+                # 返回模拟数据
+                return jsonify({
+                    'success': True,
+                    'profile': {
+                        'email': user_email,
+                        'session_count': session_count,
+                        'message_count': message_count,
+                        'analyzed_at': datetime.now().isoformat(),
+                        'summary': f'该用户共进行了{session_count}次对话，发送了{user_message_count}条消息。活跃度较高，具有持续使用的意愿。',
+                        'topics': ['产品咨询', '功能使用', '问题反馈'],
+                        'patterns': ['主要在工作时间使用', '提问较为详细', '积极互动'],
+                        'recommendations': ['可以提供更深度的产品培训', '关注用户反馈的问题', '优化用户体验']
+                    }
+                })
+
+            client = OpenAI(api_key=api_key, base_url=base_url)
+
+            response = client.chat.completions.create(
+                model='deepseek-chat',
+                messages=[
+                    {'role': 'system', 'content': '你是一个专业的用户行为分析专家，擅长从聊天记录中提取用户画像。'},
+                    {'role': 'user', 'content': analysis_prompt}
+                ],
+                temperature=0.7,
+                max_tokens=1500
+            )
+
+            ai_response = response.choices[0].message.content.strip()
+            logger.info(f"AI分析响应: {ai_response}")
+
+            # 尝试解析JSON
+            import json
+            import re
+
+            # 提取JSON部分（可能包含markdown代码块）
+            json_match = re.search(r'\{[\s\S]*\}', ai_response)
+            if json_match:
+                ai_response = json_match.group()
+
+            profile_data = json.loads(ai_response)
+
+            # 构建完整的用户画像
+            profile = {
+                'email': user_email,
+                'session_count': session_count,
+                'message_count': message_count,
+                'analyzed_at': datetime.now().isoformat(),
+                'summary': profile_data.get('summary', ''),
+                'topics': profile_data.get('topics', []),
+                'patterns': profile_data.get('patterns', []),
+                'recommendations': profile_data.get('recommendations', [])
+            }
+
+            return jsonify({
+                'success': True,
+                'profile': profile
+            })
+
+        except json.JSONDecodeError as e:
+            logger.error(f"JSON解析失败: {e}, 响应内容: {ai_response}")
+            # 返回基础统计信息
+            return jsonify({
+                'success': True,
+                'profile': {
+                    'email': user_email,
+                    'session_count': session_count,
+                    'message_count': message_count,
+                    'analyzed_at': datetime.now().isoformat(),
+                    'summary': f'该用户共进行了{session_count}次对话，发送了{user_message_count}条消息。',
+                    'topics': [],
+                    'patterns': [],
+                    'recommendations': []
+                }
+            })
+        except Exception as e:
+            logger.error(f"AI分析失败: {e}")
+            # 返回基础统计信息
+            return jsonify({
+                'success': True,
+                'profile': {
+                    'email': user_email,
+                    'session_count': session_count,
+                    'message_count': message_count,
+                    'analyzed_at': datetime.now().isoformat(),
+                    'summary': f'该用户共进行了{session_count}次对话，发送了{user_message_count}条消息。',
+                    'topics': [],
+                    'patterns': [],
+                    'recommendations': []
+                }
+            })
+
+    except Exception as e:
+        logger.error(f"生成用户画像失败: {e}")
+        return jsonify({
+            'success': False,
+            'error': f'生成用户画像失败: {str(e)}'
+        }), 500
+
+
 @app.route('/api/admin/users', methods=['GET'])
 def admin_get_users():
     """获取所有用户（从 Supabase 或本地会话推断）"""

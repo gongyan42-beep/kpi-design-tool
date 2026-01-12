@@ -1155,6 +1155,127 @@
             background: rgba(99, 102, 241, 0.1);
         }
 
+        /* 用户画像模态框 */
+        .user-profile-modal-content {
+            background: var(--bg-secondary);
+            border-radius: 20px;
+            padding: 0;
+            width: 90%;
+            max-width: 800px;
+            max-height: 85vh;
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .user-profile-modal-content .modal-header {
+            padding: 24px 32px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0;
+        }
+
+        .user-profile-modal-content .modal-header h2 {
+            margin: 0;
+        }
+
+        .user-profile-modal-content .modal-body {
+            padding: 32px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: none;
+            background: var(--bg-card-hover);
+            color: var(--text-secondary);
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-close:hover {
+            background: var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .loading-spinner {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+        }
+
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid var(--border-color);
+            border-top-color: var(--accent-purple);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-spinner p {
+            margin-top: 20px;
+            color: var(--text-secondary);
+        }
+
+        .profile-section {
+            margin-bottom: 32px;
+        }
+
+        .profile-section h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .profile-content {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            line-height: 1.8;
+            color: var(--text-secondary);
+        }
+
+        .profile-content ul {
+            margin: 12px 0;
+            padding-left: 20px;
+        }
+
+        .profile-content li {
+            margin-bottom: 8px;
+        }
+
+        .profile-stat {
+            display: inline-block;
+            padding: 4px 12px;
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 6px;
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+
         /* 搜索和导出栏 - 现代风格 */
         .search-export-bar {
             display: flex;
@@ -1331,6 +1452,29 @@
 
         .btn-back:hover {
             background: var(--bg-card-hover);
+        }
+
+        .btn-user-profile {
+            padding: 10px 18px;
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: inherit;
+            margin-left: 12px;
+            transition: all 0.2s;
+        }
+
+        .btn-user-profile:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+        }
+
+        .btn-user-profile:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
         }
 
         .btn-export-single {
@@ -1736,6 +1880,7 @@
                     </div>
                     <div>
                         <button class="btn-back" onclick="hideUserDetail()">← 返回列表</button>
+                        <button class="btn-user-profile" onclick="generateUserProfile()">🎯 生成用户画像</button>
                         <button class="btn-export-single" onclick="exportUserSessions()">导出该用户全部对话</button>
                     </div>
                 </div>
@@ -2080,6 +2225,24 @@
         </div>
     </div>
 
+    <!-- 用户画像模态框 -->
+    <div id="userProfileModal" class="modal-overlay" style="display: none;" onclick="if(event.target === this) hideUserProfileModal()">
+        <div class="modal-content user-profile-modal-content">
+            <div class="modal-header">
+                <h2>🎯 用户画像分析</h2>
+                <button class="modal-close" onclick="hideUserProfileModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div id="userProfileContent">
+                    <div class="loading-spinner">
+                        <div class="spinner"></div>
+                        <p>正在分析用户聊天记录，请稍候...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // 全局数据
         let allUsers = [];
@@ -2378,6 +2541,127 @@
         function toggleUserMessages(idx) {
             const el = document.getElementById('user-messages-' + idx);
             el.classList.toggle('hidden');
+        }
+
+        // 生成用户画像
+        async function generateUserProfile() {
+            if (!currentUserEmail) {
+                alert('请先选择一个用户');
+                return;
+            }
+
+            // 显示模态框和加载状态
+            const modal = document.getElementById('userProfileModal');
+            const content = document.getElementById('userProfileContent');
+            modal.style.display = 'flex';
+            content.innerHTML = `
+                <div class="loading-spinner">
+                    <div class="spinner"></div>
+                    <p>正在分析用户聊天记录，请稍候...</p>
+                </div>
+            `;
+
+            try {
+                const response = await fetch('/api/admin/user-profile-summary', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: currentUserEmail
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    displayUserProfile(data.profile);
+                } else {
+                    content.innerHTML = `
+                        <div style="text-align: center; padding: 40px;">
+                            <p style="color: var(--text-secondary); font-size: 16px;">
+                                ❌ ${data.error || '生成用户画像失败'}
+                            </p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('生成用户画像失败:', error);
+                content.innerHTML = `
+                    <div style="text-align: center; padding: 40px;">
+                        <p style="color: var(--text-secondary); font-size: 16px;">
+                            ❌ 网络错误或服务器异常
+                        </p>
+                    </div>
+                `;
+            }
+        }
+
+        // 显示用户画像
+        function displayUserProfile(profile) {
+            const content = document.getElementById('userProfileContent');
+
+            content.innerHTML = `
+                <div class="profile-section">
+                    <h3>📊 基本信息</h3>
+                    <div class="profile-content">
+                        <p><strong>用户邮箱：</strong>${escapeHtml(profile.email || '')}</p>
+                        <p><strong>对话次数：</strong><span class="profile-stat">${profile.session_count || 0} 次</span></p>
+                        <p><strong>消息总数：</strong><span class="profile-stat">${profile.message_count || 0} 条</span></p>
+                        <p><strong>分析时间：</strong>${new Date(profile.analyzed_at).toLocaleString('zh-CN')}</p>
+                    </div>
+                </div>
+
+                <div class="profile-section">
+                    <h3>🎯 用户画像总结</h3>
+                    <div class="profile-content">
+                        ${formatProfileText(profile.summary || '暂无总结')}
+                    </div>
+                </div>
+
+                ${profile.topics && profile.topics.length > 0 ? `
+                <div class="profile-section">
+                    <h3>💡 主要关注话题</h3>
+                    <div class="profile-content">
+                        <ul>
+                            ${profile.topics.map(topic => `<li>${escapeHtml(topic)}</li>`).join('')}
+                        </ul>
+                    </div>
+                </div>
+                ` : ''}
+
+                ${profile.patterns && profile.patterns.length > 0 ? `
+                <div class="profile-section">
+                    <h3>📈 使用模式</h3>
+                    <div class="profile-content">
+                        <ul>
+                            ${profile.patterns.map(pattern => `<li>${escapeHtml(pattern)}</li>`).join('')}
+                        </ul>
+                    </div>
+                </div>
+                ` : ''}
+
+                ${profile.recommendations && profile.recommendations.length > 0 ? `
+                <div class="profile-section">
+                    <h3>💎 建议与洞察</h3>
+                    <div class="profile-content">
+                        <ul>
+                            ${profile.recommendations.map(rec => `<li>${escapeHtml(rec)}</li>`).join('')}
+                        </ul>
+                    </div>
+                </div>
+                ` : ''}
+            `;
+        }
+
+        // 格式化文本（支持换行）
+        function formatProfileText(text) {
+            return escapeHtml(text).replace(/\n/g, '<br>');
+        }
+
+        // 隐藏用户画像模态框
+        function hideUserProfileModal() {
+            document.getElementById('userProfileModal').style.display = 'none';
         }
 
         // 导出单个用户的所有对话
