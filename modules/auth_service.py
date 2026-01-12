@@ -13,7 +13,7 @@ class AuthService:
     # 配置：商学院用户初始积分
     BUSINESS_SCHOOL_CREDITS = 2000
     # 配置：普通用户默认积分（如果没有猫币）
-    DEFAULT_CREDITS = 2
+    DEFAULT_CREDITS = 10
     # 配置：每次对话消耗积分
     CREDITS_PER_CHAT = 2
     # 配置：管理员微信
