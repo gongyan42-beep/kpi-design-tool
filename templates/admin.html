@@ -1603,6 +1603,355 @@
             padding: 40px;
             color: var(--text-muted);
         }
+
+        /* ========== 移动端汉堡菜单按钮 ========== */
+        .mobile-menu-btn {
+            display: none;
+            width: 44px;
+            height: 44px;
+            border: none;
+            border-radius: 10px;
+            background: var(--bg-card);
+            color: var(--text-primary);
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: all 0.2s;
+            border: 1px solid var(--border-color);
+        }
+
+        .mobile-menu-btn:hover {
+            background: var(--bg-card-hover);
+        }
+
+        /* 侧边栏遮罩层 */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 99;
+        }
+
+        .sidebar-overlay.show {
+            display: block;
+        }
+
+        /* ========== 响应式设计 - 平板 (1024px) ========== */
+        @media (max-width: 1024px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .prompt-container {
+                grid-template-columns: 240px 1fr;
+            }
+
+            .redeem-container {
+                grid-template-columns: 1fr;
+            }
+
+            .main-content {
+                padding: 20px 24px;
+            }
+        }
+
+        /* ========== 响应式设计 - 平板小屏 (900px) ========== */
+        @media (max-width: 900px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 16px 20px;
+            }
+
+            .mobile-menu-btn {
+                display: flex;
+            }
+
+            .main-header {
+                flex-direction: row;
+                align-items: center;
+                gap: 16px;
+            }
+
+            .page-title {
+                font-size: 24px;
+            }
+
+            .prompt-container {
+                grid-template-columns: 1fr;
+            }
+
+            .module-list {
+                margin-bottom: 20px;
+            }
+
+            .search-section {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-input-wrapper {
+                max-width: 100%;
+                min-width: auto;
+            }
+
+            .export-section {
+                flex-wrap: wrap;
+            }
+
+            .btn-export {
+                flex: 1;
+                min-width: 140px;
+                text-align: center;
+            }
+        }
+
+        /* ========== 响应式设计 - 手机 (768px) ========== */
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .stat-card {
+                padding: 20px;
+            }
+
+            .stat-number {
+                font-size: 28px;
+            }
+
+            .user-detail-header {
+                flex-direction: column;
+                gap: 16px;
+                align-items: flex-start;
+            }
+
+            .user-detail-header > div:last-child {
+                display: flex;
+                gap: 8px;
+                width: 100%;
+            }
+
+            .user-detail-header .btn-back,
+            .user-detail-header .btn-export-single {
+                flex: 1;
+                text-align: center;
+                margin-left: 0;
+            }
+
+            .session-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+
+            .user-header {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .user-stats {
+                width: 100%;
+                justify-content: space-around;
+            }
+
+            .redeem-form .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+
+            .modal-box {
+                width: 95%;
+                padding: 24px;
+            }
+
+            .prompt-tabs {
+                flex-wrap: wrap;
+            }
+
+            .prompt-textarea {
+                min-height: 300px;
+            }
+
+            .log-item {
+                flex-direction: column;
+                gap: 12px;
+                align-items: flex-start;
+            }
+
+            .log-item-time {
+                margin-left: 0;
+            }
+        }
+
+        /* ========== 响应式设计 - 小屏手机 (480px) ========== */
+        @media (max-width: 480px) {
+            .main-content {
+                padding: 12px 16px;
+            }
+
+            .main-header {
+                margin-bottom: 20px;
+            }
+
+            .page-title {
+                font-size: 20px;
+            }
+
+            .page-subtitle {
+                font-size: 13px;
+            }
+
+            .stat-card {
+                padding: 16px;
+            }
+
+            .stat-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 20px;
+                margin-bottom: 12px;
+            }
+
+            .stat-number {
+                font-size: 24px;
+            }
+
+            .stat-label {
+                font-size: 13px;
+            }
+
+            .login-box {
+                margin: 40px 16px;
+                padding: 32px 24px;
+            }
+
+            .login-box h1 {
+                font-size: 22px;
+            }
+
+            .content-panel {
+                border-radius: 12px;
+            }
+
+            .panel-header {
+                padding: 16px;
+                flex-direction: column;
+                gap: 12px;
+                align-items: flex-start;
+            }
+
+            .panel-body {
+                padding: 16px;
+            }
+
+            .user-card {
+                padding: 16px;
+            }
+
+            .user-tags {
+                gap: 6px;
+            }
+
+            .tag {
+                padding: 3px 8px;
+                font-size: 11px;
+            }
+
+            .session-card {
+                padding: 16px;
+            }
+
+            .btn-export {
+                padding: 10px 12px;
+                font-size: 12px;
+            }
+
+            .export-label {
+                width: 100%;
+                margin-bottom: 8px;
+            }
+
+            .redeem-code-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+
+            .redeem-code-status,
+            .btn-delete-code {
+                margin-left: 0;
+            }
+
+            .module-item {
+                padding: 10px;
+            }
+
+            .module-icon {
+                width: 32px;
+                height: 32px;
+                font-size: 16px;
+            }
+
+            .prompt-editor {
+                padding: 16px;
+            }
+
+            .prompt-editor-header {
+                flex-direction: column;
+                gap: 16px;
+                align-items: flex-start;
+            }
+
+            .btn-save-prompt {
+                width: 100%;
+            }
+
+            .knowledge-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+
+            .upload-zone {
+                padding: 16px;
+            }
+        }
+
+        /* ========== 响应式设计 - 超小屏手机 (360px) ========== */
+        @media (max-width: 360px) {
+            .sidebar-logo .logo-text {
+                font-size: 14px;
+            }
+
+            .sidebar-logo .logo-subtitle {
+                font-size: 10px;
+            }
+
+            .nav-item {
+                padding: 10px 12px;
+                font-size: 13px;
+            }
+
+            .nav-icon {
+                font-size: 16px;
+            }
+        }
     </style>
 </head>
 
@@ -1621,8 +1970,11 @@
 
     <!-- 管理面板（侧边栏布局） -->
     <div class="app-container" id="adminPanel">
+        <!-- 侧边栏遮罩层（移动端） -->
+        <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleMobileSidebar()"></div>
+
         <!-- 侧边栏 -->
-        <aside class="sidebar">
+        <aside class="sidebar" id="adminSidebar">
             <div class="sidebar-header">
                 <div class="sidebar-logo">
                     <div class="logo-icon">⚡</div>
@@ -1687,6 +2039,10 @@
         <main class="main-content">
             <!-- 页面标题 -->
             <div class="main-header">
+                <!-- 移动端汉堡菜单按钮 -->
+                <button class="mobile-menu-btn" id="mobileMenuBtn" onclick="toggleMobileSidebar()">
+                    ☰
+                </button>
                 <div>
                     <h1 class="page-title" id="pageTitle">用户列表</h1>
                     <p class="page-subtitle" id="pageSubtitle">管理所有注册用户</p>
@@ -2070,6 +2426,50 @@
     </div>
 
     <script>
+        // ========== 移动端侧边栏切换 ==========
+        function toggleMobileSidebar() {
+            const sidebar = document.getElementById('adminSidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+
+            if (sidebar && overlay) {
+                sidebar.classList.toggle('open');
+                overlay.classList.toggle('show');
+
+                // 防止背景滚动
+                if (sidebar.classList.contains('open')) {
+                    document.body.style.overflow = 'hidden';
+                } else {
+                    document.body.style.overflow = '';
+                }
+            }
+        }
+
+        // 点击导航项时关闭侧边栏（移动端）
+        function closeMobileSidebarOnNav() {
+            if (window.innerWidth <= 900) {
+                const sidebar = document.getElementById('adminSidebar');
+                const overlay = document.getElementById('sidebarOverlay');
+                if (sidebar && overlay) {
+                    sidebar.classList.remove('open');
+                    overlay.classList.remove('show');
+                    document.body.style.overflow = '';
+                }
+            }
+        }
+
+        // 窗口大小改变时重置侧边栏状态
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 900) {
+                const sidebar = document.getElementById('adminSidebar');
+                const overlay = document.getElementById('sidebarOverlay');
+                if (sidebar && overlay) {
+                    sidebar.classList.remove('open');
+                    overlay.classList.remove('show');
+                    document.body.style.overflow = '';
+                }
+            }
+        });
+
         // 全局数据
         let allUsers = [];
         let allSessions = [];
@@ -2488,6 +2888,9 @@
 
         // 切换标签
         function switchTab(tab) {
+            // 移动端：切换标签时关闭侧边栏
+            closeMobileSidebarOnNav();
+
             // 更新侧边栏导航高亮
             document.querySelectorAll('.sidebar-nav .nav-item').forEach(item => item.classList.remove('active'));
             const targetItem = document.querySelector(`.sidebar-nav .nav-item[data-tab="${tab}"]`);
