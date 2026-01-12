@@ -4,9 +4,12 @@
 import os
 import json
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from logging.handlers import RotatingFileHandler
 from flask import Flask, render_template, request, jsonify, send_file, session, Response
+from flask_wtf.csrf import CSRFProtect
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from config import Config
 from database import db
 from modules.ai_service import ai_service
@@ -52,8 +55,51 @@ logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 app.secret_key = Config.SECRET_KEY
+
+# ========================================
+# 安全配置
+# ========================================
+
 # 限制文件上传大小为 50MB，防止内存耗尽攻击
 app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024
+
+# CSRF 保护
+csrf = CSRFProtect(app)
+
+# Session 安全配置
+app.config['SESSION_COOKIE_SECURE'] = Config.FLASK_ENV == 'production'  # 生产环境使用 HTTPS
+app.config['SESSION_COOKIE_HTTPONLY'] = True  # 防止 JavaScript 访问 Cookie
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  # 防止 CSRF 攻击
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=24)  # Session 24小时过期
+
+# Flask-WTF CSRF 配置
+app.config['WTF_CSRF_TIME_LIMIT'] = None  # CSRF token 不过期（使用 session 过期时间）
+app.config['WTF_CSRF_SSL_STRICT'] = False  # 允许本地开发
+
+# 速率限制配置
+limiter = Limiter(
+    app=app,
+    key_func=get_remote_address,
+    default_limits=["200 per hour"],  # 默认每小时200次请求
+    storage_uri="memory://"  # 使用内存存储（生产环境建议使用 Redis）
+)
+
+# HTTP 安全头（在所有响应后添加）
+@app.after_request
+def set_security_headers(response):
+    """为所有响应添加安全头"""
+    # 防止点击劫持
+    response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+    # 防止 MIME 类型嗅探
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    # XSS 保护
+    response.headers['X-XSS-Protection'] = '1; mode=block'
+    # 引用策略
+    response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+    # 仅生产环境启用 HSTS（强制 HTTPS）
+    if Config.FLASK_ENV == 'production':
+        response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+    return response
 
 
 # ========================================
@@ -665,8 +711,9 @@ def resume_session(session_id):
 # ========================================
 
 @app.route('/api/auth/register', methods=['POST'])
+@limiter.limit("5 per hour")  # 每小时最多5次注册尝试，防止滥用
 def register():
-    """用户注册"""
+    """用户注册（带速率限制）"""
     data = request.get_json()
     username = data.get('username', '').strip()
     password = data.get('password', '')
@@ -707,8 +754,9 @@ def register():
 
 
 @app.route('/api/auth/login', methods=['POST'])
+@limiter.limit("10 per minute")  # 每分钟最多10次登录尝试
 def login():
-    """用户登录"""
+    """用户登录（带速率限制，防止暴力破解）"""
     data = request.get_json()
     username = data.get('username', '').strip()
     password = data.get('password', '')
@@ -848,8 +896,9 @@ def admin_page():
 
 
 @app.route('/api/admin/login', methods=['POST'])
+@limiter.limit("5 per minute")  # 管理员登录更严格：每分钟最多5次尝试
 def admin_login():
-    """管理员登录 - 支持主管理员和普通管理员"""
+    """管理员登录（带速率限制，防止暴力破解） - 支持主管理员和普通管理员"""
     data = request.get_json()
     if not data:
         return jsonify({'success': False, 'error': '无效的请求数据'}), 400

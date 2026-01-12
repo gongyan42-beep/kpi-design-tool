@@ -1,8 +1,11 @@
 """
 管理员用户管理服务 - 支持动态添加/删除管理员
 """
+import os
 import bcrypt
 import hashlib
+import secrets
+import string
 from typing import Optional, List, Dict, Tuple
 from modules.supabase_client import get_admin
 
@@ -10,12 +13,15 @@ from modules.supabase_client import get_admin
 class AdminUserService:
     """管理员用户管理服务"""
 
-    # 默认密码
-    DEFAULT_PASSWORD = "maoke2024"
-
     def __init__(self):
         self.client = get_admin()
         self._ensure_table()
+
+    def _generate_random_password(self, length: int = 16) -> str:
+        """生成安全的随机密码"""
+        alphabet = string.ascii_letters + string.digits + "!@#$%^&*"
+        password = ''.join(secrets.choice(alphabet) for _ in range(length))
+        return password
 
     def _ensure_table(self):
         """确保 admin_users 表存在（首次运行时会自动创建）"""
@@ -58,7 +64,7 @@ class AdminUserService:
 
     def add_admin(self, username: str, created_by: str, note: str = '') -> Tuple[bool, str, Dict]:
         """
-        添加普通管理员（默认密码：猫科）
+        添加普通管理员（生成随机安全密码）
 
         Args:
             username: 管理员用户名
@@ -73,10 +79,13 @@ class AdminUserService:
             if existing.data:
                 return False, "该用户名已存在", {}
 
+            # 生成随机安全密码
+            random_password = self._generate_random_password()
+
             # 创建管理员
             admin_data = {
                 'username': username,
-                'password_hash': self._hash_password(self.DEFAULT_PASSWORD),
+                'password_hash': self._hash_password(random_password),
                 'created_by': created_by,
                 'note': note,
                 'is_deleted': False
@@ -85,7 +94,7 @@ class AdminUserService:
             response = self.client.table('admin_users').insert(admin_data).execute()
 
             if response.data:
-                return True, f"管理员 {username} 创建成功，默认密码：{self.DEFAULT_PASSWORD}", response.data[0]
+                return True, f"管理员 {username} 创建成功，默认密码：{random_password}（请妥善保管）", response.data[0]
             else:
                 return False, "创建失败", {}
 
@@ -116,7 +125,7 @@ class AdminUserService:
 
     def reset_password(self, admin_id: str) -> Tuple[bool, str]:
         """
-        重置管理员密码为默认密码
+        重置管理员密码为随机安全密码
 
         Args:
             admin_id: 管理员 ID
@@ -124,12 +133,15 @@ class AdminUserService:
         Returns: (成功?, 消息)
         """
         try:
+            # 生成随机安全密码
+            random_password = self._generate_random_password()
+
             response = self.client.table('admin_users').update({
-                'password_hash': self._hash_password(self.DEFAULT_PASSWORD)
+                'password_hash': self._hash_password(random_password)
             }).eq('id', admin_id).execute()
 
             if response.data:
-                return True, f"密码已重置为：{self.DEFAULT_PASSWORD}"
+                return True, f"密码已重置为：{random_password}（请妥善保管）"
             else:
                 return False, "重置失败，管理员不存在"
 

@@ -26,7 +26,9 @@ class Config:
     }
 
     # Flask配置
-    SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-key')
+    SECRET_KEY = os.getenv('SECRET_KEY')
+    if not SECRET_KEY:
+        raise ValueError("SECRET_KEY 环境变量未设置！请在 .env 文件中设置一个安全的随机密钥")
     FLASK_ENV = os.getenv('FLASK_ENV', 'development')
 
     # 数据库
@@ -37,8 +39,10 @@ class Config:
     SUPABASE_KEY = os.getenv('SUPABASE_KEY')
     SUPABASE_SERVICE_KEY = os.getenv('SUPABASE_SERVICE_KEY')  # 管理员权限 key
 
-    # 管理后台密码
-    ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD', 'admin123')
+    # 管理后台密码（不再使用硬编码默认值）
+    ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD')
+    if not ADMIN_PASSWORD:
+        raise ValueError("ADMIN_PASSWORD 环境变量未设置！请在 .env 文件中设置管理员密码")
 
     # 6大模块定义
     MODULES = {
