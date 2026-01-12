@@ -1057,6 +1057,9 @@ def admin_user_profile_summary():
 请只输出JSON，不要其他内容。"""
 
         # 调用AI进行分析
+        import json as json_module
+        import re
+
         try:
             from openai import OpenAI
             import os
@@ -1097,16 +1100,12 @@ def admin_user_profile_summary():
             ai_response = response.choices[0].message.content.strip()
             logger.info(f"AI分析响应: {ai_response}")
 
-            # 尝试解析JSON
-            import json
-            import re
-
             # 提取JSON部分（可能包含markdown代码块）
             json_match = re.search(r'\{[\s\S]*\}', ai_response)
             if json_match:
                 ai_response = json_match.group()
 
-            profile_data = json.loads(ai_response)
+            profile_data = json_module.loads(ai_response)
 
             # 构建完整的用户画像
             profile = {
@@ -1125,7 +1124,7 @@ def admin_user_profile_summary():
                 'profile': profile
             })
 
-        except json.JSONDecodeError as e:
+        except json_module.JSONDecodeError as e:
             logger.error(f"JSON解析失败: {e}, 响应内容: {ai_response}")
             # 返回基础统计信息
             return jsonify({

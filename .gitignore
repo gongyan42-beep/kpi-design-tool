@@ -5,3 +5,17 @@ venv/
 __pycache__/
 *.tar.gz
 data/
+
+# 🔴 敏感文件保护（绝对不能上传！）
+.env
+.env.*
+*.env
+CLAUDE.md
+claude.md
+*CLAUDE*
+.claude/
+*.pem
+*.key
+credentials.json
+secrets.json
+
