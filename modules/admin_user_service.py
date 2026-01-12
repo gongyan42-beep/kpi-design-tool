@@ -2,6 +2,7 @@
 管理员用户管理服务 - 支持动态添加/删除管理员
 """
 import bcrypt
+import hashlib
 from typing import Optional, List, Dict, Tuple
 from modules.supabase_client import get_admin
 
@@ -28,11 +29,23 @@ class AdminUserService:
         return password_hash.decode('utf-8')
 
     def _verify_password(self, password: str, password_hash: str) -> bool:
-        """验证密码是否匹配"""
+        """验证密码是否匹配（bcrypt）"""
         try:
             return bcrypt.checkpw(password.encode('utf-8'), password_hash.encode('utf-8'))
         except Exception:
             return False
+
+    def _verify_password_md5(self, password: str, password_hash: str) -> bool:
+        """验证旧的 MD5 密码（仅用于迁移）"""
+        try:
+            md5_hash = hashlib.md5(password.encode('utf-8')).hexdigest()
+            return md5_hash == password_hash
+        except Exception:
+            return False
+
+    def _is_md5_hash(self, password_hash: str) -> bool:
+        """判断是否为 MD5 哈希（32位十六进制字符）"""
+        return len(password_hash) == 32 and all(c in '0123456789abcdef' for c in password_hash.lower())
 
     def get_all_admins(self) -> List[Dict]:
         """获取所有普通管理员列表"""
@@ -125,7 +138,7 @@ class AdminUserService:
 
     def verify_admin(self, username: str, password: str) -> Tuple[bool, Optional[Dict]]:
         """
-        验证普通管理员登录
+        验证普通管理员登录（支持 MD5 到 bcrypt 的平滑迁移）
 
         Args:
             username: 用户名
@@ -137,15 +150,35 @@ class AdminUserService:
             # 先获取用户记录
             response = self.client.table('admin_users').select('*').eq('username', username).eq('is_deleted', False).execute()
 
-            if response.data:
-                admin_data = response.data[0]
-                # 使用 bcrypt 验证密码
-                if self._verify_password(password, admin_data['password_hash']):
-                    return True, admin_data
-                else:
-                    return False, None
-            else:
+            if not response.data:
                 return False, None
+
+            admin_data = response.data[0]
+            password_hash = admin_data['password_hash']
+
+            # 优先尝试 bcrypt 验证
+            if self._verify_password(password, password_hash):
+                return True, admin_data
+
+            # 如果 bcrypt 验证失败，检查是否为旧的 MD5 密码
+            if self._is_md5_hash(password_hash):
+                if self._verify_password_md5(password, password_hash):
+                    # MD5 验证成功，立即升级为 bcrypt
+                    print(f"检测到旧密码格式，正在为用户 {username} 升级密码加密...")
+                    new_hash = self._hash_password(password)
+
+                    # 更新数据库
+                    update_response = self.client.table('admin_users').update({
+                        'password_hash': new_hash
+                    }).eq('id', admin_data['id']).execute()
+
+                    if update_response.data:
+                        print(f"用户 {username} 的密码已成功升级为 bcrypt 加密")
+                        admin_data['password_hash'] = new_hash
+
+                    return True, admin_data
+
+            return False, None
 
         except Exception as e:
             print(f"验证管理员失败: {e}")
