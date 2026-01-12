@@ -1,7 +1,7 @@
 """
 管理员用户管理服务 - 支持动态添加/删除管理员
 """
-import hashlib
+import bcrypt
 from typing import Optional, List, Dict, Tuple
 from modules.supabase_client import get_admin
 
@@ -22,8 +22,17 @@ class AdminUserService:
         pass
 
     def _hash_password(self, password: str) -> str:
-        """密码哈希（简单 MD5，生产环境建议使用 bcrypt）"""
-        return hashlib.md5(password.encode('utf-8')).hexdigest()
+        """密码哈希（使用 bcrypt 安全哈希）"""
+        salt = bcrypt.gensalt()
+        password_hash = bcrypt.hashpw(password.encode('utf-8'), salt)
+        return password_hash.decode('utf-8')
+
+    def _verify_password(self, password: str, password_hash: str) -> bool:
+        """验证密码是否匹配"""
+        try:
+            return bcrypt.checkpw(password.encode('utf-8'), password_hash.encode('utf-8'))
+        except Exception:
+            return False
 
     def get_all_admins(self) -> List[Dict]:
         """获取所有普通管理员列表"""
@@ -125,11 +134,16 @@ class AdminUserService:
         Returns: (验证通过?, 管理员数据)
         """
         try:
-            password_hash = self._hash_password(password)
-            response = self.client.table('admin_users').select('*').eq('username', username).eq('password_hash', password_hash).eq('is_deleted', False).execute()
+            # 先获取用户记录
+            response = self.client.table('admin_users').select('*').eq('username', username).eq('is_deleted', False).execute()
 
             if response.data:
-                return True, response.data[0]
+                admin_data = response.data[0]
+                # 使用 bcrypt 验证密码
+                if self._verify_password(password, admin_data['password_hash']):
+                    return True, admin_data
+                else:
+                    return False, None
             else:
                 return False, None
 
