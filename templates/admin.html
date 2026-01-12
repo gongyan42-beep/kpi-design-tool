@@ -604,6 +604,17 @@
             color: var(--accent-blue);
         }
 
+        .clickable-user {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .clickable-user:hover {
+            text-decoration: underline;
+            color: #0066ff;
+            transform: translateX(2px);
+        }
+
         .session-company {
             padding: 3px 10px;
             background: rgba(245, 158, 11, 0.1);
@@ -2325,15 +2336,43 @@
                 `).join('');
             }
 
-            // 显示详情面板，隐藏列表
+            // 显示详情面板，隐藏所有列表
             document.getElementById('userDetailPanel').style.display = 'block';
             document.getElementById('usersList').style.display = 'none';
+            document.getElementById('sessionsList').style.display = 'none';
+        }
+
+        // 从聊天记录列表点击用户邮箱查看详情
+        function showUserDetailFromSession(email) {
+            if (!email) return;
+
+            // 显示用户详情
+            showUserDetail(email);
+
+            // 记录来源标签，用于返回时恢复
+            sessionStorage.setItem('userDetailSource', 'sessions');
         }
 
         function hideUserDetail() {
             currentUserEmail = null;
+            const source = sessionStorage.getItem('userDetailSource');
+
+            // 隐藏详情面板
             document.getElementById('userDetailPanel').style.display = 'none';
-            document.getElementById('usersList').style.display = 'block';
+
+            // 根据来源显示相应的列表
+            if (source === 'sessions') {
+                // 如果是从聊天记录tab来的，保持在聊天记录tab
+                document.getElementById('sessionsList').style.display = 'block';
+                document.getElementById('usersList').style.display = 'none';
+            } else {
+                // 否则显示用户列表
+                document.getElementById('usersList').style.display = 'block';
+                document.getElementById('sessionsList').style.display = 'none';
+            }
+
+            // 清除来源记录
+            sessionStorage.removeItem('userDetailSource');
         }
 
         function toggleUserMessages(idx) {
@@ -2456,7 +2495,7 @@
                 <div class="session-card">
                     <div class="session-header">
                         <div class="session-user-info">
-                            <span class="session-user">${s.user_email || '未知用户'}</span>
+                            <span class="session-user clickable-user" onclick="showUserDetailFromSession('${s.user_email || ''}')" title="点击查看该用户的所有聊天记录">${s.user_email || '未知用户'}</span>
                             ${s.user_company ? `<span class="session-company">🏢 ${s.user_company}</span>` : ''}
                             ${s.user_position ? `<span class="session-position">👤 ${s.user_position}</span>` : ''}
                             <span class="session-module">${s.module}</span>
