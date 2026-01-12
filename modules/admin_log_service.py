@@ -120,6 +120,20 @@ class AdminLogService:
             }
         )
 
+    def log_batch_redeem_create(self, admin_name: str, count: int, credits: int):
+        """记录批量创建兑换码"""
+        return self.log(
+            admin_name=admin_name,
+            action_type='REDEEM_CREATE',
+            target=f'批量生成{count}个',
+            details=f"批量生成 {count} 个兑换码，每个 {credits} 积分",
+            extra_data={
+                'batch': True,
+                'count': count,
+                'credits': credits
+            }
+        )
+
     def log_credits_add(self, admin_name: str, target_user: str, cat_coins: int, credits: int, reason: str = ''):
         """记录直接充值积分"""
         return self.log(

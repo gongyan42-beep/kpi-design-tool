@@ -1144,16 +1144,102 @@
             background: rgba(99, 102, 241, 0.1);
         }
 
-        /* 导出栏 - 现代风格 */
-        .export-bar {
+        /* 搜索和导出栏 - 现代风格 */
+        .search-export-bar {
             display: flex;
-            align-items: center;
-            gap: 12px;
+            flex-direction: column;
+            gap: 16px;
             margin-bottom: 24px;
-            padding: 16px 20px;
+            padding: 20px;
             background: var(--bg-card);
             border: 1px solid var(--border-color);
             border-radius: 12px;
+        }
+
+        .search-section {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .search-input-wrapper {
+            position: relative;
+            flex: 1;
+            min-width: 280px;
+            max-width: 500px;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 18px;
+            height: 18px;
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 40px 12px 44px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.2s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+        }
+
+        .search-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .search-clear-btn {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            background: var(--text-muted);
+            color: var(--bg-primary);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .search-clear-btn:hover {
+            background: var(--text-secondary);
+        }
+
+        .search-result-count {
+            font-size: 13px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+
+        .search-result-count.has-results {
+            color: var(--accent-green);
+        }
+
+        .export-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
             flex-wrap: wrap;
         }
 
@@ -1645,13 +1731,32 @@
                 <div id="userSessionsList"></div>
             </div>
 
-            <!-- 导出按钮（聊天记录标签下显示） -->
-            <div class="export-bar" id="exportBar" style="display: none;">
-                <span class="export-label">导出数据：</span>
-                <button class="btn-export" onclick="exportChat('all', 'json')">全部对话 (JSON)</button>
-                <button class="btn-export" onclick="exportChat('all', 'csv')">全部对话 (CSV)</button>
-                <button class="btn-export btn-export-user" onclick="exportChat('user', 'json')">仅用户输入 (JSON)</button>
-                <button class="btn-export btn-export-user" onclick="exportChat('user', 'csv')">仅用户输入 (CSV)</button>
+            <!-- 搜索和导出栏（聊天记录标签下显示） -->
+            <div class="search-export-bar" id="exportBar" style="display: none;">
+                <!-- 搜索区域 -->
+                <div class="search-section">
+                    <div class="search-input-wrapper">
+                        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <path d="m21 21-4.35-4.35"></path>
+                        </svg>
+                        <input type="text" id="sessionSearchInput" class="search-input"
+                            placeholder="搜索用户邮箱、公司、消息内容..."
+                            oninput="handleSessionSearch()">
+                        <button class="search-clear-btn" id="searchClearBtn" onclick="clearSearch()" style="display: none;">
+                            ✕
+                        </button>
+                    </div>
+                    <span class="search-result-count" id="searchResultCount"></span>
+                </div>
+                <!-- 导出区域 -->
+                <div class="export-section">
+                    <span class="export-label">导出数据：</span>
+                    <button class="btn-export" onclick="exportChat('all', 'json')">全部对话 (JSON)</button>
+                    <button class="btn-export" onclick="exportChat('all', 'csv')">全部对话 (CSV)</button>
+                    <button class="btn-export btn-export-user" onclick="exportChat('user', 'json')">仅用户输入 (JSON)</button>
+                    <button class="btn-export btn-export-user" onclick="exportChat('user', 'csv')">仅用户输入 (CSV)</button>
+                </div>
             </div>
 
             <!-- 用户列表 -->
@@ -1806,6 +1911,34 @@
                             <div style="font-size: 14px; color: #C4C7C5; margin-bottom: 12px;" id="generatedCredits">
                             </div>
                             <button class="btn-copy-code" onclick="copyRedeemCode()">复制兑换码</button>
+                        </div>
+
+                        <!-- 批量生成分隔线 -->
+                        <div style="border-top: 1px solid var(--border-color); margin: 24px 0; padding-top: 24px;">
+                            <h3 style="font-size: 15px; font-weight: 600; color: var(--text-primary); margin-bottom: 16px;">批量生成兑换码</h3>
+                            <div class="redeem-form">
+                                <div style="display: flex; gap: 12px;">
+                                    <div class="form-group" style="flex: 1;">
+                                        <label>积分数量</label>
+                                        <input type="number" id="batchCredits" placeholder="每个兑换码的积分" min="1">
+                                    </div>
+                                    <div class="form-group" style="flex: 1;">
+                                        <label>生成数量</label>
+                                        <input type="number" id="batchCount" placeholder="1-100" min="1" max="100">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>备注（可选）</label>
+                                    <input type="text" id="batchNote" placeholder="如：活动赠送、批量发放等">
+                                </div>
+                                <button class="btn-create-code" style="background: linear-gradient(135deg, #10b981, #059669);" onclick="batchCreateRedeemCodes()">批量生成</button>
+                            </div>
+                            <!-- 批量生成结果 -->
+                            <div id="batchResult" class="redeem-result" style="display: none;">
+                                <div style="font-size: 16px; font-weight: 600; color: #10b981; margin-bottom: 12px;" id="batchResultTitle"></div>
+                                <div id="batchCodesList" style="max-height: 200px; overflow-y: auto; text-align: left; background: var(--bg-primary); border-radius: 8px; padding: 12px;"></div>
+                                <button class="btn-copy-code" style="margin-top: 12px;" onclick="copyBatchCodes()">复制全部兑换码</button>
+                            </div>
                         </div>
                     </div>
 
@@ -2238,16 +2371,88 @@
             downloadFile(JSON.stringify(exportData, null, 2), filename, 'application/json');
         }
 
+        // 存储过滤后的会话（用于搜索和导出）
+        let filteredSessions = [];
+        let currentSearchKeyword = '';
+
+        // 搜索处理函数
+        function handleSessionSearch() {
+            const input = document.getElementById('sessionSearchInput');
+            const keyword = input.value.trim().toLowerCase();
+            currentSearchKeyword = keyword;
+
+            // 显示/隐藏清除按钮
+            document.getElementById('searchClearBtn').style.display = keyword ? 'flex' : 'none';
+
+            // 过滤会话
+            if (!keyword) {
+                filteredSessions = [...allSessions];
+            } else {
+                filteredSessions = allSessions.filter(s => {
+                    // 搜索用户邮箱
+                    if ((s.user_email || '').toLowerCase().includes(keyword)) return true;
+                    // 搜索公司名称
+                    if ((s.user_company || '').toLowerCase().includes(keyword)) return true;
+                    // 搜索职位
+                    if ((s.user_position || '').toLowerCase().includes(keyword)) return true;
+                    // 搜索模块名称
+                    if ((s.module || '').toLowerCase().includes(keyword)) return true;
+                    // 搜索消息内容
+                    const messages = s.messages || [];
+                    for (const m of messages) {
+                        if ((m.content || '').toLowerCase().includes(keyword)) return true;
+                    }
+                    return false;
+                });
+            }
+
+            // 更新搜索结果计数
+            updateSearchResultCount();
+            // 重新渲染
+            renderSessions();
+        }
+
+        // 更新搜索结果计数
+        function updateSearchResultCount() {
+            const countEl = document.getElementById('searchResultCount');
+            if (!currentSearchKeyword) {
+                countEl.textContent = '';
+                countEl.classList.remove('has-results');
+            } else {
+                countEl.textContent = `找到 ${filteredSessions.length} 条记录`;
+                countEl.classList.toggle('has-results', filteredSessions.length > 0);
+            }
+        }
+
+        // 清除搜索
+        function clearSearch() {
+            document.getElementById('sessionSearchInput').value = '';
+            currentSearchKeyword = '';
+            document.getElementById('searchClearBtn').style.display = 'none';
+            filteredSessions = [...allSessions];
+            updateSearchResultCount();
+            renderSessions();
+        }
+
         // 渲染会话列表
         function renderSessions() {
             const container = document.getElementById('sessionsList');
 
-            if (allSessions.length === 0) {
-                container.innerHTML = '<p class="loading">暂无聊天记录</p>';
+            // 如果还没有初始化 filteredSessions，使用 allSessions
+            if (filteredSessions.length === 0 && allSessions.length > 0 && !currentSearchKeyword) {
+                filteredSessions = [...allSessions];
+            }
+
+            const sessionsToRender = currentSearchKeyword ? filteredSessions : allSessions;
+
+            if (sessionsToRender.length === 0) {
+                container.innerHTML = currentSearchKeyword
+                    ? '<p class="loading">未找到匹配的聊天记录</p>'
+                    : '<p class="loading">暂无聊天记录</p>';
                 return;
             }
 
-            container.innerHTML = allSessions.map((s, idx) => `
+            container.innerHTML = sessionsToRender.map((s, idx) => `
                 <div class="session-card">
                     <div class="session-header">
                         <div class="session-user-info">
@@ -2340,8 +2545,11 @@
 
         // 导出聊天记录（包含完整用户信息）
         function exportChat(type, format) {
-            if (allSessions.length === 0) {
-                alert('暂无数据可导出');
+            // 使用搜索结果或全部数据
+            const sessionsToExport = currentSearchKeyword ? filteredSessions : allSessions;
+
+            if (sessionsToExport.length === 0) {
+                alert(currentSearchKeyword ? '搜索结果为空，无数据可导出' : '暂无数据可导出');
                 return;
             }
 
@@ -2353,10 +2561,12 @@
 
             let exportData;
             const timestamp = new Date().toISOString().slice(0, 10);
+            // 文件名添加搜索标识
+            const searchSuffix = currentSearchKeyword ? `_search_${currentSearchKeyword.substring(0, 20)}` : '';
 
             if (type === 'user') {
                 // 只导出用户输入
-                exportData = allSessions.map(s => {
+                exportData = sessionsToExport.map(s => {
                     const user = userMap[s.user_email] || {};
                     return {
                         session_id: s.session_id || s.id,
@@ -2370,7 +2580,7 @@
                 });
             } else {
                 // 导出全部对话
-                exportData = allSessions.map(s => {
+                exportData = sessionsToExport.map(s => {
                     const user = userMap[s.user_email] || {};
                     return {
                         session_id: s.session_id || s.id,
@@ -2387,13 +2597,13 @@
             if (format === 'json') {
                 downloadFile(
                     JSON.stringify(exportData, null, 2),
-                    `chat_${type}_${timestamp}.json`,
+                    `chat_${type}${searchSuffix}_${timestamp}.json`,
                     'application/json'
                 );
             } else {
                 // CSV 格式
                 const csvContent = convertToCSV(exportData, type);
-                downloadFile(csvContent, `chat_${type}_${timestamp}.csv`, 'text/csv');
+                downloadFile(csvContent, `chat_${type}${searchSuffix}_${timestamp}.csv`, 'text/csv');
             }
         }
 
@@ -2996,6 +3206,73 @@
             const code = document.getElementById('generatedCode').textContent;
             navigator.clipboard.writeText(code).then(() => {
                 alert('兑换码已复制: ' + code);
+            });
+        }
+
+        // 批量生成的兑换码列表（用于复制）
+        let batchGeneratedCodes = [];
+
+        async function batchCreateRedeemCodes() {
+            const credits = parseInt(document.getElementById('batchCredits').value) || 0;
+            const count = parseInt(document.getElementById('batchCount').value) || 0;
+            const note = document.getElementById('batchNote').value.trim();
+
+            if (credits <= 0) {
+                alert('请输入积分数量');
+                return;
+            }
+
+            if (count <= 0 || count > 100) {
+                alert('生成数量必须在1-100之间');
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/admin/redeem/batch', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ credits, count, note })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    batchGeneratedCodes = data.codes.map(c => c.code);
+
+                    // 显示结果
+                    document.getElementById('batchResultTitle').textContent =
+                        `成功生成 ${data.codes.length} 个兑换码（每个 ${credits} 积分）`;
+
+                    // 显示兑换码列表
+                    const listHtml = data.codes.map(c =>
+                        `<div style="font-family: monospace; padding: 4px 0; color: var(--accent-blue);">${c.code}</div>`
+                    ).join('');
+                    document.getElementById('batchCodesList').innerHTML = listHtml;
+
+                    document.getElementById('batchResult').style.display = 'block';
+
+                    // 清空表单
+                    document.getElementById('batchCredits').value = '';
+                    document.getElementById('batchCount').value = '';
+                    document.getElementById('batchNote').value = '';
+
+                    // 刷新列表
+                    loadRedeemCodes();
+                } else {
+                    alert('生成失败: ' + data.error);
+                }
+            } catch (e) {
+                alert('网络错误');
+            }
+        }
+
+        function copyBatchCodes() {
+            if (batchGeneratedCodes.length === 0) {
+                alert('没有可复制的兑换码');
+                return;
+            }
+            const codesText = batchGeneratedCodes.join('\n');
+            navigator.clipboard.writeText(codesText).then(() => {
+                alert(`已复制 ${batchGeneratedCodes.length} 个兑换码`);
             });
         }
 

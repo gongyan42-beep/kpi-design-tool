@@ -275,6 +275,84 @@ class RedeemService:
         except Exception as e:
             return False, f"删除失败: {str(e)}"
 
+    def batch_create_codes(
+        self,
+        credits: int,
+        count: int,
+        created_by: str,
+        note: str = ''
+    ) -> Tuple[bool, str, List[Dict]]:
+        """
+        批量生成兑换码（用户名留空）
+
+        Args:
+            credits: 每个兑换码的积分数量
+            count: 生成数量
+            created_by: 创建人（管理员）
+            note: 备注
+
+        Returns:
+            (成功?, 消息, 兑换码列表)
+        """
+        if not self.client:
+            return False, "数据库连接失败", []
+
+        if credits <= 0:
+            return False, "积分数量必须大于0", []
+
+        if count <= 0 or count > 100:
+            return False, "生成数量必须在1-100之间", []
+
+        try:
+            codes_data = []
+            generated_codes = set()
+
+            for _ in range(count):
+                # 生成唯一兑换码
+                code = self._generate_code()
+                while code in generated_codes:
+                    code = self._generate_code(10)
+                generated_codes.add(code)
+
+                # 检查数据库是否重复
+                existing = self.client.table('redeem_codes').select('id').eq('code', code).execute()
+                if existing.data:
+                    code = self._generate_code(10)
+
+                data = {
+                    'code': code,
+                    'target_name': '',  # 用户名留空
+                    'cat_coins': 0,
+                    'credits': credits,
+                    'created_by': created_by,
+                    'note': note or '批量生成',
+                    'is_used': False,
+                    'created_at': datetime.now().isoformat()
+                }
+                codes_data.append(data)
+
+            # 批量插入数据库
+            result = self.client.table('redeem_codes').insert(codes_data).execute()
+
+            if result.data:
+                # 记录管理员操作日志
+                try:
+                    from modules.admin_log_service import admin_log_service
+                    admin_log_service.log_batch_redeem_create(
+                        admin_name=created_by,
+                        count=count,
+                        credits=credits
+                    )
+                except Exception as log_err:
+                    print(f"记录管理员日志失败: {log_err}")
+
+                return True, f"成功生成 {count} 个兑换码", result.data
+            else:
+                return False, "批量创建失败", []
+
+        except Exception as e:
+            return False, f"批量创建失败: {str(e)}", []
+
 
 # 单例实例
 redeem_service = RedeemService()

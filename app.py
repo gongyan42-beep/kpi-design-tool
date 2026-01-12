@@ -4,6 +4,7 @@
 import os
 import json
 import logging
+from datetime import datetime
 from logging.handlers import RotatingFileHandler
 from flask import Flask, render_template, request, jsonify, send_file, session, Response
 from config import Config
@@ -159,7 +160,7 @@ def get_modules():
 
 @app.route('/api/session/new', methods=['POST'])
 def create_session():
-    """创建新会话"""
+    """创建新会话（增强版：记录更多用户信息）"""
     data = request.get_json()
     if not data:
         return jsonify({'success': False, 'error': '无效的请求数据'}), 400
@@ -171,12 +172,39 @@ def create_session():
     if not module_info and module not in Config.MODULES:
         return jsonify({'success': False, 'error': '无效的模块'}), 400
 
+    # 获取模块中文名称
+    if module_info:
+        module_name = module_info.get('name', module)
+    elif module in Config.MODULES:
+        module_name = Config.MODULES[module].get('name', module)
+    else:
+        module_name = module
+
     # 获取当前登录用户信息
     user_id = session.get('user_id')
     user_email = session.get('email')
+    user_nickname = session.get('nickname', '')
+    user_company = ''
 
-    # 创建会话（关联用户）
-    session_id = db.create_session(module, user_id, user_email)
+    # 如果已登录，尝试获取更完整的用户信息
+    if user_id:
+        try:
+            profile = auth_service.get_profile(user_id)
+            if profile:
+                user_nickname = profile.get('nickname', user_nickname)
+                user_company = profile.get('company', '')
+        except Exception as e:
+            logger.warning(f"获取用户信息失败: {e}")
+
+    # 创建会话（关联用户 + 记录额外信息）
+    session_id = db.create_session(
+        module=module,
+        user_id=user_id,
+        user_email=user_email,
+        user_nickname=user_nickname,
+        user_company=user_company,
+        module_name=module_name
+    )
 
     # 获取欢迎语
     welcome_message = get_welcome_message(module)
@@ -235,9 +263,28 @@ def chat_api():
             'need_login': True
         }), 401
 
-    # 验证会话所有权（会话必须属于当前用户）
-    if chat_session.get('user_id') and chat_session.get('user_id') != user_id:
-        return jsonify({'success': False, 'error': '无权访问此会话'}), 403
+    # 验证会话所有权（增强版：修复旧会话访问漏洞）
+    session_owner_id = chat_session.get('user_id')
+
+    if session_owner_id:
+        # 会话已有所有者，必须是当前用户
+        if session_owner_id != user_id:
+            return jsonify({'success': False, 'error': '无权访问此会话'}), 403
+    else:
+        # 会话没有所有者（旧会话），自动关联到当前用户
+        try:
+            db.update_collected_data(session_id, {
+                '_claimed_by': user_id,
+                '_claimed_at': datetime.now().isoformat()
+            })
+            if db.use_supabase:
+                db.supabase.table('sessions').update({
+                    'user_id': user_id,
+                    'user_email': session.get('email', '')
+                }).eq('id', session_id).execute()
+            logger.info(f"会话 {session_id} 已关联到用户 {user_id}")
+        except Exception as e:
+            logger.warning(f"关联会话所有者失败: {e}")
 
     # 获取当前积分
     current_credits = auth_service.get_credits(user_id)
@@ -289,6 +336,15 @@ def chat_api():
         # 保存AI回复
         db.add_message(session_id, 'assistant', response)
 
+        # 异步提取用户画像（后台执行，不阻塞响应）
+        try:
+            # 获取最新消息列表
+            updated_session = db.get_session(session_id)
+            if updated_session and user_id:
+                memory_service.extract_and_update(user_id, updated_session['messages'])
+        except Exception as mem_err:
+            logger.warning(f"用户画像提取失败（不影响主流程）: {mem_err}")
+
         # 扣除积分（AI调用成功后）
         success, msg, remaining_credits = auth_service.use_credits(
             user_id, credits_cost, f"AI对话 - {chat_session['module']}"
@@ -338,9 +394,28 @@ def chat_stream_api():
             'need_login': True
         }), 401
 
-    # 验证会话所有权（会话必须属于当前用户）
-    if chat_session.get('user_id') and chat_session.get('user_id') != user_id:
-        return jsonify({'success': False, 'error': '无权访问此会话'}), 403
+    # 验证会话所有权（增强版：修复旧会话访问漏洞）
+    session_owner_id = chat_session.get('user_id')
+
+    if session_owner_id:
+        # 会话已有所有者，必须是当前用户
+        if session_owner_id != user_id:
+            return jsonify({'success': False, 'error': '无权访问此会话'}), 403
+    else:
+        # 会话没有所有者（旧会话），自动关联到当前用户
+        try:
+            db.update_collected_data(session_id, {
+                '_claimed_by': user_id,
+                '_claimed_at': datetime.now().isoformat()
+            })
+            if db.use_supabase:
+                db.supabase.table('sessions').update({
+                    'user_id': user_id,
+                    'user_email': session.get('email', '')
+                }).eq('id', session_id).execute()
+            logger.info(f"会话 {session_id} 已关联到用户 {user_id}")
+        except Exception as e:
+            logger.warning(f"关联会话所有者失败: {e}")
 
     # 检查积分是否足够
     credits_cost = auth_service.CREDITS_PER_CHAT
@@ -404,6 +479,14 @@ def chat_stream_api():
             # 流结束，保存完整响应
             complete_response = ''.join(full_response)
             db.add_message(session_id, 'assistant', complete_response)
+
+            # 异步提取用户画像（后台执行，不阻塞响应）
+            try:
+                updated_session = db.get_session(session_id)
+                if updated_session and user_id:
+                    memory_service.extract_and_update(user_id, updated_session['messages'])
+            except Exception as mem_err:
+                print(f"[Stream] 用户画像提取失败: {mem_err}")
 
             # 扣除积分
             credits_cost = auth_service.CREDITS_PER_CHAT
@@ -1209,6 +1292,44 @@ def admin_delete_redeem_code(code_id):
 
     if success:
         return jsonify({'success': True, 'message': message})
+    else:
+        return jsonify({'success': False, 'error': message}), 400
+
+
+@app.route('/api/admin/redeem/batch', methods=['POST'])
+def admin_batch_create_redeem_codes():
+    """批量生成兑换码"""
+    if not session.get('is_admin'):
+        return jsonify({'success': False, 'error': '请先登录管理后台'}), 401
+
+    data = request.get_json()
+    credits = data.get('credits', 0)
+    count = data.get('count', 0)
+    note = data.get('note', '').strip()
+
+    try:
+        credits = int(credits)
+        count = int(count)
+    except (ValueError, TypeError):
+        return jsonify({'success': False, 'error': '参数格式错误'}), 400
+
+    if credits <= 0:
+        return jsonify({'success': False, 'error': '积分数量必须大于0'}), 400
+
+    if count <= 0 or count > 100:
+        return jsonify({'success': False, 'error': '生成数量必须在1-100之间'}), 400
+
+    created_by = session.get('admin_username', 'admin')
+
+    success, message, codes = redeem_service.batch_create_codes(
+        credits=credits,
+        count=count,
+        created_by=created_by,
+        note=note
+    )
+
+    if success:
+        return jsonify({'success': True, 'message': message, 'codes': codes})
     else:
         return jsonify({'success': False, 'error': message}), 400
 
