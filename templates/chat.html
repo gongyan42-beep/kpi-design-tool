@@ -2206,20 +2206,20 @@
                 return `
                 <div class="history-item ${safeId === sessionId ? 'active' : ''}" data-id="${safeId}" data-module="${safeModule}" onclick="resumeSession('${safeId}', '${safeModule}')">
                     <span class="history-item-text">${safePreview}</span>
-                    <button class="history-item-menu" onclick="event.stopPropagation(); toggleHistoryMenu('${safeId}')">
+                    <button class="history-item-menu" onclick="event.stopPropagation(); toggleHistoryMenu('${safeId}')" aria-label="更多操作" aria-haspopup="menu" aria-expanded="false">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                             <circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/>
                         </svg>
                     </button>
-                    <div class="history-dropdown" id="history-menu-${safeId}">
-                        <div class="history-dropdown-item" onclick="event.stopPropagation(); renameHistory('${safeId}')">
+                    <div class="history-dropdown" id="history-menu-${safeId}" role="menu" aria-label="历史对话操作">
+                        <div class="history-dropdown-item" role="menuitem" tabindex="-1" onclick="event.stopPropagation(); renameHistory('${safeId}')" onkeydown="handleMenuKeydown(event, '${safeId}', 'rename')">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                                 <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                             </svg>
                             重命名
                         </div>
-                        <div class="history-dropdown-item danger" onclick="event.stopPropagation(); deleteHistory('${safeId}')">
+                        <div class="history-dropdown-item danger" role="menuitem" tabindex="-1" onclick="event.stopPropagation(); deleteHistory('${safeId}')" onkeydown="handleMenuKeydown(event, '${safeId}', 'delete')">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <polyline points="3,6 5,6 21,6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
                             </svg>
@@ -2252,12 +2252,62 @@
 
         // 历史菜单切换
         function toggleHistoryMenu(id) {
-            // 关闭其他菜单
+            // 关闭其他菜单并重置 aria-expanded
             document.querySelectorAll('.history-dropdown.show').forEach(el => {
-                if (el.id !== `history-menu-${id}`) el.classList.remove('show');
+                if (el.id !== `history-menu-${id}`) {
+                    el.classList.remove('show');
+                    const btn = el.previousElementSibling;
+                    if (btn) btn.setAttribute('aria-expanded', 'false');
+                }
             });
             const menu = document.getElementById(`history-menu-${id}`);
-            menu.classList.toggle('show');
+            const isShown = menu.classList.toggle('show');
+
+            // 更新 aria-expanded
+            const menuBtn = menu.previousElementSibling;
+            if (menuBtn) menuBtn.setAttribute('aria-expanded', isShown);
+
+            // 菜单打开时聚焦第一个选项
+            if (isShown) {
+                const firstItem = menu.querySelector('[role="menuitem"]');
+                if (firstItem) firstItem.focus();
+            }
+        }
+
+        // 历史菜单键盘导航
+        function handleMenuKeydown(event, id, action) {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                event.stopPropagation();
+                if (action === 'rename') {
+                    renameHistory(id);
+                } else if (action === 'delete') {
+                    deleteHistory(id);
+                }
+            } else if (event.key === 'Escape') {
+                // 关闭菜单
+                const menu = document.getElementById(`history-menu-${id}`);
+                if (menu) {
+                    menu.classList.remove('show');
+                    const btn = menu.previousElementSibling;
+                    if (btn) {
+                        btn.setAttribute('aria-expanded', 'false');
+                        btn.focus();
+                    }
+                }
+            } else if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+                event.preventDefault();
+                const menu = document.getElementById(`history-menu-${id}`);
+                const items = menu.querySelectorAll('[role="menuitem"]');
+                const currentIndex = Array.from(items).indexOf(document.activeElement);
+                let nextIndex;
+                if (event.key === 'ArrowDown') {
+                    nextIndex = currentIndex < items.length - 1 ? currentIndex + 1 : 0;
+                } else {
+                    nextIndex = currentIndex > 0 ? currentIndex - 1 : items.length - 1;
+                }
+                items[nextIndex].focus();
+            }
         }
 
         // 删除历史
@@ -2892,6 +2942,8 @@
 
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
+            toast.setAttribute('role', 'alert');
+            toast.setAttribute('aria-live', 'polite');
             toast.textContent = message;
             document.body.appendChild(toast);
 
@@ -3176,6 +3228,16 @@
             `;
             document.body.appendChild(modal);
 
+            // 添加 ESC 键关闭
+            const handleEsc = (e) => {
+                if (e.key === 'Escape') {
+                    closeCreditsModal();
+                    document.removeEventListener('keydown', handleEsc);
+                }
+            };
+            document.addEventListener('keydown', handleEsc);
+            modal._escHandler = handleEsc; // 保存引用以便清理
+
             // 添加动画
             requestAnimationFrame(() => {
                 modal.classList.add('show');
@@ -3186,6 +3248,10 @@
         function closeCreditsModal() {
             const modal = document.getElementById('creditsModal');
             if (modal) {
+                // 清理 ESC 事件监听器
+                if (modal._escHandler) {
+                    document.removeEventListener('keydown', modal._escHandler);
+                }
                 modal.classList.remove('show');
                 setTimeout(() => {
                     modal.remove();

@@ -1336,6 +1336,20 @@
             }
         });
 
+        // ESC 键关闭弹窗
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const authModal = document.getElementById('authModal');
+                const redeemModal = document.getElementById('redeemModal');
+                if (authModal && authModal.classList.contains('show')) {
+                    hideAuthModal();
+                }
+                if (redeemModal && redeemModal.classList.contains('show')) {
+                    hideRedeemModal();
+                }
+            }
+        });
+
         async function checkLoginStatus() {
             try {
                 const res = await fetch('/api/auth/me');
@@ -1373,6 +1387,8 @@
                 showRedeemModal();
             } else {
                 document.getElementById('authModal').classList.add('show');
+                // 锁定背景滚动
+                document.body.style.overflow = 'hidden';
                 if (type === 'login') {
                     document.getElementById('loginForm').style.display = 'block';
                     document.getElementById('registerForm').style.display = 'none';
@@ -1387,6 +1403,8 @@
 
         function hideAuthModal() {
             document.getElementById('authModal').classList.remove('show');
+            // 恢复背景滚动
+            document.body.style.overflow = '';
         }
 
         function showMessage(msg, isError = false) {
@@ -1597,6 +1615,8 @@
             }
 
             document.getElementById('redeemModal').classList.add('show');
+            // 锁定背景滚动
+            document.body.style.overflow = 'hidden';
             document.getElementById('redeemMessage').style.display = 'none';
             document.getElementById('redeemCodeInput').value = '';
 
@@ -1617,6 +1637,8 @@
         function showRedeemModalForNewUser() {
             isUserLoggedIn = true; // 确保已登录状态
             document.getElementById('redeemModal').classList.add('show');
+            // 锁定背景滚动
+            document.body.style.overflow = 'hidden';
             document.getElementById('redeemMessage').style.display = 'none';
             document.getElementById('redeemCodeInput').value = '';
 
@@ -1654,6 +1676,8 @@
 
         function hideRedeemModal() {
             document.getElementById('redeemModal').classList.remove('show');
+            // 恢复背景滚动
+            document.body.style.overflow = '';
         }
 
         function showRedeemMessage(msg, isError = false) {
