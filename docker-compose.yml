@@ -8,6 +8,7 @@ services:
     ports:
       - "3014:3014"
     environment:
+      - TZ=Asia/Shanghai
       - KPI_PORT=3014
       - PORT=3014
       - FLASK_ENV=production
@@ -15,3 +16,4 @@ services:
       - .env
     volumes:
       - ./data:/app/data
+      - /etc/localtime:/etc/localtime:ro
