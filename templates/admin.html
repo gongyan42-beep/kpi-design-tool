@@ -2235,37 +2235,12 @@
                             <span style="font-size: 12px; padding: 2px 8px; background: #10b981; color: white; border-radius: 4px; margin-left: 8px;">推荐</span>
                         </h3>
                         <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 16px;">
-                            通过手机号直接给用户充值积分，无需生成兑换码，用户积分即时到账
+                            输入手机号直接充值，用户已注册即时到账，未注册则自动预存、注册后到账
                         </p>
                         <div class="redeem-form">
                             <div class="form-group">
                                 <label>用户手机号</label>
-                                <div style="display: flex; gap: 8px;">
-                                    <input type="tel" id="directRechargePhone" placeholder="输入11位手机号" maxlength="11"
-                                        style="flex: 1;" oninput="searchUserByPhone()">
-                                    <button class="btn-create-code" style="width: auto; padding: 12px 16px; background: #444746;"
-                                        onclick="searchUserByPhone()">🔍 查找</button>
-                                </div>
-                            </div>
-
-                            <!-- 用户预览区 -->
-                            <div id="phoneUserPreview" style="display: none; padding: 16px; background: rgba(99, 102, 241, 0.1);
-                                border-radius: 12px; border: 1px solid rgba(99, 102, 241, 0.3); margin-bottom: 16px;">
-                                <div style="display: flex; justify-content: space-between; align-items: center;">
-                                    <div>
-                                        <div style="font-weight: 600; color: var(--text-primary);" id="previewUserName">-</div>
-                                        <div style="font-size: 13px; color: var(--text-muted);">
-                                            <span id="previewUserCompany">-</span> | 当前积分: <span id="previewUserCredits" style="color: #10b981; font-weight: 600;">0</span>
-                                        </div>
-                                    </div>
-                                    <div style="font-size: 24px;">✅</div>
-                                </div>
-                            </div>
-
-                            <!-- 未找到用户提示 -->
-                            <div id="phoneUserNotFound" style="display: none; padding: 16px; background: rgba(239, 68, 68, 0.1);
-                                border-radius: 12px; border: 1px solid rgba(239, 68, 68, 0.3); margin-bottom: 16px; text-align: center;">
-                                <span style="color: #ef4444;">❌ 未找到该手机号对应的用户</span>
+                                <input type="tel" id="directRechargePhone" placeholder="输入11位手机号" maxlength="11">
                             </div>
 
                             <div class="form-group">
@@ -2282,7 +2257,7 @@
                                 <input type="text" id="directRechargeReason" placeholder="如：VIP客户、活动赠送">
                             </div>
 
-                            <button class="btn-create-code" id="directRechargeBtn" onclick="directRechargeCredits()" disabled
+                            <button class="btn-create-code" id="directRechargeBtn" onclick="directRechargeCredits()"
                                 style="background: linear-gradient(135deg, #10b981, #059669);">
                                 💰 确认充值
                             </button>
@@ -3486,6 +3461,17 @@
             // 显示/隐藏导出按钮
             document.getElementById('exportBar').style.display = tab === 'sessions' ? 'flex' : 'none';
 
+            // 切换到用户列表时，重置列表显示状态（修复从详情页直接切换标签后列表不显示的问题）
+            if (tab === 'users') {
+                document.getElementById('usersList').style.display = 'block';
+                document.getElementById('sessionsList').style.display = 'none';
+            }
+            // 切换到聊天记录时，重置列表显示状态
+            if (tab === 'sessions') {
+                document.getElementById('sessionsList').style.display = 'block';
+                document.getElementById('usersList').style.display = 'none';
+            }
+
             // 显示/隐藏统计卡片
             const statsGrid = document.getElementById('statsGrid');
             if (statsGrid) {
@@ -4214,47 +4200,6 @@
         // 手机号直接充值
         // ========================================
 
-        let foundUserByPhone = null;
-        let searchTimeout = null;
-
-        async function searchUserByPhone() {
-            const phone = document.getElementById('directRechargePhone').value.trim();
-
-            // 重置状态
-            document.getElementById('phoneUserPreview').style.display = 'none';
-            document.getElementById('phoneUserNotFound').style.display = 'none';
-            document.getElementById('directRechargeBtn').disabled = true;
-            document.getElementById('directRechargeResult').style.display = 'none';
-            foundUserByPhone = null;
-
-            if (!phone || phone.length < 11) {
-                return;
-            }
-
-            // 防抖搜索
-            if (searchTimeout) clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(async () => {
-                try {
-                    const res = await fetch(`/api/admin/user/find-by-phone?phone=${encodeURIComponent(phone)}`);
-                    const data = await res.json();
-
-                    if (data.success) {
-                        foundUserByPhone = data.user;
-                        document.getElementById('previewUserName').textContent = data.user.nickname || data.user.email || '未知用户';
-                        document.getElementById('previewUserCompany').textContent = data.user.company || '无公司信息';
-                        document.getElementById('previewUserCredits').textContent = data.user.credits || 0;
-                        document.getElementById('phoneUserPreview').style.display = 'block';
-                        document.getElementById('directRechargeBtn').disabled = false;
-                    } else {
-                        document.getElementById('phoneUserNotFound').style.display = 'block';
-                    }
-                } catch (e) {
-                    console.error('Search user failed:', e);
-                    document.getElementById('phoneUserNotFound').style.display = 'block';
-                }
-            }, 300);
-        }
-
         function updateDirectRechargePreview() {
             const credits = parseInt(document.getElementById('directRechargeCredits').value) || 0;
             const hint = document.getElementById('directRechargeHint');
@@ -4268,23 +4213,22 @@
         }
 
         async function directRechargeCredits() {
-            if (!foundUserByPhone) {
-                alert('请先查找用户');
-                return;
-            }
-
             const phone = document.getElementById('directRechargePhone').value.trim();
             const credits = parseInt(document.getElementById('directRechargeCredits').value) || 0;
             const reason = document.getElementById('directRechargeReason').value.trim() || '管理员手动充值';
+
+            if (!phone || phone.length < 11) {
+                alert('请输入正确的11位手机号');
+                return;
+            }
 
             if (credits <= 0) {
                 alert('请输入充值积分数量');
                 return;
             }
 
-            // 确认
-            const userName = foundUserByPhone.nickname || foundUserByPhone.email || '未知用户';
-            if (!confirm(`确认为用户「${userName}」充值 ${credits} 积分？`)) {
+            // 简单确认
+            if (!confirm(`确认为手机号 ${phone} 充值 ${credits} 积分？`)) {
                 return;
             }
 
@@ -4298,14 +4242,18 @@
 
                 if (data.success) {
                     // 显示成功
-                    document.getElementById('directRechargeResultText').textContent =
-                        `为「${data.data.user.nickname || userName}」充值 ${credits} 积分，当前余额 ${data.data.new_balance}`;
+                    const resultTextEl = document.getElementById('directRechargeResultText');
+                    if (data.data.user && data.data.user.nickname) {
+                        // 用户已注册，直接充值成功
+                        resultTextEl.innerHTML = `为「${data.data.user.nickname}」充值 ${credits} 积分，当前余额 ${data.data.new_balance}`;
+                    } else {
+                        // 用户未注册，预充值成功
+                        resultTextEl.innerHTML = `已为手机号 <strong>${phone}</strong> 预充值 <strong>${credits}</strong> 积分<br><span style="color: var(--text-muted); font-size: 12px;">用户注册时将自动到账</span>`;
+                    }
                     document.getElementById('directRechargeResult').style.display = 'block';
 
-                    // 更新预览
-                    document.getElementById('previewUserCredits').textContent = data.data.new_balance;
-
                     // 清空输入
+                    document.getElementById('directRechargePhone').value = '';
                     document.getElementById('directRechargeCredits').value = '';
                     document.getElementById('directRechargeReason').value = '';
                     updateDirectRechargePreview();

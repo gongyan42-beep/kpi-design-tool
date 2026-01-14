@@ -724,7 +724,7 @@ def login():
     password = data.get('password', '')
 
     if not username or not password:
-        return jsonify({'success': False, 'error': '请填写姓名和密码'}), 400
+        return jsonify({'success': False, 'error': '请填写手机号/姓名和密码'}), 400
 
     success, message, user_data = auth_service.login(username, password)
 

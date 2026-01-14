@@ -3,7 +3,7 @@
 """
 import hashlib
 import time
-from typing import Optional, Dict, Tuple
+from typing import Optional, Dict, Tuple, List
 from modules.supabase_client import get_client, get_admin
 
 
@@ -105,10 +105,32 @@ class AuthService:
                     cat_coins=cat_coins
                 )
 
-                return True, "注册成功！", {
+                # 检查是否有预充值积分需要发放
+                pending_credits = 0
+                pending_records = []
+                if phone:
+                    try:
+                        from database import db
+                        pending_credits, pending_records = db.claim_pending_credits(phone, response.user.id)
+
+                        if pending_credits > 0:
+                            # 将预充值积分追加到用户账户
+                            self.add_credits(response.user.id, pending_credits, '预充值积分自动到账')
+                            print(f"[注册] 用户 {username} 领取预充值积分 {pending_credits}")
+                    except Exception as pending_err:
+                        print(f"[注册] 检查预充值积分失败: {pending_err}")
+
+                total_credits = initial_credits + pending_credits
+                message = "注册成功！"
+                if pending_credits > 0:
+                    message = f"注册成功！您有 {pending_credits} 积分的预充值已自动到账"
+
+                return True, message, {
                     "user_id": response.user.id,
                     "username": username,
-                    "credits": initial_credits,
+                    "credits": total_credits,
+                    "initial_credits": initial_credits,
+                    "pending_credits": pending_credits,
                     "user_type": user_type
                 }
             else:
@@ -122,12 +144,27 @@ class AuthService:
 
     def login(self, username: str, password: str) -> Tuple[bool, str, Dict]:
         """
-        用户登录（使用姓名）
+        用户登录（支持手机号或姓名）
         返回: (成功?, 消息, 用户数据)
         """
+        import re
         try:
-            # 生成相同的邮箱地址（与注册时一致）
-            pseudo_email = self._generate_email(username)
+            login_identifier = username.strip()
+
+            # 判断是手机号还是姓名
+            if re.match(r'^1[3-9]\d{9}$', login_identifier):
+                # 是手机号，先查找对应的用户
+                user = self.find_user_by_phone(login_identifier)
+                if not user:
+                    return False, "该手机号尚未注册", {}
+                # 获取真实的姓名
+                real_name = user.get('nickname') or user.get('email', '').split('@')[0].replace('user_', '')
+                # 尝试用 email 直接登录（更可靠）
+                pseudo_email = user.get('email')
+            else:
+                # 是姓名，生成伪邮箱
+                real_name = login_identifier
+                pseudo_email = self._generate_email(login_identifier)
 
             response = self.client.auth.sign_in_with_password({
                 "email": pseudo_email,
@@ -450,7 +487,10 @@ class AuthService:
     def add_credits_by_phone(self, phone: str, amount: int, reason: str = "管理员充值",
                              admin_name: str = "admin") -> Tuple[bool, str, int, Optional[Dict]]:
         """
-        通过手机号给用户充值积分
+        通过手机号给用户充值积分（支持预充值）
+
+        如果用户已注册：直接充值
+        如果用户未注册：创建预充值记录，用户注册后自动到账
 
         Args:
             phone: 手机号
@@ -458,36 +498,67 @@ class AuthService:
             reason: 充值原因
             admin_name: 操作管理员
 
-        Returns: (成功?, 消息, 新余额, 用户数据)
+        Returns: (成功?, 消息, 新余额或预充值积分, 用户数据或None)
         """
         # 查找用户
         user = self.find_user_by_phone(phone)
-        if not user:
-            return False, f"未找到手机号为 {phone} 的用户", 0, None
 
-        user_id = user.get('id')
-        user_name = user.get('nickname') or user.get('email', '未知用户')
+        if user:
+            # 用户存在，直接充值
+            user_id = user.get('id')
+            user_name = user.get('nickname') or user.get('email', '未知用户')
 
-        # 增加积分
-        success, msg, new_balance = self.add_credits(user_id, amount, reason)
+            # 增加积分
+            success, msg, new_balance = self.add_credits(user_id, amount, reason)
 
-        if success:
-            # 记录管理员操作日志
-            try:
-                from modules.admin_log_service import admin_log_service
-                admin_log_service.log_credits_add(
-                    admin_name=admin_name,
-                    target_user=f"{user_name} ({phone})",
-                    cat_coins=0,
-                    credits=amount,
-                    reason=reason
-                )
-            except Exception as log_err:
-                print(f"记录管理员操作日志失败: {log_err}")
+            if success:
+                # 记录管理员操作日志
+                try:
+                    from modules.admin_log_service import admin_log_service
+                    admin_log_service.log_credits_add(
+                        admin_name=admin_name,
+                        target_user=f"{user_name} ({phone})",
+                        cat_coins=0,
+                        credits=amount,
+                        reason=reason
+                    )
+                except Exception as log_err:
+                    print(f"记录管理员操作日志失败: {log_err}")
 
-            return True, f"成功为 {user_name} 充值 {amount} 积分", new_balance, user
+                return True, f"成功为 {user_name} 充值 {amount} 积分", new_balance, user
+            else:
+                return False, msg, 0, user
         else:
-            return False, msg, 0, user
+            # 用户不存在，创建预充值记录
+            try:
+                from database import db
+                success, msg, record_id = db.add_pending_credits(
+                    phone=phone,
+                    credits=amount,
+                    reason=reason,
+                    admin_name=admin_name
+                )
+
+                if success:
+                    # 记录管理员操作日志
+                    try:
+                        from modules.admin_log_service import admin_log_service
+                        admin_log_service.log_credits_add(
+                            admin_name=admin_name,
+                            target_user=f"预充值 ({phone})",
+                            cat_coins=0,
+                            credits=amount,
+                            reason=f"{reason}（预充值-待用户注册）"
+                        )
+                    except Exception as log_err:
+                        print(f"记录管理员操作日志失败: {log_err}")
+
+                    return True, msg, amount, None
+                else:
+                    return False, msg, 0, None
+            except Exception as e:
+                print(f"创建预充值记录失败: {e}")
+                return False, f"预充值失败: {e}", 0, None
 
 
 # 单例服务

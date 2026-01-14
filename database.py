@@ -6,7 +6,7 @@ import sqlite3
 import json
 import uuid
 from datetime import datetime
-from typing import Optional, Dict, List
+from typing import Optional, Dict, List, Tuple
 from config import Config
 
 
@@ -96,6 +96,25 @@ class Database:
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         ''')
+
+        # 预充值表（用户未注册时先存储，注册后自动发放）
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS pending_credits (
+                id TEXT PRIMARY KEY,
+                phone TEXT NOT NULL,
+                credits INTEGER NOT NULL,
+                reason TEXT DEFAULT '管理员预充值',
+                admin_name TEXT DEFAULT 'admin',
+                status TEXT DEFAULT 'pending',
+                claimed_at TIMESTAMP,
+                claimed_user_id TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+
+        # 为预充值表创建索引
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_pending_credits_phone ON pending_credits(phone)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_pending_credits_status ON pending_credits(status)')
 
         conn.commit()
         conn.close()
@@ -539,6 +558,150 @@ class Database:
         except Exception as e:
             print(f"获取本地提示词失败: {e}")
             return None
+
+    # ========================================
+    # 预充值管理（用户未注册时先存储积分）
+    # ========================================
+
+    def add_pending_credits(self, phone: str, credits: int, reason: str = "管理员预充值",
+                           admin_name: str = "admin") -> Tuple[bool, str, str]:
+        """
+        添加预充值记录
+
+        Args:
+            phone: 手机号
+            credits: 积分数量
+            reason: 充值原因
+            admin_name: 操作管理员
+
+        Returns: (成功?, 消息, 预充值ID)
+        """
+        try:
+            conn = self._get_conn()
+            cursor = conn.cursor()
+
+            record_id = str(uuid.uuid4())
+            cursor.execute('''
+                INSERT INTO pending_credits (id, phone, credits, reason, admin_name, status, created_at)
+                VALUES (?, ?, ?, ?, ?, 'pending', CURRENT_TIMESTAMP)
+            ''', (record_id, phone, credits, reason, admin_name))
+
+            conn.commit()
+            conn.close()
+            return True, f"已为手机号 {phone} 预充值 {credits} 积分，用户注册后自动到账", record_id
+        except Exception as e:
+            print(f"添加预充值记录失败: {e}")
+            return False, f"预充值失败: {e}", ""
+
+    def get_pending_credits_by_phone(self, phone: str) -> List[Dict]:
+        """
+        获取指定手机号的所有待发放预充值记录
+
+        Args:
+            phone: 手机号
+
+        Returns: 预充值记录列表
+        """
+        try:
+            conn = self._get_conn()
+            cursor = conn.cursor()
+            cursor.execute('''
+                SELECT id, phone, credits, reason, admin_name, status, created_at
+                FROM pending_credits
+                WHERE phone = ? AND status = 'pending'
+                ORDER BY created_at ASC
+            ''', (phone,))
+            rows = cursor.fetchall()
+            conn.close()
+            return [dict(row) for row in rows]
+        except Exception as e:
+            print(f"获取预充值记录失败: {e}")
+            return []
+
+    def claim_pending_credits(self, phone: str, user_id: str) -> Tuple[int, List[Dict]]:
+        """
+        领取预充值积分（用户注册时调用）
+
+        Args:
+            phone: 手机号
+            user_id: 用户ID
+
+        Returns: (总领取积分数, 领取的记录列表)
+        """
+        try:
+            conn = self._get_conn()
+            cursor = conn.cursor()
+
+            # 获取所有待发放的记录
+            cursor.execute('''
+                SELECT id, credits, reason, admin_name, created_at
+                FROM pending_credits
+                WHERE phone = ? AND status = 'pending'
+            ''', (phone,))
+            rows = cursor.fetchall()
+
+            if not rows:
+                conn.close()
+                return 0, []
+
+            total_credits = 0
+            claimed_records = []
+
+            for row in rows:
+                record = dict(row)
+                total_credits += record['credits']
+                claimed_records.append(record)
+
+                # 标记为已领取
+                cursor.execute('''
+                    UPDATE pending_credits
+                    SET status = 'claimed', claimed_at = CURRENT_TIMESTAMP, claimed_user_id = ?
+                    WHERE id = ?
+                ''', (user_id, record['id']))
+
+            conn.commit()
+            conn.close()
+            return total_credits, claimed_records
+        except Exception as e:
+            print(f"领取预充值积分失败: {e}")
+            return 0, []
+
+    def get_all_pending_credits(self, status: str = None, limit: int = 100) -> List[Dict]:
+        """
+        获取所有预充值记录（管理后台用）
+
+        Args:
+            status: 状态筛选（'pending' / 'claimed' / None表示全部）
+            limit: 数量限制
+
+        Returns: 预充值记录列表
+        """
+        try:
+            conn = self._get_conn()
+            cursor = conn.cursor()
+
+            if status:
+                cursor.execute('''
+                    SELECT id, phone, credits, reason, admin_name, status, claimed_at, claimed_user_id, created_at
+                    FROM pending_credits
+                    WHERE status = ?
+                    ORDER BY created_at DESC
+                    LIMIT ?
+                ''', (status, limit))
+            else:
+                cursor.execute('''
+                    SELECT id, phone, credits, reason, admin_name, status, claimed_at, claimed_user_id, created_at
+                    FROM pending_credits
+                    ORDER BY created_at DESC
+                    LIMIT ?
+                ''', (limit,))
+
+            rows = cursor.fetchall()
+            conn.close()
+            return [dict(row) for row in rows]
+        except Exception as e:
+            print(f"获取预充值记录列表失败: {e}")
+            return []
 
 
 # 单例实例
