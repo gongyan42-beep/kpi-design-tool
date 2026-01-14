@@ -365,6 +365,50 @@ def chat_api():
         }), 500
 
 
+def _generate_thinking_steps(module: str, message: str) -> list:
+    """
+    根据模块和用户消息生成思考步骤
+    让用户在等待时看到 AI 正在思考的过程
+    """
+    # 基础思考步骤
+    base_steps = ["理解问题", "分析需求"]
+
+    # 根据模块添加特定步骤
+    module_steps = {
+        'kpi': ["检索 KPI 知识库", "匹配岗位模板", "设计考核指标"],
+        'market_price': ["查询市场数据", "分析行业薪酬", "计算薪资范围"],
+        'salary': ["分析绩效数据", "核算薪资构成", "生成薪资方案"],
+        'okr': ["理解业务目标", "拆解关键结果", "设计 OKR 框架"],
+        'interview': ["分析岗位要求", "设计面试题目", "制定评分标准"],
+        'onboarding': ["规划培训流程", "设计带教计划", "制定考核节点"],
+        'organization': ["分析组织架构", "设计部门职能", "规划汇报关系"],
+        'job_design': ["分析岗位职责", "设计能力要求", "制定晋升通道"],
+    }
+
+    # 根据消息内容智能判断步骤
+    keyword_steps = []
+    if any(kw in message for kw in ['表格', '模板', '文档']):
+        keyword_steps.append("生成格式化内容")
+    if any(kw in message for kw in ['分析', '评估', '诊断']):
+        keyword_steps.append("进行专业分析")
+    if any(kw in message for kw in ['建议', '优化', '改进']):
+        keyword_steps.append("生成优化建议")
+    if any(kw in message for kw in ['计算', '核算', '估算']):
+        keyword_steps.append("执行数据计算")
+
+    # 组合步骤
+    steps = base_steps + module_steps.get(module, ["检索相关知识"]) + keyword_steps + ["组织回答"]
+
+    # 去重并限制数量
+    seen = set()
+    unique_steps = []
+    for step in steps:
+        if step not in seen:
+            seen.add(step)
+            unique_steps.append(step)
+    return unique_steps[:5]  # 最多 5 个步骤
+
+
 @app.route('/api/chat/stream', methods=['POST'])
 def chat_stream_api():
     """流式对话 - 逐字返回（打字机效果）- 支持图片"""
@@ -462,6 +506,13 @@ def chat_stream_api():
         full_response = []
 
         try:
+            # 发送思考状态（让用户看到 AI 正在思考）
+            thinking_steps = _generate_thinking_steps(chat_session['module'], message)
+            for step in thinking_steps:
+                yield f"data: {json.dumps({'thinking': step})}\n\n"
+                import time
+                time.sleep(0.3)  # 短暂延迟，让动画更自然
+
             for chunk in ai_service.chat_stream(
                 messages=messages,
                 system_prompt=system_prompt,
@@ -1256,13 +1307,19 @@ def admin_user_insight():
         if len(all_conversations) > 20:
             all_conversations = all_conversations[-20:]
 
+        # 获取调研记录
+        research_notes_text = db.get_research_notes_text_for_analysis(user_email)
+
         # 构建用户洞察提示词
-        insight_prompt = f"""你是一个专业的需求分析专家。请分析以下客户的所有访谈/对话记录，提取需求信息，识别核心洞察，输出结构化文档。
+        insight_prompt = f"""你是一个专业的需求分析专家。请分析以下客户的所有访谈/对话记录和调研资料，提取需求信息，识别核心洞察，输出结构化文档。
 
 客户邮箱：{user_email}
 对话次数：{len(user_sessions)}
 
-以下是该客户的全部对话记录：
+【用户调研资料】
+{research_notes_text if research_notes_text else '（暂无额外调研资料）'}
+
+【AI对话记录】
 {''.join(all_conversations)}
 
 ---
@@ -1352,14 +1409,17 @@ def admin_user_insight():
             from openai import OpenAI
             import os
 
-            # 使用朋友提供的 API（支持 Gemini 3 Pro）
-            api_key = os.getenv('GEMINI_API_KEY', 'sk-2rGRzA9boGmu5pbdzDNZZhEsHinCSX1Nv0w9TkDhBct1gJbe')
-            base_url = os.getenv('GEMINI_BASE_URL', 'http://54.81.25.253:4000/v1')
+            # 使用 CloseAI API
+            api_key = os.getenv('CLOSEAI_API_KEY')
+            base_url = os.getenv('CLOSEAI_BASE_URL', 'https://api.closeai-asia.com/v1')
+
+            if not api_key:
+                return jsonify({'success': False, 'error': '未配置 CLOSEAI_API_KEY'}), 500
 
             client = OpenAI(api_key=api_key, base_url=base_url)
 
             response = client.chat.completions.create(
-                model='gemini-3-pro-preview',
+                model='gpt-4o',
                 messages=[
                     {'role': 'system', 'content': '你是一个专业的需求分析专家，擅长从客户对话中提取核心需求和洞察。请使用 Markdown 格式输出。'},
                     {'role': 'user', 'content': insight_prompt}
@@ -1449,13 +1509,19 @@ def admin_tool_analysis():
         if len(all_conversations) > 20:
             all_conversations = all_conversations[-20:]
 
+        # 获取调研记录
+        research_notes_text = db.get_research_notes_text_for_analysis(user_email)
+
         # 构建工具分析提示词
-        analysis_prompt = f"""你是一个专业的产品经理和需求分析师。请分析以下客户的所有对话记录，提取工具/功能需求，输出一份清晰的功能需求文档。
+        analysis_prompt = f"""你是一个专业的产品经理和需求分析师。请分析以下客户的所有对话记录和调研资料，提取工具/功能需求，输出一份清晰的功能需求文档。
 
 客户邮箱：{user_email}
 对话次数：{len(user_sessions)}
 
-以下是该客户的全部对话记录：
+【用户调研资料】
+{research_notes_text if research_notes_text else '（暂无额外调研资料）'}
+
+【AI对话记录】
 {''.join(all_conversations)}
 
 ---
@@ -1523,14 +1589,17 @@ def admin_tool_analysis():
             from openai import OpenAI
             import os
 
-            # 使用朋友提供的 API（支持 Gemini 3 Pro）
-            api_key = os.getenv('GEMINI_API_KEY', 'sk-2rGRzA9boGmu5pbdzDNZZhEsHinCSX1Nv0w9TkDhBct1gJbe')
-            base_url = os.getenv('GEMINI_BASE_URL', 'http://54.81.25.253:4000/v1')
+            # 使用 CloseAI API
+            api_key = os.getenv('CLOSEAI_API_KEY')
+            base_url = os.getenv('CLOSEAI_BASE_URL', 'https://api.closeai-asia.com/v1')
+
+            if not api_key:
+                return jsonify({'success': False, 'error': '未配置 CLOSEAI_API_KEY'}), 500
 
             client = OpenAI(api_key=api_key, base_url=base_url)
 
             response = client.chat.completions.create(
-                model='gemini-3-pro-preview',
+                model='gpt-4o',
                 messages=[
                     {'role': 'system', 'content': '你是一个专业的产品经理，擅长从客户对话中提取功能需求并输出清晰的需求文档。请使用 Markdown 格式输出。'},
                     {'role': 'user', 'content': analysis_prompt}
@@ -1564,6 +1633,164 @@ def admin_tool_analysis():
             'success': False,
             'error': f'生成工具分析失败: {str(e)}'
         }), 500
+
+
+# ========================================
+# 用户调研记录 API
+# ========================================
+
+# 调研类型分类
+RESEARCH_CATEGORIES = [
+    {'id': 'phone_call', 'name': '电话沟通录音转文字', 'icon': '📞'},
+    {'id': 'site_visit', 'name': '现场拜访', 'icon': '🏢'},
+    {'id': 'wechat_chat', 'name': '微信沟通', 'icon': '💬'},
+    {'id': 'email', 'name': '邮件沟通', 'icon': '📧'},
+    {'id': 'meeting', 'name': '会议记录', 'icon': '📋'},
+    {'id': 'survey', 'name': '问卷调研', 'icon': '📝'},
+    {'id': 'other', 'name': '其他', 'icon': '📎'}
+]
+
+
+@app.route('/api/admin/research-notes/<user_email>', methods=['GET'])
+def admin_get_research_notes(user_email):
+    """获取用户的调研记录（时间线）"""
+    if not session.get('is_admin'):
+        return jsonify({'success': False, 'error': '请先登录管理后台'}), 401
+
+    try:
+        notes = db.get_research_notes_by_user(user_email)
+        return jsonify({
+            'success': True,
+            'notes': notes,
+            'categories': RESEARCH_CATEGORIES
+        })
+    except Exception as e:
+        logger.error(f"获取调研记录失败: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/admin/research-notes', methods=['POST'])
+def admin_create_research_note():
+    """创建调研记录（纯文字）"""
+    if not session.get('is_admin'):
+        return jsonify({'success': False, 'error': '请先登录管理后台'}), 401
+
+    try:
+        data = request.get_json()
+        user_email = data.get('user_email')
+        category = data.get('category', 'other')
+        content = data.get('content', '').strip()
+        notes = data.get('notes', '').strip()
+
+        if not user_email:
+            return jsonify({'success': False, 'error': '缺少用户邮箱'}), 400
+
+        if not content:
+            return jsonify({'success': False, 'error': '请输入调研内容'}), 400
+
+        note_id = db.create_research_note(
+            user_email=user_email,
+            category=category,
+            content=content,
+            notes=notes,
+            created_by=session.get('admin_username', 'admin')
+        )
+
+        logger.info(f"创建调研记录成功: {note_id}, 用户: {user_email}")
+
+        return jsonify({'success': True, 'note_id': note_id})
+
+    except Exception as e:
+        logger.error(f"创建调研记录失败: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/admin/research-notes/upload', methods=['POST'])
+def admin_upload_research_file():
+    """上传文件调研记录"""
+    if not session.get('is_admin'):
+        return jsonify({'success': False, 'error': '请先登录管理后台'}), 401
+
+    try:
+        user_email = request.form.get('user_email')
+        category = request.form.get('category', 'other')
+        content = request.form.get('content', '').strip()
+        notes = request.form.get('notes', '').strip()
+        file = request.files.get('file')
+
+        if not user_email:
+            return jsonify({'success': False, 'error': '缺少用户邮箱'}), 400
+
+        if not file:
+            return jsonify({'success': False, 'error': '请上传文件'}), 400
+
+        # 验证文件类型
+        from modules.file_processor import validate_file_type, get_file_extension, extract_text_from_file
+
+        if not validate_file_type(file.filename):
+            return jsonify({'success': False, 'error': '不支持的文件格式，请上传 PDF、Word 或 TXT 文件'}), 400
+
+        file_ext = get_file_extension(file.filename)
+
+        # 读取文件内容
+        file_content = file.read()
+
+        # 提取文字
+        file_text = extract_text_from_file(file_content, file_ext)
+
+        # 尝试上传到 Supabase Storage（可选）
+        file_url = None
+        try:
+            from modules.file_processor import upload_to_supabase_storage
+            file_url = upload_to_supabase_storage(
+                file_content, file.filename, file.content_type or 'application/octet-stream',
+                f"research/{user_email.replace('@', '_')}"
+            )
+        except Exception as upload_err:
+            logger.warning(f"文件上传到 Storage 失败（不影响主流程）: {upload_err}")
+
+        # 创建调研记录
+        note_id = db.create_research_note(
+            user_email=user_email,
+            category=category,
+            content=content,
+            file_url=file_url,
+            file_name=file.filename,
+            file_type=file_ext,
+            file_text_content=file_text,
+            notes=notes,
+            created_by=session.get('admin_username', 'admin')
+        )
+
+        logger.info(f"上传调研文件成功: {note_id}, 文件: {file.filename}")
+
+        return jsonify({
+            'success': True,
+            'note_id': note_id,
+            'file_url': file_url
+        })
+
+    except Exception as e:
+        logger.error(f"上传调研文件失败: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/admin/research-notes/<note_id>', methods=['DELETE'])
+def admin_delete_research_note(note_id):
+    """删除调研记录"""
+    if not session.get('is_admin'):
+        return jsonify({'success': False, 'error': '请先登录管理后台'}), 401
+
+    try:
+        success = db.delete_research_note(note_id)
+        if success:
+            logger.info(f"删除调研记录成功: {note_id}")
+            return jsonify({'success': True})
+        else:
+            return jsonify({'success': False, 'error': '删除失败'}), 500
+    except Exception as e:
+        logger.error(f"删除调研记录失败: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 
 @app.route('/api/admin/users', methods=['GET'])
@@ -1965,6 +2192,9 @@ def admin_add_credits_by_phone():
         return jsonify({'success': False, 'error': '请先登录管理后台'}), 401
 
     data = request.get_json()
+    if not data:
+        return jsonify({'success': False, 'error': '无效的请求数据'}), 400
+
     phone = data.get('phone', '').strip()
     credits = data.get('credits', 0)
     reason = data.get('reason', '管理员手动充值').strip()

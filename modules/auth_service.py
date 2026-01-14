@@ -115,8 +115,16 @@ class AuthService:
 
                         if pending_credits > 0:
                             # 将预充值积分追加到用户账户
-                            self.add_credits(response.user.id, pending_credits, '预充值积分自动到账')
-                            print(f"[注册] 用户 {username} 领取预充值积分 {pending_credits}")
+                            success, msg, _ = self.add_credits(response.user.id, pending_credits, '预充值积分自动到账')
+                            if success:
+                                print(f"[注册] 用户 {username} 领取预充值积分 {pending_credits}")
+                            else:
+                                # 🔴 add_credits 失败，回滚预充值记录状态
+                                print(f"[注册] add_credits 失败: {msg}，回滚预充值记录")
+                                record_ids = [r['id'] for r in pending_records]
+                                db.rollback_pending_credits(record_ids)
+                                pending_credits = 0  # 重置，避免误导用户
+                                pending_records = []
                     except Exception as pending_err:
                         print(f"[注册] 检查预充值积分失败: {pending_err}")
 
@@ -421,33 +429,48 @@ class AuthService:
 
     def add_credits(self, user_id: str, amount: int, reason: str = "充值") -> Tuple[bool, str, int]:
         """
-        增加积分
+        增加积分（使用乐观锁防止并发问题）
         返回: (成功?, 消息, 新余额)
         """
-        try:
-            current_credits = self.get_credits(user_id)
-            new_balance = current_credits + amount
-
-            # 更新积分
-            self.admin_client.table('profiles').update({
-                'credits': new_balance
-            }).eq('id', user_id).execute()
-
-            # 记录积分变动（忽略 RLS 权限错误）
+        max_retries = 3
+        for attempt in range(max_retries):
             try:
-                self.admin_client.table('credit_logs').insert({
-                    'user_id': user_id,
-                    'amount': amount,
-                    'balance': new_balance,
-                    'reason': reason
-                }).execute()
-            except Exception as log_err:
-                print(f"记录积分日志失败（不影响充值）: {log_err}")
+                current_credits = self.get_credits(user_id)
+                new_balance = current_credits + amount
 
-            return True, f"增加 {amount} 积分", new_balance
+                # 使用乐观锁更新：只有当 credits 仍等于 current_credits 时才更新
+                response = self.admin_client.table('profiles').update({
+                    'credits': new_balance
+                }).eq('id', user_id).eq('credits', current_credits).execute()
 
-        except Exception as e:
-            return False, f"充值失败: {str(e)}", 0
+                # 检查是否成功更新
+                if not response.data or len(response.data) == 0:
+                    # 并发冲突，重试
+                    if attempt < max_retries - 1:
+                        time.sleep(0.1 * (attempt + 1))
+                        continue
+                    else:
+                        return False, "操作冲突，请重试", current_credits
+
+                # 记录积分变动（忽略 RLS 权限错误）
+                try:
+                    self.admin_client.table('credit_logs').insert({
+                        'user_id': user_id,
+                        'amount': amount,
+                        'balance': new_balance,
+                        'reason': reason
+                    }).execute()
+                except Exception as log_err:
+                    print(f"记录积分日志失败（不影响充值）: {log_err}")
+
+                return True, f"增加 {amount} 积分", new_balance
+
+            except Exception as e:
+                if attempt < max_retries - 1:
+                    continue
+                return False, f"充值失败: {str(e)}", 0
+
+        return False, "充值失败，请重试", 0
 
     def get_credit_logs(self, user_id: str, limit: int = 20) -> list:
         """获取积分变动记录"""

@@ -43,6 +43,26 @@ class Database:
         conn.row_factory = sqlite3.Row
         return conn
 
+    def _safe_json_loads(self, data: str, default=None):
+        """
+        安全的 JSON 解析，防止损坏数据导致崩溃
+
+        Args:
+            data: JSON 字符串
+            default: 解析失败时的默认值
+
+        Returns: 解析后的对象或默认值
+        """
+        if default is None:
+            default = {}
+        if not data:
+            return default
+        try:
+            return json.loads(data)
+        except (json.JSONDecodeError, TypeError) as e:
+            print(f"JSON 解析失败，使用默认值: {e}")
+            return default
+
     def _init_db(self):
         """初始化本地 SQLite 数据库表"""
         conn = self._get_conn()
@@ -115,6 +135,26 @@ class Database:
         # 为预充值表创建索引
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_pending_credits_phone ON pending_credits(phone)')
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_pending_credits_status ON pending_credits(status)')
+
+        # 用户调研记录表
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS user_research_notes (
+                id TEXT PRIMARY KEY,
+                user_email TEXT NOT NULL,
+                category TEXT NOT NULL,
+                content TEXT,
+                file_url TEXT,
+                file_name TEXT,
+                file_type TEXT,
+                file_text_content TEXT,
+                notes TEXT,
+                created_by TEXT DEFAULT 'admin',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_research_user ON user_research_notes(user_email)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_research_category ON user_research_notes(category)')
 
         conn.commit()
         conn.close()
@@ -223,8 +263,8 @@ class Database:
                 'user_id': row['user_id'],
                 'user_email': row['user_email'],
                 'status': row['status'],
-                'collected_data': json.loads(row['collected_data']),
-                'messages': json.loads(row['messages']),
+                'collected_data': self._safe_json_loads(row['collected_data'], {}),
+                'messages': self._safe_json_loads(row['messages'], []),
                 'output_document': row['output_document'],
                 'created_at': row['created_at'],
                 'updated_at': row['updated_at']
@@ -464,7 +504,7 @@ class Database:
         for row in rows:
             session_dict = dict(row)
             session_dict['session_id'] = session_dict['id']
-            session_dict['messages'] = json.loads(session_dict['messages'])
+            session_dict['messages'] = self._safe_json_loads(session_dict['messages'], [])
             session_dict['message_count'] = len(session_dict['messages'])
             result.append(session_dict)
         return result
@@ -513,7 +553,7 @@ class Database:
         result = []
         for row in rows:
             session_dict = dict(row)
-            messages = json.loads(session_dict['messages'])
+            messages = self._safe_json_loads(session_dict['messages'], [])
             session_dict['messages'] = messages
 
             preview = '新对话'
@@ -577,6 +617,9 @@ class Database:
         Returns: (成功?, 消息, 预充值ID)
         """
         try:
+            # 🔴 规范化手机号（去除空格和横杠），确保与查询时格式一致
+            phone = phone.strip().replace(' ', '').replace('-', '')
+
             conn = self._get_conn()
             cursor = conn.cursor()
 
@@ -603,6 +646,9 @@ class Database:
         Returns: 预充值记录列表
         """
         try:
+            # 🔴 规范化手机号
+            phone = phone.strip().replace(' ', '').replace('-', '')
+
             conn = self._get_conn()
             cursor = conn.cursor()
             cursor.execute('''
@@ -629,6 +675,9 @@ class Database:
         Returns: (总领取积分数, 领取的记录列表)
         """
         try:
+            # 🔴 规范化手机号
+            phone = phone.strip().replace(' ', '').replace('-', '')
+
             conn = self._get_conn()
             cursor = conn.cursor()
 
@@ -666,6 +715,38 @@ class Database:
             print(f"领取预充值积分失败: {e}")
             return 0, []
 
+    def rollback_pending_credits(self, record_ids: List[str]) -> bool:
+        """
+        回滚预充值记录状态（当 add_credits 失败时调用）
+        将 claimed 状态改回 pending
+
+        Args:
+            record_ids: 需要回滚的记录 ID 列表
+
+        Returns: 是否成功
+        """
+        if not record_ids:
+            return True
+
+        try:
+            conn = self._get_conn()
+            cursor = conn.cursor()
+
+            for record_id in record_ids:
+                cursor.execute('''
+                    UPDATE pending_credits
+                    SET status = 'pending', claimed_at = NULL, claimed_user_id = NULL
+                    WHERE id = ?
+                ''', (record_id,))
+
+            conn.commit()
+            conn.close()
+            print(f"[预充值] 回滚了 {len(record_ids)} 条记录")
+            return True
+        except Exception as e:
+            print(f"回滚预充值记录失败: {e}")
+            return False
+
     def get_all_pending_credits(self, status: str = None, limit: int = 100) -> List[Dict]:
         """
         获取所有预充值记录（管理后台用）
@@ -702,6 +783,141 @@ class Database:
         except Exception as e:
             print(f"获取预充值记录列表失败: {e}")
             return []
+
+    # ========================================
+    # 用户调研记录管理
+    # ========================================
+
+    def get_research_notes_by_user(self, user_email: str) -> List[Dict]:
+        """获取用户的所有调研记录（按时间倒序）"""
+        # 优先尝试 Supabase
+        if self.use_supabase:
+            try:
+                result = self.supabase.table('user_research_notes').select('*') \
+                    .eq('user_email', user_email) \
+                    .order('created_at', desc=True) \
+                    .execute()
+                return result.data or []
+            except Exception as e:
+                print(f"Supabase 获取调研记录失败，回退到 SQLite: {e}")
+
+        # 回退到 SQLite
+        conn = self._get_conn()
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT * FROM user_research_notes
+            WHERE user_email = ?
+            ORDER BY created_at DESC
+        ''', (user_email,))
+        rows = cursor.fetchall()
+        conn.close()
+        return [dict(row) for row in rows]
+
+    def create_research_note(
+        self,
+        user_email: str,
+        category: str,
+        content: str = '',
+        file_url: str = None,
+        file_name: str = None,
+        file_type: str = None,
+        file_text_content: str = None,
+        notes: str = '',
+        created_by: str = 'admin'
+    ) -> str:
+        """创建新的调研记录"""
+        note_id = str(uuid.uuid4())
+        now = datetime.now().isoformat()
+
+        # 优先尝试 Supabase
+        if self.use_supabase:
+            try:
+                self.supabase.table('user_research_notes').insert({
+                    'id': note_id,
+                    'user_email': user_email,
+                    'category': category,
+                    'content': content,
+                    'file_url': file_url,
+                    'file_name': file_name,
+                    'file_type': file_type,
+                    'file_text_content': file_text_content,
+                    'notes': notes,
+                    'created_by': created_by,
+                    'created_at': now,
+                    'updated_at': now
+                }).execute()
+                return note_id
+            except Exception as e:
+                print(f"Supabase 创建调研记录失败，回退到 SQLite: {e}")
+
+        # 回退到 SQLite
+        conn = self._get_conn()
+        cursor = conn.cursor()
+        cursor.execute('''
+            INSERT INTO user_research_notes
+            (id, user_email, category, content, file_url, file_name, file_type,
+             file_text_content, notes, created_by, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (note_id, user_email, category, content, file_url, file_name,
+              file_type, file_text_content, notes, created_by, now, now))
+        conn.commit()
+        conn.close()
+        return note_id
+
+    def delete_research_note(self, note_id: str) -> bool:
+        """删除调研记录"""
+        # 优先尝试 Supabase
+        if self.use_supabase:
+            try:
+                self.supabase.table('user_research_notes').delete().eq('id', note_id).execute()
+                return True
+            except Exception as e:
+                print(f"Supabase 删除调研记录失败，回退到 SQLite: {e}")
+
+        # 回退到 SQLite
+        conn = self._get_conn()
+        cursor = conn.cursor()
+        cursor.execute('DELETE FROM user_research_notes WHERE id = ?', (note_id,))
+        conn.commit()
+        conn.close()
+        return True
+
+    def get_research_notes_text_for_analysis(self, user_email: str) -> str:
+        """获取用户调研记录的文本内容（用于 AI 分析）"""
+        notes = self.get_research_notes_by_user(user_email)
+        if not notes:
+            return ""
+
+        # 分类标签映射
+        category_names = {
+            'phone_call': '电话沟通录音转文字',
+            'site_visit': '现场拜访',
+            'wechat_chat': '微信沟通',
+            'email': '邮件沟通',
+            'meeting': '会议记录',
+            'survey': '问卷调研',
+            'other': '其他'
+        }
+
+        text_parts = []
+        for note in notes:
+            category = note.get('category', 'other')
+            category_name = category_names.get(category, category)
+            created_at = note.get('created_at', '')[:10]
+
+            text_parts.append(f"\n--- 调研记录 ({category_name}) - {created_at} ---")
+
+            if note.get('content'):
+                text_parts.append(note['content'])
+
+            if note.get('file_text_content'):
+                text_parts.append(f"[文件内容: {note.get('file_name', 'unknown')}]")
+                text_parts.append(note['file_text_content'])
+
+            if note.get('notes'):
+                text_parts.append(f"[备注] {note['notes']}")
+
+        return '\n'.join(text_parts)
 
 
 # 单例实例
