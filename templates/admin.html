@@ -2005,6 +2005,10 @@
                         <span class="nav-icon">👤</span>
                         <span>管理员管理</span>
                     </div>
+                    <div class="nav-item" onclick="switchTab('buttons')" data-tab="buttons" data-role="super">
+                        <span class="nav-icon">🎛️</span>
+                        <span>按钮配置</span>
+                    </div>
                     <div class="nav-item" onclick="switchTab('logs')" data-tab="logs" data-role="super">
                         <span class="nav-icon">📋</span>
                         <span>操作日志</span>
@@ -2223,6 +2227,80 @@
             <!-- 兑换码管理 -->
             <div id="redeemTab" class="hidden">
                 <div class="redeem-container">
+                    <!-- 📱 手机号直接充值（新功能） -->
+                    <div class="redeem-form-card" style="margin-bottom: 24px; border: 2px solid rgba(16, 185, 129, 0.3); background: linear-gradient(135deg, rgba(16, 185, 129, 0.05), rgba(6, 78, 59, 0.1));">
+                        <h3 style="display: flex; align-items: center; gap: 8px;">
+                            <span style="font-size: 24px;">📱</span>
+                            手机号直接充值
+                            <span style="font-size: 12px; padding: 2px 8px; background: #10b981; color: white; border-radius: 4px; margin-left: 8px;">推荐</span>
+                        </h3>
+                        <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 16px;">
+                            通过手机号直接给用户充值积分，无需生成兑换码，用户积分即时到账
+                        </p>
+                        <div class="redeem-form">
+                            <div class="form-group">
+                                <label>用户手机号</label>
+                                <div style="display: flex; gap: 8px;">
+                                    <input type="tel" id="directRechargePhone" placeholder="输入11位手机号" maxlength="11"
+                                        style="flex: 1;" oninput="searchUserByPhone()">
+                                    <button class="btn-create-code" style="width: auto; padding: 12px 16px; background: #444746;"
+                                        onclick="searchUserByPhone()">🔍 查找</button>
+                                </div>
+                            </div>
+
+                            <!-- 用户预览区 -->
+                            <div id="phoneUserPreview" style="display: none; padding: 16px; background: rgba(99, 102, 241, 0.1);
+                                border-radius: 12px; border: 1px solid rgba(99, 102, 241, 0.3); margin-bottom: 16px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div>
+                                        <div style="font-weight: 600; color: var(--text-primary);" id="previewUserName">-</div>
+                                        <div style="font-size: 13px; color: var(--text-muted);">
+                                            <span id="previewUserCompany">-</span> | 当前积分: <span id="previewUserCredits" style="color: #10b981; font-weight: 600;">0</span>
+                                        </div>
+                                    </div>
+                                    <div style="font-size: 24px;">✅</div>
+                                </div>
+                            </div>
+
+                            <!-- 未找到用户提示 -->
+                            <div id="phoneUserNotFound" style="display: none; padding: 16px; background: rgba(239, 68, 68, 0.1);
+                                border-radius: 12px; border: 1px solid rgba(239, 68, 68, 0.3); margin-bottom: 16px; text-align: center;">
+                                <span style="color: #ef4444;">❌ 未找到该手机号对应的用户</span>
+                            </div>
+
+                            <div class="form-group">
+                                <label>充值积分</label>
+                                <input type="number" id="directRechargeCredits" placeholder="输入积分数量" min="1"
+                                    oninput="updateDirectRechargePreview()">
+                                <div id="directRechargeHint" style="font-size: 13px; color: var(--text-muted); margin-top: 8px;">
+                                    💡 提示：2积分 ≈ 1次回答机会
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>充值原因（选填）</label>
+                                <input type="text" id="directRechargeReason" placeholder="如：VIP客户、活动赠送">
+                            </div>
+
+                            <button class="btn-create-code" id="directRechargeBtn" onclick="directRechargeCredits()" disabled
+                                style="background: linear-gradient(135deg, #10b981, #059669);">
+                                💰 确认充值
+                            </button>
+                        </div>
+
+                        <!-- 充值结果 -->
+                        <div id="directRechargeResult" class="redeem-result" style="display: none;">
+                            <div style="font-size: 16px; font-weight: 600; color: #10b981; margin-bottom: 8px;">✅ 充值成功</div>
+                            <div style="font-size: 14px; color: var(--text-secondary);" id="directRechargeResultText"></div>
+                        </div>
+                    </div>
+
+                    <div style="border-top: 1px solid var(--border-color); margin: 0 0 24px 0; padding-top: 24px;">
+                        <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 16px;">
+                            👇 以下为旧版兑换码功能，仍可继续使用
+                        </p>
+                    </div>
+
                     <!-- 创建兑换码表单 -->
                     <div class="redeem-form-card">
                         <h3>生成兑换码</h3>
@@ -2392,6 +2470,22 @@
                         <div id="adminsList" class="redeem-codes-list">
                             <p class="loading">加载中...</p>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 按钮配置（仅主管理员可见） -->
+            <div id="buttonsTab" class="hidden">
+                <div class="buttons-container" style="max-width: 900px;">
+                    <div style="background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 12px; padding: 16px; margin-bottom: 24px;">
+                        <div style="display: flex; align-items: center; gap: 8px; color: #a5b4fc;">
+                            <span>💡</span>
+                            <span>配置用户详情页的三个分析按钮（生成用户画像、用户洞察、工具分析）的名称和提示词</span>
+                        </div>
+                    </div>
+
+                    <div id="buttonConfigList" style="display: flex; flex-direction: column; gap: 24px;">
+                        <p class="loading">加载中...</p>
                     </div>
                 </div>
             </div>
@@ -3371,6 +3465,7 @@
                 'prompts': { title: '提示词管理', subtitle: '配置AI模块提示词' },
                 'redeem': { title: '兑换码管理', subtitle: '生成和管理兑换码' },
                 'admins': { title: '管理员管理', subtitle: '添加和管理管理员账号' },
+                'buttons': { title: '按钮配置', subtitle: '配置用户分析按钮的名称和提示词' },
                 'logs': { title: '操作日志', subtitle: '查看系统操作记录' }
             };
             if (titles[tab]) {
@@ -3384,6 +3479,7 @@
             document.getElementById('promptsTab').classList.toggle('hidden', tab !== 'prompts');
             document.getElementById('redeemTab').classList.toggle('hidden', tab !== 'redeem');
             document.getElementById('adminsTab').classList.toggle('hidden', tab !== 'admins');
+            document.getElementById('buttonsTab').classList.toggle('hidden', tab !== 'buttons');
             document.getElementById('logsTab').classList.toggle('hidden', tab !== 'logs');
             document.getElementById('userDetailPanel').style.display = 'none';
 
@@ -3411,6 +3507,10 @@
             // 切换到管理员管理时加载管理员列表
             if (tab === 'admins') {
                 loadAdminUsers();
+            }
+            // 切换到按钮配置时加载配置
+            if (tab === 'buttons') {
+                loadButtonConfigs();
             }
         }
 
@@ -4110,6 +4210,118 @@
             }
         }
 
+        // ========================================
+        // 手机号直接充值
+        // ========================================
+
+        let foundUserByPhone = null;
+        let searchTimeout = null;
+
+        async function searchUserByPhone() {
+            const phone = document.getElementById('directRechargePhone').value.trim();
+
+            // 重置状态
+            document.getElementById('phoneUserPreview').style.display = 'none';
+            document.getElementById('phoneUserNotFound').style.display = 'none';
+            document.getElementById('directRechargeBtn').disabled = true;
+            document.getElementById('directRechargeResult').style.display = 'none';
+            foundUserByPhone = null;
+
+            if (!phone || phone.length < 11) {
+                return;
+            }
+
+            // 防抖搜索
+            if (searchTimeout) clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(async () => {
+                try {
+                    const res = await fetch(`/api/admin/user/find-by-phone?phone=${encodeURIComponent(phone)}`);
+                    const data = await res.json();
+
+                    if (data.success) {
+                        foundUserByPhone = data.user;
+                        document.getElementById('previewUserName').textContent = data.user.nickname || data.user.email || '未知用户';
+                        document.getElementById('previewUserCompany').textContent = data.user.company || '无公司信息';
+                        document.getElementById('previewUserCredits').textContent = data.user.credits || 0;
+                        document.getElementById('phoneUserPreview').style.display = 'block';
+                        document.getElementById('directRechargeBtn').disabled = false;
+                    } else {
+                        document.getElementById('phoneUserNotFound').style.display = 'block';
+                    }
+                } catch (e) {
+                    console.error('Search user failed:', e);
+                    document.getElementById('phoneUserNotFound').style.display = 'block';
+                }
+            }, 300);
+        }
+
+        function updateDirectRechargePreview() {
+            const credits = parseInt(document.getElementById('directRechargeCredits').value) || 0;
+            const hint = document.getElementById('directRechargeHint');
+
+            if (credits > 0) {
+                const answers = Math.floor(credits / 2);
+                hint.innerHTML = `💡 ${credits} 积分 ≈ ${answers} 次回答机会`;
+            } else {
+                hint.innerHTML = '💡 提示：2积分 ≈ 1次回答机会';
+            }
+        }
+
+        async function directRechargeCredits() {
+            if (!foundUserByPhone) {
+                alert('请先查找用户');
+                return;
+            }
+
+            const phone = document.getElementById('directRechargePhone').value.trim();
+            const credits = parseInt(document.getElementById('directRechargeCredits').value) || 0;
+            const reason = document.getElementById('directRechargeReason').value.trim() || '管理员手动充值';
+
+            if (credits <= 0) {
+                alert('请输入充值积分数量');
+                return;
+            }
+
+            // 确认
+            const userName = foundUserByPhone.nickname || foundUserByPhone.email || '未知用户';
+            if (!confirm(`确认为用户「${userName}」充值 ${credits} 积分？`)) {
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/admin/credits/add-by-phone', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone, credits, reason })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    // 显示成功
+                    document.getElementById('directRechargeResultText').textContent =
+                        `为「${data.data.user.nickname || userName}」充值 ${credits} 积分，当前余额 ${data.data.new_balance}`;
+                    document.getElementById('directRechargeResult').style.display = 'block';
+
+                    // 更新预览
+                    document.getElementById('previewUserCredits').textContent = data.data.new_balance;
+
+                    // 清空输入
+                    document.getElementById('directRechargeCredits').value = '';
+                    document.getElementById('directRechargeReason').value = '';
+                    updateDirectRechargePreview();
+                } else {
+                    alert('充值失败: ' + data.error);
+                }
+            } catch (e) {
+                console.error('Recharge failed:', e);
+                alert('网络错误');
+            }
+        }
+
+        // ========================================
+        // 兑换码管理
+        // ========================================
+
         async function createRedeemCode() {
             const targetName = document.getElementById('redeemTargetName').value.trim();
             const userType = document.querySelector('input[name="redeemUserType"]:checked').value;
@@ -4453,6 +4665,120 @@
                     alert(data.message || '密码已重置为：猫科');
                 } else {
                     alert('重置失败: ' + (data.error || '未知错误'));
+                }
+            } catch (e) {
+                alert('网络错误');
+            }
+        }
+
+        // ========================================
+        // 按钮配置管理
+        // ========================================
+
+        let buttonConfigs = [];
+
+        async function loadButtonConfigs() {
+            const container = document.getElementById('buttonConfigList');
+            container.innerHTML = '<p class="loading">加载中...</p>';
+
+            try {
+                const res = await fetch('/api/admin/buttons');
+                const data = await res.json();
+
+                if (data.success) {
+                    buttonConfigs = data.buttons;
+                    renderButtonConfigs();
+                } else {
+                    container.innerHTML = '<p style="color: var(--accent-red);">加载失败: ' + data.error + '</p>';
+                }
+            } catch (e) {
+                container.innerHTML = '<p style="color: var(--accent-red);">网络错误</p>';
+            }
+        }
+
+        function renderButtonConfigs() {
+            const container = document.getElementById('buttonConfigList');
+            const buttonColors = {
+                'user_profile': 'linear-gradient(135deg, #a855f7, #6366f1)',
+                'user_insight': 'linear-gradient(135deg, #22d3ee, #3b82f6)',
+                'tool_analysis': 'linear-gradient(135deg, #f97316, #f59e0b)'
+            };
+
+            const buttonOrder = ['user_profile', 'user_insight', 'tool_analysis'];
+            const sortedConfigs = buttonOrder.map(id => buttonConfigs.find(b => b.id === id)).filter(Boolean);
+
+            container.innerHTML = sortedConfigs.map((btn, index) => `
+                <div class="button-config-card" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 24px;">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+                        <div style="width: 48px; height: 48px; background: ${buttonColors[btn.id] || 'var(--accent-blue)'}; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                            ${btn.icon || '📋'}
+                        </div>
+                        <div>
+                            <div style="font-size: 18px; font-weight: 600; color: var(--text-primary);">按钮 ${index + 1}</div>
+                            <div style="font-size: 13px; color: var(--text-muted);">ID: ${btn.id}</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 16px;">
+                        <label style="display: block; font-size: 14px; font-weight: 500; color: var(--text-secondary); margin-bottom: 8px;">按钮名称</label>
+                        <input type="text" id="btn-name-${btn.id}" value="${btn.name || ''}"
+                            style="width: 100%; padding: 12px 16px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 10px; color: var(--text-primary); font-size: 15px;"
+                            placeholder="输入按钮显示名称">
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 16px;">
+                        <label style="display: block; font-size: 14px; font-weight: 500; color: var(--text-secondary); margin-bottom: 8px;">按钮图标（emoji）</label>
+                        <input type="text" id="btn-icon-${btn.id}" value="${btn.icon || ''}"
+                            style="width: 80px; padding: 12px 16px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 10px; color: var(--text-primary); font-size: 20px; text-align: center;"
+                            placeholder="🔍">
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 16px;">
+                        <label style="display: block; font-size: 14px; font-weight: 500; color: var(--text-secondary); margin-bottom: 8px;">提示词</label>
+                        <textarea id="btn-prompt-${btn.id}"
+                            style="width: 100%; min-height: 200px; padding: 16px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 10px; color: var(--text-primary); font-size: 14px; line-height: 1.6; resize: vertical; font-family: 'DM Sans', 'Noto Sans SC', monospace;"
+                            placeholder="输入 AI 分析使用的提示词...">${btn.prompt || ''}</textarea>
+                    </div>
+
+                    <button onclick="saveButtonConfig('${btn.id}')"
+                        style="padding: 12px 24px; background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple)); border: none; border-radius: 10px; color: white; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s;"
+                        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 15px rgba(99, 102, 241, 0.4)'"
+                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                        💾 保存配置
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        async function saveButtonConfig(buttonId) {
+            const name = document.getElementById(`btn-name-${buttonId}`).value.trim();
+            const icon = document.getElementById(`btn-icon-${buttonId}`).value.trim();
+            const prompt = document.getElementById(`btn-prompt-${buttonId}`).value;
+
+            if (!name) {
+                alert('请输入按钮名称');
+                return;
+            }
+
+            try {
+                const res = await fetch(`/api/admin/buttons/${buttonId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, icon, prompt })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    alert('✅ 保存成功！');
+                    // 更新本地缓存
+                    const btn = buttonConfigs.find(b => b.id === buttonId);
+                    if (btn) {
+                        btn.name = name;
+                        btn.icon = icon;
+                        btn.prompt = prompt;
+                    }
+                } else {
+                    alert('保存失败: ' + (data.error || '未知错误'));
                 }
             } catch (e) {
                 alert('网络错误');

@@ -1241,6 +1241,10 @@
                     <input type="text" id="registerPosition" placeholder="如：运营总监、店长">
                 </div>
                 <div class="form-group">
+                    <label>手机号<span style="color: var(--gemini-on-surface-variant); font-size: 12px; margin-left: 4px;">（选填）</span></label>
+                    <input type="tel" id="registerPhone" placeholder="用于接收充值通知" maxlength="11">
+                </div>
+                <div class="form-group">
                     <label>密码</label>
                     <input type="password" id="registerPassword" placeholder="至少6位密码">
                 </div>
@@ -1439,6 +1443,7 @@
             const username = document.getElementById('registerUsername').value;
             const company = document.getElementById('registerCompany').value;
             const position = document.getElementById('registerPosition').value;
+            const phone = document.getElementById('registerPhone').value.trim();
             const password = document.getElementById('registerPassword').value;
             const passwordConfirm = document.getElementById('registerPasswordConfirm').value;
             const submitBtn = document.querySelector('#registerForm .btn-submit');
@@ -1458,6 +1463,12 @@
                 return;
             }
 
+            // 验证手机号格式（如果填写了）
+            if (phone && !/^1[3-9]\d{9}$/.test(phone.replace(/[\s-]/g, ''))) {
+                showMessage('请输入正确的11位手机号码', true);
+                return;
+            }
+
             submitBtn.disabled = true;
             submitBtn.textContent = '注册中...';
 
@@ -1469,7 +1480,8 @@
                         username,
                         password,
                         company,
-                        position
+                        position,
+                        phone: phone || ''
                     })
                 });
 

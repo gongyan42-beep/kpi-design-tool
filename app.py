@@ -667,11 +667,14 @@ def resume_session(session_id):
 @app.route('/api/auth/register', methods=['POST'])
 def register():
     """用户注册"""
+    import re
+
     data = request.get_json()
     username = data.get('username', '').strip()
     password = data.get('password', '')
     company = data.get('company', '').strip()
     position = data.get('position', '').strip()
+    phone = data.get('phone', '').strip()  # 手机号（选填）
     user_type = data.get('user_type', 'normal')  # 'business_school' 或 'normal'
     cat_coins = data.get('cat_coins', 0)  # 猫币数量
 
@@ -680,6 +683,12 @@ def register():
 
     if len(password) < 6:
         return jsonify({'success': False, 'error': '密码至少6位'}), 400
+
+    # 验证手机号格式（如果填写了）
+    if phone:
+        phone = phone.replace(' ', '').replace('-', '')
+        if not re.match(r'^1[3-9]\d{9}$', phone):
+            return jsonify({'success': False, 'error': '请输入正确的11位手机号码'}), 400
 
     # 验证用户类型
     if user_type not in ['business_school', 'normal']:
@@ -696,6 +705,7 @@ def register():
 
     success, message, user_data = auth_service.register(
         username, password, company, position,
+        phone=phone,
         user_type=user_type,
         cat_coins=cat_coins if user_type == 'normal' else 0
     )
@@ -1915,6 +1925,90 @@ def admin_batch_create_redeem_codes():
 
 
 # ========================================
+# 手机号直接充值 API
+# ========================================
+
+@app.route('/api/admin/user/find-by-phone', methods=['GET'])
+def admin_find_user_by_phone():
+    """通过手机号查找用户（用于充值前预览）"""
+    if not session.get('is_admin'):
+        return jsonify({'success': False, 'error': '请先登录管理后台'}), 401
+
+    phone = request.args.get('phone', '').strip()
+
+    if not phone:
+        return jsonify({'success': False, 'error': '请输入手机号'}), 400
+
+    user = auth_service.find_user_by_phone(phone)
+
+    if user:
+        return jsonify({
+            'success': True,
+            'user': {
+                'id': user.get('id'),
+                'nickname': user.get('nickname'),
+                'email': user.get('email'),
+                'phone': user.get('phone'),
+                'company': user.get('company'),
+                'position': user.get('position'),
+                'credits': user.get('credits', 0)
+            }
+        })
+    else:
+        return jsonify({'success': False, 'error': '未找到该手机号对应的用户'}), 404
+
+
+@app.route('/api/admin/credits/add-by-phone', methods=['POST'])
+def admin_add_credits_by_phone():
+    """通过手机号直接给用户充值积分（不生成兑换码）"""
+    if not session.get('is_admin'):
+        return jsonify({'success': False, 'error': '请先登录管理后台'}), 401
+
+    data = request.get_json()
+    phone = data.get('phone', '').strip()
+    credits = data.get('credits', 0)
+    reason = data.get('reason', '管理员手动充值').strip()
+
+    if not phone:
+        return jsonify({'success': False, 'error': '请输入手机号'}), 400
+
+    try:
+        credits = int(credits)
+    except (ValueError, TypeError):
+        return jsonify({'success': False, 'error': '积分数量格式错误'}), 400
+
+    if credits <= 0:
+        return jsonify({'success': False, 'error': '积分数量必须大于0'}), 400
+
+    admin_name = session.get('admin_username', 'admin')
+
+    success, message, new_balance, user_data = auth_service.add_credits_by_phone(
+        phone=phone,
+        amount=credits,
+        reason=reason or '管理员手动充值',
+        admin_name=admin_name
+    )
+
+    if success:
+        return jsonify({
+            'success': True,
+            'message': message,
+            'data': {
+                'user': {
+                    'id': user_data.get('id') if user_data else None,
+                    'nickname': user_data.get('nickname') if user_data else None,
+                    'phone': user_data.get('phone') if user_data else None,
+                    'company': user_data.get('company') if user_data else None
+                },
+                'credits_added': credits,
+                'new_balance': new_balance
+            }
+        })
+    else:
+        return jsonify({'success': False, 'error': message}), 400
+
+
+# ========================================
 # 管理员用户管理 API（仅主管理员可用）
 # ========================================
 
@@ -2059,6 +2153,64 @@ def admin_get_logs():
 
         return jsonify({'success': True, 'logs': logs})
     except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+# ========================================
+# 按钮配置管理 API（仅超级管理员）
+# ========================================
+
+@app.route('/api/admin/buttons', methods=['GET'])
+def admin_get_buttons():
+    """获取所有按钮配置"""
+    if not session.get('is_admin'):
+        return jsonify({'success': False, 'error': '请先登录管理后台'}), 401
+
+    try:
+        from modules.button_config_service import button_config_service
+        buttons = button_config_service.get_all_buttons()
+        return jsonify({'success': True, 'buttons': buttons})
+    except Exception as e:
+        logger.error(f"获取按钮配置失败: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/admin/buttons/<button_id>', methods=['PUT'])
+def admin_update_button(button_id):
+    """更新按钮配置（仅超级管理员）"""
+    if not session.get('is_admin'):
+        return jsonify({'success': False, 'error': '请先登录管理后台'}), 401
+
+    # 检查是否为超级管理员
+    if session.get('admin_role') != 'super':
+        return jsonify({'success': False, 'error': '只有主管理员可以修改按钮配置'}), 403
+
+    try:
+        from modules.button_config_service import button_config_service
+        data = request.get_json()
+
+        # 验证按钮 ID
+        valid_ids = ['user_profile', 'user_insight', 'tool_analysis']
+        if button_id not in valid_ids:
+            return jsonify({'success': False, 'error': f'无效的按钮ID: {button_id}'}), 400
+
+        success = button_config_service.update_button(button_id, data)
+
+        if success:
+            # 记录操作日志
+            from modules.admin_log_service import admin_log_service
+            admin_log_service.log(
+                admin_name=session.get('admin_username'),
+                action_type='BUTTON_UPDATE',
+                target=button_id,
+                details=f"修改按钮配置：{data.get('name', button_id)}"
+            )
+            return jsonify({'success': True, 'message': '按钮配置更新成功'})
+        else:
+            return jsonify({'success': False, 'error': '更新失败'}), 500
+
+    except Exception as e:
+        logger.error(f"更新按钮配置失败: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
 

@@ -47,7 +47,7 @@ class AuthService:
     # ========================================
 
     def register(self, username: str, password: str, company: str = None, position: str = None,
-                 user_type: str = 'normal', cat_coins: int = 0) -> Tuple[bool, str, Dict]:
+                 phone: str = None, user_type: str = 'normal', cat_coins: int = 0) -> Tuple[bool, str, Dict]:
         """
         用户注册（使用姓名作为标识符）
 
@@ -56,6 +56,7 @@ class AuthService:
             password: 密码
             company: 公司名称
             position: 职位
+            phone: 手机号（选填）
             user_type: 用户类型 ('business_school' 商学院 / 'normal' 普通用户)
             cat_coins: 猫币数量（仅普通用户）
 
@@ -90,12 +91,13 @@ class AuthService:
             })
 
             if response.user:
-                # 注册成功后立即创建 profile 记录（确保 company/position 被保存）
+                # 注册成功后立即创建 profile 记录（确保 company/position/phone 被保存）
                 self._create_profile(
                     user_id=response.user.id,
                     username=username,
                     company=company or '',
                     position=position or '',
+                    phone=phone or '',
                     email=pseudo_email,
                     initial_credits=initial_credits,
                     credit_reason=credit_reason,
@@ -180,7 +182,8 @@ class AuthService:
             return False, f"登录失败: {error_msg}", {}
 
     def _create_profile(self, user_id: str, username: str, company: str = '', position: str = '',
-                        email: str = None, initial_credits: int = None, credit_reason: str = '新用户注册赠送',
+                        phone: str = '', email: str = None, initial_credits: int = None,
+                        credit_reason: str = '新用户注册赠送',
                         user_type: str = 'normal', cat_coins: int = 0) -> Dict:
         """为用户创建或更新 profile（注册或首次登录时）"""
         try:
@@ -243,18 +246,19 @@ class AuthService:
                         except Exception as insert_err:
                             print(f"[注册] 插入 profile 也失败: {insert_err}")
 
-            # 尝试更新 company/position
+            # 尝试更新 company/position/phone
             try:
-                if company or position:
-                    update_fields = {}
-                    if company:
-                        update_fields['company'] = company
-                    if position:
-                        update_fields['position'] = position
-                    if update_fields:
-                        self.admin_client.table('profiles').update(update_fields).eq('id', user_id).execute()
+                update_fields = {}
+                if company:
+                    update_fields['company'] = company
+                if position:
+                    update_fields['position'] = position
+                if phone:
+                    update_fields['phone'] = phone
+                if update_fields:
+                    self.admin_client.table('profiles').update(update_fields).eq('id', user_id).execute()
             except Exception as field_err:
-                print(f"更新 company/position 失败: {field_err}")
+                print(f"更新 company/position/phone 失败: {field_err}")
 
             # 记录初始积分日志
             try:
@@ -273,6 +277,7 @@ class AuthService:
                 'nickname': username,
                 'company': company,
                 'position': position,
+                'phone': phone,
                 'credits': initial_credits,
                 'user_type': user_type,
                 'cat_coins': cat_coins
@@ -420,6 +425,69 @@ class AuthService:
         except Exception as e:
             print(f"获取积分记录失败: {e}")
             return []
+
+    # ========================================
+    # 手机号相关操作
+    # ========================================
+
+    def find_user_by_phone(self, phone: str) -> Optional[Dict]:
+        """通过手机号查找用户"""
+        if not phone:
+            return None
+
+        try:
+            # 规范化手机号（去除空格和横杠）
+            phone = phone.strip().replace(' ', '').replace('-', '')
+
+            response = self.admin_client.table('profiles').select('*').eq('phone', phone).execute()
+            if response.data and len(response.data) > 0:
+                return response.data[0]
+            return None
+        except Exception as e:
+            print(f"通过手机号查找用户失败: {e}")
+            return None
+
+    def add_credits_by_phone(self, phone: str, amount: int, reason: str = "管理员充值",
+                             admin_name: str = "admin") -> Tuple[bool, str, int, Optional[Dict]]:
+        """
+        通过手机号给用户充值积分
+
+        Args:
+            phone: 手机号
+            amount: 积分数量
+            reason: 充值原因
+            admin_name: 操作管理员
+
+        Returns: (成功?, 消息, 新余额, 用户数据)
+        """
+        # 查找用户
+        user = self.find_user_by_phone(phone)
+        if not user:
+            return False, f"未找到手机号为 {phone} 的用户", 0, None
+
+        user_id = user.get('id')
+        user_name = user.get('nickname') or user.get('email', '未知用户')
+
+        # 增加积分
+        success, msg, new_balance = self.add_credits(user_id, amount, reason)
+
+        if success:
+            # 记录管理员操作日志
+            try:
+                from modules.admin_log_service import admin_log_service
+                admin_log_service.log_credits_add(
+                    admin_name=admin_name,
+                    target_user=f"{user_name} ({phone})",
+                    cat_coins=0,
+                    credits=amount,
+                    reason=reason
+                )
+            except Exception as log_err:
+                print(f"记录管理员操作日志失败: {log_err}")
+
+            return True, f"成功为 {user_name} 充值 {amount} 积分", new_balance, user
+        else:
+            return False, msg, 0, user
 
 
 # 单例服务
