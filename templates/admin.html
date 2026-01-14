@@ -558,28 +558,54 @@
         .tag-industry-service { background: rgba(167, 139, 250, 0.1); border-color: rgba(167, 139, 250, 0.3); color: #a78bfa; }
         .tag-industry-unknown { background: rgba(113, 113, 122, 0.1); border-color: rgba(113, 113, 122, 0.3); color: var(--text-muted); }
 
-        /* 用户筛选工具栏 */
+        /* CRM风格用户筛选工具栏 */
         .user-filter-bar {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+        }
+        .filter-row {
             display: flex;
             flex-wrap: wrap;
             gap: 12px;
-            margin-bottom: 20px;
-            padding: 16px;
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
             align-items: center;
+        }
+        .filter-row-main {
+            flex: 1;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
         }
         .user-filter-bar .search-input {
             flex: 1;
-            min-width: 200px;
-            padding: 10px 14px;
+            min-width: 240px;
+            padding: 10px 14px 10px 40px;
             background: var(--bg-secondary);
             border: 1px solid var(--border-color);
-            border-radius: 8px;
+            border-radius: 10px;
             color: var(--text-primary);
             font-size: 14px;
             transition: all 0.2s;
+        }
+        .search-wrapper {
+            position: relative;
+            flex: 1;
+            min-width: 240px;
+        }
+        .search-wrapper svg {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 18px;
+            height: 18px;
+            color: var(--text-muted);
         }
         .user-filter-bar .search-input:focus {
             outline: none;
@@ -590,18 +616,19 @@
             color: var(--text-muted);
         }
         .user-filter-bar .filter-select {
-            padding: 10px 32px 10px 12px;
+            padding: 10px 36px 10px 12px;
             background: var(--bg-secondary);
             border: 1px solid var(--border-color);
-            border-radius: 8px;
+            border-radius: 10px;
             color: var(--text-primary);
             font-size: 14px;
             cursor: pointer;
             appearance: none;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23a1a1aa' d='M3 4.5L6 7.5L9 4.5'/%3E%3C/svg%3E");
             background-repeat: no-repeat;
-            background-position: right 10px center;
+            background-position: right 12px center;
             transition: all 0.2s;
+            min-width: 140px;
         }
         .user-filter-bar .filter-select:focus {
             outline: none;
@@ -610,12 +637,255 @@
         .user-filter-bar .filter-select:hover {
             border-color: var(--border-light);
         }
+        .filter-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
         .filter-count {
-            padding: 6px 12px;
+            padding: 8px 14px;
             background: rgba(99, 102, 241, 0.1);
-            border-radius: 6px;
+            border-radius: 8px;
             font-size: 13px;
             color: var(--accent-blue);
+            font-weight: 500;
+        }
+        .view-toggle {
+            display: flex;
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            padding: 4px;
+            border: 1px solid var(--border-color);
+        }
+        .view-btn {
+            padding: 8px 14px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .view-btn:hover {
+            color: var(--text-primary);
+        }
+        .view-btn.active {
+            background: rgba(99, 102, 241, 0.2);
+            color: var(--accent-blue);
+        }
+        .btn-reset-filter {
+            padding: 10px 16px;
+            background: transparent;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        .btn-reset-filter:hover {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: var(--accent-red);
+            color: var(--accent-red);
+        }
+
+        /* CRM表格视图 */
+        .crm-table-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        .crm-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .crm-table thead {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        .crm-table th {
+            padding: 14px 16px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--border-color);
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
+        }
+        .crm-table th:hover {
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.03);
+        }
+        .crm-table th.sortable::after {
+            content: '↕';
+            margin-left: 6px;
+            opacity: 0.4;
+        }
+        .crm-table th.sort-asc::after {
+            content: '↑';
+            opacity: 1;
+            color: var(--accent-blue);
+        }
+        .crm-table th.sort-desc::after {
+            content: '↓';
+            opacity: 1;
+            color: var(--accent-blue);
+        }
+        .crm-table tbody tr {
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .crm-table tbody tr:hover {
+            background: rgba(99, 102, 241, 0.05);
+        }
+        .crm-table tbody tr:last-child {
+            border-bottom: none;
+        }
+        .crm-table td {
+            padding: 16px;
+            font-size: 14px;
+            color: var(--text-secondary);
+            vertical-align: middle;
+        }
+        .crm-user-cell {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .crm-user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+            color: white;
+            flex-shrink: 0;
+        }
+        .crm-user-info h4 {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 2px;
+        }
+        .crm-user-info span {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+        .crm-company-cell {
+            max-width: 180px;
+        }
+        .crm-company-name {
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .crm-position {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+        .crm-industry-tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .crm-stat-cell {
+            text-align: center;
+        }
+        .crm-stat-value {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .crm-stat-value.highlight {
+            color: var(--accent-green);
+        }
+        .crm-stat-value.warning {
+            color: var(--accent-red);
+        }
+        .crm-stat-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+        .crm-time-cell {
+            white-space: nowrap;
+        }
+        .crm-time-primary {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+        .crm-time-secondary {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+        .crm-actions {
+            display: flex;
+            gap: 8px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .crm-table tbody tr:hover .crm-actions {
+            opacity: 1;
+        }
+        .crm-action-btn {
+            padding: 6px 12px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            border-radius: 6px;
+            color: var(--text-secondary);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .crm-action-btn:hover {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+            color: white;
+        }
+        .crm-empty {
+            padding: 60px 20px;
+            text-align: center;
+            color: var(--text-muted);
+        }
+        .crm-empty-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        /* 卡片视图容器 */
+        #usersCardView {
+            display: grid;
+            gap: 12px;
+        }
+        #usersTableView {
+            display: none;
+        }
+        .view-table #usersCardView {
+            display: none;
+        }
+        .view-table #usersTableView {
+            display: block;
         }
 
         .user-stats {
@@ -2104,38 +2374,105 @@
 
             <!-- 用户列表 -->
             <div id="usersTab">
-                <!-- 筛选工具栏 -->
+                <!-- CRM风格筛选工具栏 -->
                 <div class="user-filter-bar">
-                    <input type="text" class="search-input" id="userSearchInput" placeholder="搜索用户名、公司、邮箱..." oninput="filterUsers()">
-                    <select class="filter-select" id="industryFilter" onchange="filterUsers()">
-                        <option value="">全部行业</option>
-                        <option value="科技/互联网">科技/互联网</option>
-                        <option value="制造业">制造业</option>
-                        <option value="零售/贸易">零售/贸易</option>
-                        <option value="教育培训">教育培训</option>
-                        <option value="金融">金融</option>
-                        <option value="医疗健康">医疗健康</option>
-                        <option value="建筑/房产">建筑/房产</option>
-                        <option value="服务业">服务业</option>
-                        <option value="未知">未知行业</option>
-                    </select>
-                    <select class="filter-select" id="creditsFilter" onchange="filterUsers()">
-                        <option value="">全部积分</option>
-                        <option value="zero">无积分 (0)</option>
-                        <option value="low">低积分 (<20)</option>
-                        <option value="normal">正常 (20-50)</option>
-                        <option value="high">高积分 (>50)</option>
-                    </select>
-                    <select class="filter-select" id="activityFilter" onchange="filterUsers()">
-                        <option value="">全部活跃度</option>
-                        <option value="inactive">未活跃 (0对话)</option>
-                        <option value="low">低活跃 (1-2对话)</option>
-                        <option value="medium">中活跃 (3-5对话)</option>
-                        <option value="high">高活跃 (>5对话)</option>
-                    </select>
-                    <span class="filter-count" id="filterCount">显示 0 / 0 用户</span>
+                    <div class="filter-row">
+                        <div class="filter-row-main">
+                            <div class="search-wrapper">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <path d="m21 21-4.35-4.35"></path>
+                                </svg>
+                                <input type="text" class="search-input" id="userSearchInput" placeholder="搜索用户名、公司、邮箱..." oninput="filterUsers()">
+                            </div>
+                            <select class="filter-select" id="industryFilter" onchange="filterUsers()">
+                                <option value="">全部行业</option>
+                                <option value="科技/互联网">科技/互联网</option>
+                                <option value="制造业">制造业</option>
+                                <option value="零售/贸易">零售/贸易</option>
+                                <option value="教育培训">教育培训</option>
+                                <option value="金融">金融</option>
+                                <option value="医疗健康">医疗健康</option>
+                                <option value="建筑/房产">建筑/房产</option>
+                                <option value="服务业">服务业</option>
+                                <option value="未知">未知行业</option>
+                            </select>
+                            <select class="filter-select" id="creditsFilter" onchange="filterUsers()">
+                                <option value="">全部积分</option>
+                                <option value="zero">无积分 (0)</option>
+                                <option value="low">低积分 (<20)</option>
+                                <option value="normal">正常 (20-50)</option>
+                                <option value="high">高积分 (>50)</option>
+                            </select>
+                            <select class="filter-select" id="activityFilter" onchange="filterUsers()">
+                                <option value="">全部活跃度</option>
+                                <option value="inactive">未活跃 (0次)</option>
+                                <option value="low">低活跃 (1-2次)</option>
+                                <option value="medium">中活跃 (3-5次)</option>
+                                <option value="high">高活跃 (>5次)</option>
+                            </select>
+                            <select class="filter-select" id="sortFilter" onchange="filterUsers()">
+                                <option value="recent">最近注册</option>
+                                <option value="oldest">最早注册</option>
+                                <option value="sessions_desc">对话最多</option>
+                                <option value="sessions_asc">对话最少</option>
+                                <option value="messages_desc">消息最多</option>
+                                <option value="credits_desc">积分最高</option>
+                                <option value="credits_asc">积分最低</option>
+                                <option value="last_active">最近活跃</option>
+                            </select>
+                        </div>
+                        <div class="filter-actions">
+                            <button class="btn-reset-filter" onclick="resetFilters()">重置筛选</button>
+                            <div class="view-toggle">
+                                <button class="view-btn" id="viewTableBtn" onclick="setView('table')">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/><path d="M9 3v18"/>
+                                    </svg>
+                                    表格
+                                </button>
+                                <button class="view-btn active" id="viewCardBtn" onclick="setView('card')">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+                                    </svg>
+                                    卡片
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="filter-row" style="justify-content: space-between;">
+                        <span class="filter-count" id="filterCount">显示 0 / 0 用户</span>
+                        <div style="display: flex; gap: 8px; font-size: 12px; color: var(--text-muted);">
+                            <span id="industryStats"></span>
+                        </div>
+                    </div>
                 </div>
-                <div id="usersList"></div>
+
+                <!-- 表格视图 -->
+                <div id="usersTableView" class="crm-table-container">
+                    <table class="crm-table">
+                        <thead>
+                            <tr>
+                                <th class="sortable" data-sort="name">用户</th>
+                                <th class="sortable" data-sort="company">公司/职位</th>
+                                <th class="sortable" data-sort="industry">行业</th>
+                                <th class="sortable" data-sort="credits">积分</th>
+                                <th class="sortable" data-sort="sessions">对话</th>
+                                <th class="sortable" data-sort="messages">消息</th>
+                                <th class="sortable" data-sort="created">注册时间</th>
+                                <th class="sortable" data-sort="last_active">最近活跃</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody">
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 卡片视图 -->
+                <div id="usersCardView">
+                    <div id="usersList"></div>
+                </div>
             </div>
 
             <!-- 会话列表 -->
@@ -2586,6 +2923,18 @@
                 if (data.success) {
                     allUsers = data.users || [];
                     document.getElementById('totalUsers').textContent = allUsers.length;
+
+                    // 恢复用户保存的视图偏好
+                    const savedView = localStorage.getItem('userViewPreference');
+                    if (savedView) {
+                        currentView = savedView;
+                        if (savedView === 'table') {
+                            document.getElementById('usersTab').classList.add('view-table');
+                            document.getElementById('viewTableBtn').classList.add('active');
+                            document.getElementById('viewCardBtn').classList.remove('active');
+                        }
+                    }
+
                     renderUsers();
                 }
             } catch (e) {
@@ -2663,43 +3012,96 @@
 
         // 存储用户统计数据（供筛选使用）
         let userStatsCache = {};
+        let currentView = 'card'; // 'card' or 'table'
 
-        function renderUsers(filteredUsers = null) {
-            const container = document.getElementById('usersList');
-            const usersToRender = filteredUsers || allUsers;
+        // 视图切换
+        function setView(view) {
+            currentView = view;
+            const usersTab = document.getElementById('usersTab');
+            const tableBtn = document.getElementById('viewTableBtn');
+            const cardBtn = document.getElementById('viewCardBtn');
 
-            if (allUsers.length === 0) {
-                container.innerHTML = '<p class="loading">暂无注册用户</p>';
-                document.getElementById('filterCount').textContent = '显示 0 / 0 用户';
-                return;
+            if (view === 'table') {
+                usersTab.classList.add('view-table');
+                tableBtn.classList.add('active');
+                cardBtn.classList.remove('active');
+            } else {
+                usersTab.classList.remove('view-table');
+                tableBtn.classList.remove('active');
+                cardBtn.classList.add('active');
             }
 
-            // 为每个用户统计会话数和消息数
-            userStatsCache = {};
-            allSessions.forEach(s => {
-                const email = s.user_email || '未知';
-                if (!userStatsCache[email]) {
-                    userStatsCache[email] = { sessions: 0, messages: 0 };
-                }
-                userStatsCache[email].sessions++;
-                userStatsCache[email].messages += (s.messages || []).length;
-            });
+            // 重新渲染
+            filterUsers();
 
-            // 更新筛选计数
-            document.getElementById('filterCount').textContent = `显示 ${usersToRender.length} / ${allUsers.length} 用户`;
+            // 保存偏好到localStorage
+            localStorage.setItem('userViewPreference', view);
+        }
+
+        // 重置所有筛选
+        function resetFilters() {
+            document.getElementById('userSearchInput').value = '';
+            document.getElementById('industryFilter').value = '';
+            document.getElementById('creditsFilter').value = '';
+            document.getElementById('activityFilter').value = '';
+            document.getElementById('sortFilter').value = 'recent';
+            filterUsers();
+        }
+
+        // 获取用户的最近活跃时间
+        function getUserLastActive(email) {
+            const userSessions = allSessions.filter(s => s.user_email === email);
+            if (userSessions.length === 0) return null;
+
+            // 找到最近的会话更新时间
+            let latestTime = null;
+            userSessions.forEach(s => {
+                const time = new Date(s.updated_at || s.created_at);
+                if (!latestTime || time > latestTime) {
+                    latestTime = time;
+                }
+            });
+            return latestTime;
+        }
+
+        // 格式化相对时间
+        function formatRelativeTime(date) {
+            if (!date) return '从未';
+            const now = new Date();
+            const diff = now - date;
+            const minutes = Math.floor(diff / 60000);
+            const hours = Math.floor(diff / 3600000);
+            const days = Math.floor(diff / 86400000);
+
+            if (minutes < 1) return '刚刚';
+            if (minutes < 60) return `${minutes}分钟前`;
+            if (hours < 24) return `${hours}小时前`;
+            if (days < 7) return `${days}天前`;
+            if (days < 30) return `${Math.floor(days / 7)}周前`;
+            return formatTime(date);
+        }
+
+        // 获取用户首字母
+        function getUserInitial(user) {
+            if (user.nickname) return user.nickname.charAt(0).toUpperCase();
+            if (user.email) return user.email.charAt(0).toUpperCase();
+            return '?';
+        }
+
+        // 渲染卡片视图
+        function renderCardView(usersToRender) {
+            const container = document.getElementById('usersList');
 
             if (usersToRender.length === 0) {
-                container.innerHTML = '<p class="loading">没有符合条件的用户</p>';
+                container.innerHTML = '<div class="crm-empty"><div class="crm-empty-icon">👥</div><p>没有符合条件的用户</p></div>';
                 return;
             }
 
             container.innerHTML = usersToRender.map(user => {
                 const email = user.email || '未知';
-                const stats = userStatsCache[email] || { sessions: 0, messages: 0 };
+                const stats = userStatsCache[email] || { sessions: 0, messages: 0, lastActive: null };
                 const credits = user.credits || 0;
                 const creditsClass = credits < 20 ? 'tag-credits-low' : 'tag-credits';
-
-                // 获取行业
                 const industry = getIndustryByKeyword(user.company);
                 const industryClass = getIndustryClass(industry);
 
@@ -2716,7 +3118,7 @@
                                 <span class="tag tag-sessions">💬 ${stats.sessions} 次对话</span>
                             </div>
                             <div class="user-meta">
-                                注册时间: ${formatTime(user.created_at)}
+                                注册时间: ${formatTime(user.created_at)} · 最近活跃: ${formatRelativeTime(stats.lastActive)}
                             </div>
                         </div>
                         <div class="user-stats">
@@ -2738,14 +3140,201 @@
             `}).join('');
         }
 
+        // 渲染表格视图
+        function renderTableView(usersToRender) {
+            const tbody = document.getElementById('usersTableBody');
+
+            if (usersToRender.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" class="crm-empty"><div class="crm-empty-icon">👥</div><p>没有符合条件的用户</p></td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = usersToRender.map(user => {
+                const email = user.email || '未知';
+                const stats = userStatsCache[email] || { sessions: 0, messages: 0, lastActive: null };
+                const credits = user.credits || 0;
+                const industry = getIndustryByKeyword(user.company);
+                const industryClass = getIndustryClass(industry);
+                const initial = getUserInitial(user);
+                const creditsClass = credits < 20 ? 'warning' : (credits > 50 ? 'highlight' : '');
+
+                return `
+                <tr onclick="showUserDetail('${email}')">
+                    <td>
+                        <div class="crm-user-cell">
+                            <div class="crm-user-avatar">${initial}</div>
+                            <div class="crm-user-info">
+                                <h4>${user.nickname || email.split('@')[0]}</h4>
+                                <span>${email}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="crm-company-cell">
+                        <div class="crm-company-name">${user.company || '-'}</div>
+                        <div class="crm-position">${user.position || '-'}</div>
+                    </td>
+                    <td>
+                        <span class="crm-industry-tag ${industryClass}">${industry}</span>
+                    </td>
+                    <td class="crm-stat-cell">
+                        <div class="crm-stat-value ${creditsClass}">${credits}</div>
+                    </td>
+                    <td class="crm-stat-cell">
+                        <div class="crm-stat-value">${stats.sessions}</div>
+                    </td>
+                    <td class="crm-stat-cell">
+                        <div class="crm-stat-value">${stats.messages}</div>
+                    </td>
+                    <td class="crm-time-cell">
+                        <div class="crm-time-primary">${formatTime(user.created_at)}</div>
+                    </td>
+                    <td class="crm-time-cell">
+                        <div class="crm-time-primary">${formatRelativeTime(stats.lastActive)}</div>
+                    </td>
+                    <td>
+                        <div class="crm-actions">
+                            <button class="crm-action-btn" onclick="event.stopPropagation(); showUserDetail('${email}')">查看</button>
+                        </div>
+                    </td>
+                </tr>
+            `}).join('');
+        }
+
+        function renderUsers(filteredUsers = null) {
+            const usersToRender = filteredUsers || allUsers;
+
+            if (allUsers.length === 0) {
+                document.getElementById('usersList').innerHTML = '<p class="loading">暂无注册用户</p>';
+                document.getElementById('usersTableBody').innerHTML = '<tr><td colspan="9"><p class="loading">暂无注册用户</p></td></tr>';
+                document.getElementById('filterCount').textContent = '显示 0 / 0 用户';
+                return;
+            }
+
+            // 为每个用户统计会话数、消息数和最近活跃时间
+            userStatsCache = {};
+            allSessions.forEach(s => {
+                const email = s.user_email || '未知';
+                if (!userStatsCache[email]) {
+                    userStatsCache[email] = { sessions: 0, messages: 0, lastActive: null };
+                }
+                userStatsCache[email].sessions++;
+                userStatsCache[email].messages += (s.messages || []).length;
+
+                // 更新最近活跃时间
+                const sessionTime = new Date(s.updated_at || s.created_at);
+                if (!userStatsCache[email].lastActive || sessionTime > userStatsCache[email].lastActive) {
+                    userStatsCache[email].lastActive = sessionTime;
+                }
+            });
+
+            // 更新筛选计数
+            document.getElementById('filterCount').textContent = `显示 ${usersToRender.length} / ${allUsers.length} 用户`;
+
+            // 更新行业统计
+            updateIndustryStats(usersToRender);
+
+            // 根据当前视图渲染
+            if (currentView === 'table') {
+                renderTableView(usersToRender);
+            } else {
+                renderCardView(usersToRender);
+            }
+        }
+
+        // 更新行业统计显示
+        function updateIndustryStats(users) {
+            const industryCount = {};
+            users.forEach(user => {
+                const industry = getIndustryByKeyword(user.company);
+                industryCount[industry] = (industryCount[industry] || 0) + 1;
+            });
+
+            const statsHtml = Object.entries(industryCount)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 4)
+                .map(([industry, count]) => `${industry}: ${count}`)
+                .join(' · ');
+
+            document.getElementById('industryStats').textContent = statsHtml;
+        }
+
+        // 排序用户
+        function sortUsers(users, sortBy) {
+            const sorted = [...users];
+
+            switch (sortBy) {
+                case 'recent':
+                    sorted.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+                    break;
+                case 'oldest':
+                    sorted.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+                    break;
+                case 'sessions_desc':
+                    sorted.sort((a, b) => {
+                        const statsA = userStatsCache[a.email] || { sessions: 0 };
+                        const statsB = userStatsCache[b.email] || { sessions: 0 };
+                        return statsB.sessions - statsA.sessions;
+                    });
+                    break;
+                case 'sessions_asc':
+                    sorted.sort((a, b) => {
+                        const statsA = userStatsCache[a.email] || { sessions: 0 };
+                        const statsB = userStatsCache[b.email] || { sessions: 0 };
+                        return statsA.sessions - statsB.sessions;
+                    });
+                    break;
+                case 'messages_desc':
+                    sorted.sort((a, b) => {
+                        const statsA = userStatsCache[a.email] || { messages: 0 };
+                        const statsB = userStatsCache[b.email] || { messages: 0 };
+                        return statsB.messages - statsA.messages;
+                    });
+                    break;
+                case 'credits_desc':
+                    sorted.sort((a, b) => (b.credits || 0) - (a.credits || 0));
+                    break;
+                case 'credits_asc':
+                    sorted.sort((a, b) => (a.credits || 0) - (b.credits || 0));
+                    break;
+                case 'last_active':
+                    sorted.sort((a, b) => {
+                        const statsA = userStatsCache[a.email] || { lastActive: null };
+                        const statsB = userStatsCache[b.email] || { lastActive: null };
+                        if (!statsA.lastActive && !statsB.lastActive) return 0;
+                        if (!statsA.lastActive) return 1;
+                        if (!statsB.lastActive) return -1;
+                        return statsB.lastActive - statsA.lastActive;
+                    });
+                    break;
+            }
+
+            return sorted;
+        }
+
         // 筛选用户
         function filterUsers() {
             const searchText = document.getElementById('userSearchInput').value.toLowerCase().trim();
             const industryFilter = document.getElementById('industryFilter').value;
             const creditsFilter = document.getElementById('creditsFilter').value;
             const activityFilter = document.getElementById('activityFilter').value;
+            const sortFilter = document.getElementById('sortFilter').value;
 
-            const filtered = allUsers.filter(user => {
+            // 先构建统计缓存（在筛选前需要用到）
+            userStatsCache = {};
+            allSessions.forEach(s => {
+                const email = s.user_email || '未知';
+                if (!userStatsCache[email]) {
+                    userStatsCache[email] = { sessions: 0, messages: 0, lastActive: null };
+                }
+                userStatsCache[email].sessions++;
+                userStatsCache[email].messages += (s.messages || []).length;
+                const sessionTime = new Date(s.updated_at || s.created_at);
+                if (!userStatsCache[email].lastActive || sessionTime > userStatsCache[email].lastActive) {
+                    userStatsCache[email].lastActive = sessionTime;
+                }
+            });
+
+            let filtered = allUsers.filter(user => {
                 const email = user.email || '';
                 const nickname = user.nickname || '';
                 const company = user.company || '';
@@ -2789,6 +3378,9 @@
 
                 return true;
             });
+
+            // 应用排序
+            filtered = sortUsers(filtered, sortFilter);
 
             renderUsers(filtered);
         }
