@@ -546,3 +546,483 @@ OSError: [Errno 5] Input/output error
 2026-01-14 11:16:06,803 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/admin_buttons?select=id&limit=1 "HTTP/2 404 Not Found"
 2026-01-14 11:16:07,180 [INFO] httpx: HTTP Request: POST https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/admin_logs "HTTP/2 201 Created"
 2026-01-14 11:16:37,686 [INFO] httpx: HTTP Request: POST https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/admin_logs "HTTP/2 201 Created"
+2026-01-14 11:37:47,425 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/sessions?select=id%2C%20module%2C%20status%2C%20created_at%2C%20updated_at&order=updated_at.desc&limit=1 "HTTP/2 200 OK"
+2026-01-14 11:37:58,830 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/sessions?select=id%2C%20module%2C%20status%2C%20created_at%2C%20updated_at&order=updated_at.desc&limit=1 "HTTP/2 200 OK"
+2026-01-14 11:40:14,418 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/sessions?select=id%2C%20module%2C%20status%2C%20created_at%2C%20updated_at&order=updated_at.desc&limit=1 "HTTP/2 200 OK"
+2026-01-14 12:20:08,544 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/modules?select=%2A&id=eq.kpi "HTTP/2 200 OK"
+2026-01-14 12:20:08,669 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/modules?select=%2A&order=sort_order "HTTP/2 200 OK"
+2026-01-14 12:20:08,688 [ERROR] app: Exception on /chat/kpi [GET]
+Traceback (most recent call last):
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 2190, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 1486, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 1469, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/Users/gusuping/code/kpi-design-tool/app.py", line 122, in chat
+    return render_template(
+        'chat.html',
+    ...<4 lines>...
+        all_modules=all_modules
+    )
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/templating.py", line 151, in render_template
+    return _render(app, template, context)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/templating.py", line 132, in _render
+    rv = template.render(context)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/jinja2/environment.py", line 1295, in render
+    self.environment.handle_exception()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "/Users/gusuping/code/kpi-design-tool/templates/chat.html", line 2037, in top-level template code
+    {% for id, info in all_modules.items() %}
+    ^
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/jinja2/utils.py", line 92, in from_obj
+    if hasattr(obj, "jinja_pass_arg"):
+       ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+jinja2.exceptions.UndefinedError: 'list object' has no attribute 'items'
+2026-01-14 12:20:08,692 [ERROR] __main__: 500 错误: 500 Internal Server Error: The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.
+Traceback (most recent call last):
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 2190, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 1486, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 1469, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/Users/gusuping/code/kpi-design-tool/app.py", line 122, in chat
+    return render_template(
+        'chat.html',
+    ...<4 lines>...
+        all_modules=all_modules
+    )
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/templating.py", line 151, in render_template
+    return _render(app, template, context)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/templating.py", line 132, in _render
+    rv = template.render(context)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/jinja2/environment.py", line 1295, in render
+    self.environment.handle_exception()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "/Users/gusuping/code/kpi-design-tool/templates/chat.html", line 2037, in top-level template code
+    {% for id, info in all_modules.items() %}
+    ^
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/jinja2/utils.py", line 92, in from_obj
+    if hasattr(obj, "jinja_pass_arg"):
+       ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+jinja2.exceptions.UndefinedError: 'list object' has no attribute 'items'
+2026-01-14 12:21:53,639 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/modules?select=%2A&id=eq.kpi "HTTP/2 200 OK"
+2026-01-14 12:21:53,783 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/modules?select=%2A&order=sort_order "HTTP/2 200 OK"
+2026-01-14 12:21:53,785 [ERROR] app: Exception on /chat/kpi [GET]
+Traceback (most recent call last):
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 2190, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 1486, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 1469, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/Users/gusuping/code/kpi-design-tool/app.py", line 122, in chat
+    return render_template(
+        'chat.html',
+    ...<4 lines>...
+        all_modules=all_modules
+    )
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/templating.py", line 151, in render_template
+    return _render(app, template, context)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/templating.py", line 132, in _render
+    rv = template.render(context)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/jinja2/environment.py", line 1295, in render
+    self.environment.handle_exception()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "/Users/gusuping/code/kpi-design-tool/templates/chat.html", line 2037, in top-level template code
+    {% for m in all_modules %}
+    ^
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/jinja2/utils.py", line 92, in from_obj
+    if hasattr(obj, "jinja_pass_arg"):
+       ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+jinja2.exceptions.UndefinedError: 'list object' has no attribute 'items'
+2026-01-14 12:21:53,789 [ERROR] __main__: 500 错误: 500 Internal Server Error: The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.
+Traceback (most recent call last):
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 2190, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 1486, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 1469, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/Users/gusuping/code/kpi-design-tool/app.py", line 122, in chat
+    return render_template(
+        'chat.html',
+    ...<4 lines>...
+        all_modules=all_modules
+    )
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/templating.py", line 151, in render_template
+    return _render(app, template, context)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/templating.py", line 132, in _render
+    rv = template.render(context)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/jinja2/environment.py", line 1295, in render
+    self.environment.handle_exception()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "/Users/gusuping/code/kpi-design-tool/templates/chat.html", line 2037, in top-level template code
+    {% for m in all_modules %}
+    ^
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/jinja2/utils.py", line 92, in from_obj
+    if hasattr(obj, "jinja_pass_arg"):
+       ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+jinja2.exceptions.UndefinedError: 'list object' has no attribute 'items'
+2026-01-14 12:22:09,677 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/modules?select=%2A&id=eq.kpi "HTTP/2 200 OK"
+2026-01-14 12:22:09,808 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/modules?select=%2A&order=sort_order "HTTP/2 200 OK"
+2026-01-14 12:22:09,810 [ERROR] app: Exception on /chat/kpi [GET]
+Traceback (most recent call last):
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 2190, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 1486, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 1469, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/Users/gusuping/code/kpi-design-tool/app.py", line 122, in chat
+    return render_template(
+        'chat.html',
+    ...<4 lines>...
+        all_modules=all_modules
+    )
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/templating.py", line 151, in render_template
+    return _render(app, template, context)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/templating.py", line 132, in _render
+    rv = template.render(context)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/jinja2/environment.py", line 1295, in render
+    self.environment.handle_exception()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "/Users/gusuping/code/kpi-design-tool/templates/chat.html", line 2037, in top-level template code
+    {% for m in all_modules %}
+    ^
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/jinja2/utils.py", line 92, in from_obj
+    if hasattr(obj, "jinja_pass_arg"):
+       ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+jinja2.exceptions.UndefinedError: 'list object' has no attribute 'items'
+2026-01-14 12:22:09,812 [ERROR] __main__: 500 错误: 500 Internal Server Error: The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.
+Traceback (most recent call last):
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 2190, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 1486, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 1469, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/Users/gusuping/code/kpi-design-tool/app.py", line 122, in chat
+    return render_template(
+        'chat.html',
+    ...<4 lines>...
+        all_modules=all_modules
+    )
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/templating.py", line 151, in render_template
+    return _render(app, template, context)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/templating.py", line 132, in _render
+    rv = template.render(context)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/jinja2/environment.py", line 1295, in render
+    self.environment.handle_exception()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "/Users/gusuping/code/kpi-design-tool/templates/chat.html", line 2037, in top-level template code
+    {% for m in all_modules %}
+    ^
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/jinja2/utils.py", line 92, in from_obj
+    if hasattr(obj, "jinja_pass_arg"):
+       ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+jinja2.exceptions.UndefinedError: 'list object' has no attribute 'items'
+2026-01-14 12:22:30,912 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/modules?select=%2A&id=eq.kpi "HTTP/2 200 OK"
+2026-01-14 12:22:31,064 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/modules?select=%2A&order=sort_order "HTTP/2 200 OK"
+2026-01-14 12:22:31,066 [ERROR] app: Exception on /chat/kpi [HEAD]
+Traceback (most recent call last):
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 2190, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 1486, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 1469, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/Users/gusuping/code/kpi-design-tool/app.py", line 122, in chat
+    return render_template(
+        'chat.html',
+    ...<4 lines>...
+        all_modules=all_modules
+    )
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/templating.py", line 151, in render_template
+    return _render(app, template, context)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/templating.py", line 132, in _render
+    rv = template.render(context)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/jinja2/environment.py", line 1295, in render
+    self.environment.handle_exception()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "/Users/gusuping/code/kpi-design-tool/templates/chat.html", line 2037, in top-level template code
+    {% for m in all_modules %}
+    ^
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/jinja2/utils.py", line 92, in from_obj
+    if hasattr(obj, "jinja_pass_arg"):
+       ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+jinja2.exceptions.UndefinedError: 'list object' has no attribute 'items'
+2026-01-14 12:22:31,068 [ERROR] __main__: 500 错误: 500 Internal Server Error: The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.
+Traceback (most recent call last):
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 2190, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 1486, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 1469, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/Users/gusuping/code/kpi-design-tool/app.py", line 122, in chat
+    return render_template(
+        'chat.html',
+    ...<4 lines>...
+        all_modules=all_modules
+    )
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/templating.py", line 151, in render_template
+    return _render(app, template, context)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/templating.py", line 132, in _render
+    rv = template.render(context)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/jinja2/environment.py", line 1295, in render
+    self.environment.handle_exception()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "/Users/gusuping/code/kpi-design-tool/templates/chat.html", line 2037, in top-level template code
+    {% for m in all_modules %}
+    ^
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/jinja2/utils.py", line 92, in from_obj
+    if hasattr(obj, "jinja_pass_arg"):
+       ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+jinja2.exceptions.UndefinedError: 'list object' has no attribute 'items'
+2026-01-14 12:24:12,860 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/modules?select=%2A&id=eq.kpi "HTTP/2 200 OK"
+2026-01-14 12:24:13,010 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/modules?select=%2A&order=sort_order "HTTP/2 200 OK"
+2026-01-14 12:24:13,015 [ERROR] app: Exception on /chat/kpi [HEAD]
+Traceback (most recent call last):
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 2190, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 1486, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 1469, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/Users/gusuping/code/kpi-design-tool/app.py", line 122, in chat
+    return render_template(
+        'chat.html',
+    ...<4 lines>...
+        all_modules=all_modules
+    )
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/templating.py", line 151, in render_template
+    return _render(app, template, context)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/templating.py", line 132, in _render
+    rv = template.render(context)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/jinja2/environment.py", line 1295, in render
+    self.environment.handle_exception()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "/Users/gusuping/code/kpi-design-tool/templates/chat.html", line 2037, in top-level template code
+    {% for m in all_modules %}
+    ^
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/jinja2/utils.py", line 92, in from_obj
+    if hasattr(obj, "jinja_pass_arg"):
+       ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+jinja2.exceptions.UndefinedError: 'list object' has no attribute 'items'
+2026-01-14 12:24:13,019 [ERROR] __main__: 500 错误: 500 Internal Server Error: The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.
+Traceback (most recent call last):
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 2190, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 1486, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 1469, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/Users/gusuping/code/kpi-design-tool/app.py", line 122, in chat
+    return render_template(
+        'chat.html',
+    ...<4 lines>...
+        all_modules=all_modules
+    )
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/templating.py", line 151, in render_template
+    return _render(app, template, context)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/templating.py", line 132, in _render
+    rv = template.render(context)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/jinja2/environment.py", line 1295, in render
+    self.environment.handle_exception()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "/Users/gusuping/code/kpi-design-tool/templates/chat.html", line 2037, in top-level template code
+    {% for m in all_modules %}
+    ^
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/jinja2/utils.py", line 92, in from_obj
+    if hasattr(obj, "jinja_pass_arg"):
+       ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+jinja2.exceptions.UndefinedError: 'list object' has no attribute 'items'
+2026-01-14 12:25:55,459 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/modules?select=%2A&id=eq.kpi "HTTP/2 200 OK"
+2026-01-14 12:25:55,563 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/modules?select=%2A&order=sort_order "HTTP/2 200 OK"
+2026-01-14 12:25:55,564 [ERROR] app: Exception on /chat/kpi [GET]
+Traceback (most recent call last):
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 2190, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 1486, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 1469, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/Users/gusuping/code/kpi-design-tool/app.py", line 122, in chat
+    return render_template(
+        'chat.html',
+    ...<4 lines>...
+        all_modules=all_modules
+    )
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/templating.py", line 151, in render_template
+    return _render(app, template, context)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/templating.py", line 132, in _render
+    rv = template.render(context)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/jinja2/environment.py", line 1295, in render
+    self.environment.handle_exception()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "/Users/gusuping/code/kpi-design-tool/templates/chat.html", line 2037, in top-level template code
+    {% for m in all_modules %}
+    ^
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/jinja2/utils.py", line 92, in from_obj
+    if hasattr(obj, "jinja_pass_arg"):
+       ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+jinja2.exceptions.UndefinedError: 'list object' has no attribute 'items'
+2026-01-14 12:25:55,568 [ERROR] __main__: 500 错误: 500 Internal Server Error: The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.
+Traceback (most recent call last):
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 2190, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 1486, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 1469, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/Users/gusuping/code/kpi-design-tool/app.py", line 122, in chat
+    return render_template(
+        'chat.html',
+    ...<4 lines>...
+        all_modules=all_modules
+    )
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/templating.py", line 151, in render_template
+    return _render(app, template, context)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/templating.py", line 132, in _render
+    rv = template.render(context)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/jinja2/environment.py", line 1295, in render
+    self.environment.handle_exception()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "/Users/gusuping/code/kpi-design-tool/templates/chat.html", line 2037, in top-level template code
+    {% for m in all_modules %}
+    ^
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/jinja2/utils.py", line 92, in from_obj
+    if hasattr(obj, "jinja_pass_arg"):
+       ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+jinja2.exceptions.UndefinedError: 'list object' has no attribute 'items'
+2026-01-14 12:26:09,102 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/modules?select=%2A&id=eq.kpi "HTTP/2 200 OK"
+2026-01-14 12:26:09,208 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/modules?select=%2A&order=sort_order "HTTP/2 200 OK"
+2026-01-14 12:26:09,209 [ERROR] app: Exception on /chat/kpi [GET]
+Traceback (most recent call last):
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 2190, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 1486, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 1469, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/Users/gusuping/code/kpi-design-tool/app.py", line 122, in chat
+    return render_template(
+        'chat.html',
+    ...<4 lines>...
+        all_modules=all_modules
+    )
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/templating.py", line 151, in render_template
+    return _render(app, template, context)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/templating.py", line 132, in _render
+    rv = template.render(context)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/jinja2/environment.py", line 1295, in render
+    self.environment.handle_exception()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "/Users/gusuping/code/kpi-design-tool/templates/chat.html", line 2037, in top-level template code
+    {% for m in all_modules %}
+    ^
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/jinja2/utils.py", line 92, in from_obj
+    if hasattr(obj, "jinja_pass_arg"):
+       ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+jinja2.exceptions.UndefinedError: 'list object' has no attribute 'items'
+2026-01-14 12:26:09,210 [ERROR] __main__: 500 错误: 500 Internal Server Error: The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.
+Traceback (most recent call last):
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 2190, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 1486, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/app.py", line 1469, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/Users/gusuping/code/kpi-design-tool/app.py", line 122, in chat
+    return render_template(
+        'chat.html',
+    ...<4 lines>...
+        all_modules=all_modules
+    )
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/templating.py", line 151, in render_template
+    return _render(app, template, context)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/flask/templating.py", line 132, in _render
+    rv = template.render(context)
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/jinja2/environment.py", line 1295, in render
+    self.environment.handle_exception()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "/Users/gusuping/code/kpi-design-tool/templates/chat.html", line 2037, in top-level template code
+    {% for m in all_modules %}
+    ^
+  File "/Users/gusuping/code/kpi-design-tool/venv/lib/python3.14/site-packages/jinja2/utils.py", line 92, in from_obj
+    if hasattr(obj, "jinja_pass_arg"):
+       ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+jinja2.exceptions.UndefinedError: 'list object' has no attribute 'items'
+2026-01-14 12:26:45,261 [INFO] httpx: HTTP Request: GET https://uitkbrmndylhgbbcjykd.supabase.co/rest/v1/modules?select=%2A&order=sort_order "HTTP/2 200 OK"

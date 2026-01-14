@@ -468,6 +468,98 @@
             letter-spacing: 0.01em;
         }
 
+        /* 模块选择器 */
+        .module-selector-wrapper {
+            position: relative;
+        }
+
+        .module-selector {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: var(--gemini-surface-container-high);
+            border: none;
+            border-radius: 16px;
+            color: var(--gemini-on-surface);
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+        }
+
+        .module-selector:hover {
+            background: #dde3ea;
+        }
+
+        .module-selector .module-icon {
+            font-size: 16px;
+        }
+
+        .module-selector .dropdown-arrow {
+            width: 16px;
+            height: 16px;
+            transition: transform 0.2s;
+        }
+
+        .module-selector-wrapper.open .dropdown-arrow {
+            transform: rotate(180deg);
+        }
+
+        .module-dropdown {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            min-width: 180px;
+            background: var(--gemini-surface);
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+            padding: 8px 0;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+        }
+
+        .module-selector-wrapper.open .module-dropdown {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .module-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 16px;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .module-option:hover {
+            background: rgba(0, 0, 0, 0.04);
+        }
+
+        .module-option.active {
+            background: rgba(26, 115, 232, 0.08);
+        }
+
+        .module-option-icon {
+            font-size: 18px;
+        }
+
+        .module-option-name {
+            flex: 1;
+            font-size: 14px;
+        }
+
+        .check-icon {
+            color: var(--gemini-primary);
+            font-weight: 500;
+        }
+
         .user-credits {
             display: flex;
             align-items: center;
@@ -1932,7 +2024,25 @@
                 </div>
             </div>
             <div class="nav-right">
-                <span class="pro-badge">{{ module_info.name }}</span>
+                <!-- 模块选择器 -->
+                <div class="module-selector-wrapper">
+                    <button class="module-selector" onclick="toggleModuleDropdown()">
+                        <span class="module-icon">{{ module_info.icon }}</span>
+                        <span class="module-name">{{ module_info.name }}</span>
+                        <svg class="dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </button>
+                    <div class="module-dropdown" id="moduleDropdown">
+                        {% for m in all_modules %}
+                        <div class="module-option {% if m.id == module %}active{% endif %}" onclick="switchModule('{{ m.id }}')">
+                            <span class="module-option-icon">{{ m.icon }}</span>
+                            <span class="module-option-name">{{ m.name }}</span>
+                            {% if m.id == module %}<span class="check-icon">✓</span>{% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
                 <a href="/" class="user-credits" id="userCredits" style="display: none; text-decoration: none; cursor: pointer;" title="点击兑换积分">
                     <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
                         <path d="M12 0L14.59 8.41L23 11L14.59 13.59L12 22L9.41 13.59L1 11L9.41 8.41L12 0Z"/>
@@ -2920,13 +3030,39 @@
             });
         }
 
+        // 模块选择器
+        function toggleModuleDropdown() {
+            const wrapper = document.querySelector('.module-selector-wrapper');
+            wrapper.classList.toggle('open');
+        }
+
+        function switchModule(newModule) {
+            // 关闭下拉菜单
+            document.querySelector('.module-selector-wrapper').classList.remove('open');
+
+            // 如果是当前模块，不做任何操作
+            if (newModule === MODULE) {
+                return;
+            }
+
+            // 跳转到新模块的聊天页面（自动创建新会话）
+            window.location.href = '/chat/' + newModule;
+        }
+
         // 点击外部关闭下拉
         document.addEventListener('click', (e) => {
+            // 关闭模型选择器下拉
             const dropdown = document.getElementById('modelDropdown');
             const selector = document.querySelector('.model-selector');
             if (!dropdown.contains(e.target) && !selector.contains(e.target)) {
                 dropdown.classList.remove('show');
                 selector.classList.remove('open');
+            }
+
+            // 关闭模块选择器下拉
+            const moduleWrapper = document.querySelector('.module-selector-wrapper');
+            if (moduleWrapper && !moduleWrapper.contains(e.target)) {
+                moduleWrapper.classList.remove('open');
             }
         });
 
