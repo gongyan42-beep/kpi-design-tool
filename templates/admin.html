@@ -624,6 +624,244 @@
             color: var(--accent-blue);
         }
 
+        /* 视图切换按钮组 */
+        .view-toggle-group {
+            display: flex;
+            gap: 4px;
+            background: var(--bg-secondary);
+            padding: 4px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+        .view-toggle-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 32px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .view-toggle-btn:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+        }
+        .view-toggle-btn.active {
+            background: var(--accent-blue);
+            color: white;
+            box-shadow: 0 2px 4px rgba(99, 102, 241, 0.3);
+        }
+
+        /* 表格视图样式 */
+        .users-table-container {
+            background: var(--bg-card);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+        .users-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .users-table th {
+            background: var(--bg-secondary);
+            padding: 14px 16px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .users-table th:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+        .users-table th.sorted {
+            color: var(--accent-blue);
+        }
+        .users-table th .sort-icon {
+            display: inline-block;
+            margin-left: 6px;
+            opacity: 0.3;
+            transition: all 0.2s;
+        }
+        .users-table th.sorted .sort-icon {
+            opacity: 1;
+        }
+        .users-table th.sorted.desc .sort-icon {
+            transform: rotate(180deg);
+        }
+        .users-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 14px;
+            color: var(--text-secondary);
+            vertical-align: middle;
+        }
+        .users-table tr:last-child td {
+            border-bottom: none;
+        }
+        .users-table tr:hover td {
+            background: var(--bg-secondary);
+        }
+        .users-table .user-name-cell {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .users-table .user-avatar-small {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+        .users-table .user-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .users-table .user-info .name {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .users-table .user-info .company {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+        .users-table .tag-industry {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+        .users-table .credits-cell {
+            font-weight: 600;
+            color: var(--accent-green);
+        }
+        .users-table .credits-cell.low {
+            color: var(--accent-orange);
+        }
+        .users-table .credits-cell.zero {
+            color: var(--text-muted);
+        }
+        .users-table .action-btns {
+            display: flex;
+            gap: 8px;
+        }
+        .users-table .action-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .users-table .action-btn.view {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--accent-blue);
+        }
+        .users-table .action-btn.view:hover {
+            background: rgba(99, 102, 241, 0.2);
+        }
+        .users-table .action-btn.edit {
+            background: rgba(34, 197, 94, 0.1);
+            color: var(--accent-green);
+        }
+        .users-table .action-btn.edit:hover {
+            background: rgba(34, 197, 94, 0.2);
+        }
+
+        /* 紧凑视图样式 */
+        .users-compact-list {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            background: var(--bg-card);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            padding: 8px;
+        }
+        .user-compact-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 14px;
+            border-radius: 8px;
+            gap: 16px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .user-compact-item:hover {
+            background: var(--bg-secondary);
+        }
+        .user-compact-item .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+        .user-compact-item .info {
+            flex: 1;
+            min-width: 0;
+        }
+        .user-compact-item .name {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+        .user-compact-item .company {
+            font-size: 12px;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .user-compact-item .stats {
+            display: flex;
+            gap: 20px;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+        .user-compact-item .stat {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .user-compact-item .stat-value {
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+        .user-compact-item .tag-industry {
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
         .user-stats {
             display: flex;
             gap: 16px;
@@ -2503,6 +2741,34 @@
                         <option value="medium">中活跃 (3-5对话)</option>
                         <option value="high">高活跃 (>5对话)</option>
                     </select>
+
+                    <!-- 视图切换按钮组 -->
+                    <div class="view-toggle-group">
+                        <button class="view-toggle-btn active" data-view="card" onclick="switchUserView('card')" title="卡片视图">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="7" height="7" rx="1"/>
+                                <rect x="14" y="3" width="7" height="7" rx="1"/>
+                                <rect x="3" y="14" width="7" height="7" rx="1"/>
+                                <rect x="14" y="14" width="7" height="7" rx="1"/>
+                            </svg>
+                        </button>
+                        <button class="view-toggle-btn" data-view="table" onclick="switchUserView('table')" title="表格视图">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="3" y1="6" x2="21" y2="6"/>
+                                <line x1="3" y1="12" x2="21" y2="12"/>
+                                <line x1="3" y1="18" x2="21" y2="18"/>
+                            </svg>
+                        </button>
+                        <button class="view-toggle-btn" data-view="compact" onclick="switchUserView('compact')" title="紧凑视图">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="3" y1="4" x2="21" y2="4"/>
+                                <line x1="3" y1="9" x2="21" y2="9"/>
+                                <line x1="3" y1="14" x2="21" y2="14"/>
+                                <line x1="3" y1="19" x2="21" y2="19"/>
+                            </svg>
+                        </button>
+                    </div>
+
                     <span class="filter-count" id="filterCount">显示 0 / 0 用户</span>
                 </div>
                 <div id="usersList"></div>
@@ -2992,6 +3258,11 @@
     <script>
         // 全局数据
         let allUsers = [];
+
+        // 视图状态
+        let currentUserView = 'card'; // card, table, compact
+        let tableSortField = 'created_at';
+        let tableSortDirection = 'desc';
         let allSessions = [];
         let currentUserEmail = null;
         let currentAdminRole = 'normal';  // 当前管理员角色：'super' 或 'normal'
@@ -3257,7 +3528,23 @@
                 return;
             }
 
-            container.innerHTML = usersToRender.map(user => {
+            // 根据当前视图模式渲染
+            switch(currentUserView) {
+                case 'table':
+                    renderUsersTable(usersToRender);
+                    break;
+                case 'compact':
+                    renderUsersCompact(usersToRender);
+                    break;
+                default:
+                    renderUsersCard(usersToRender);
+            }
+        }
+
+        // 卡片视图渲染
+        function renderUsersCard(users) {
+            const container = document.getElementById('usersList');
+            container.innerHTML = users.map(user => {
                 const email = user.email || '未知';
                 const stats = userStatsCache[email] || { sessions: 0, messages: 0 };
                 const credits = user.credits || 0;
@@ -3301,6 +3588,210 @@
                     </div>
                 </div>
             `}).join('');
+        }
+
+        // 表格视图渲染
+        function renderUsersTable(users) {
+            const container = document.getElementById('usersList');
+
+            // 排序用户
+            const sortedUsers = sortUsersForTable(users);
+
+            const getSortClass = (field) => {
+                if (tableSortField !== field) return '';
+                return `sorted ${tableSortDirection}`;
+            };
+
+            const sortIcon = `<span class="sort-icon">▲</span>`;
+
+            container.innerHTML = `
+                <div class="users-table-container">
+                    <table class="users-table">
+                        <thead>
+                            <tr>
+                                <th class="${getSortClass('nickname')}" onclick="sortTableBy('nickname')">
+                                    用户${sortIcon}
+                                </th>
+                                <th class="${getSortClass('industry')}" onclick="sortTableBy('industry')">
+                                    行业${sortIcon}
+                                </th>
+                                <th class="${getSortClass('credits')}" onclick="sortTableBy('credits')">
+                                    积分${sortIcon}
+                                </th>
+                                <th class="${getSortClass('sessions')}" onclick="sortTableBy('sessions')">
+                                    对话数${sortIcon}
+                                </th>
+                                <th class="${getSortClass('messages')}" onclick="sortTableBy('messages')">
+                                    消息数${sortIcon}
+                                </th>
+                                <th class="${getSortClass('created_at')}" onclick="sortTableBy('created_at')">
+                                    注册时间${sortIcon}
+                                </th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${sortedUsers.map(user => {
+                                const email = user.email || '未知';
+                                const stats = userStatsCache[email] || { sessions: 0, messages: 0 };
+                                const credits = user.credits || 0;
+                                const industry = getIndustryByKeyword(user.company);
+                                const industryClass = getIndustryClass(industry);
+                                const creditsClass = credits === 0 ? 'zero' : (credits < 20 ? 'low' : '');
+                                const displayName = user.nickname || email.split('@')[0];
+                                const initial = displayName.charAt(0).toUpperCase();
+
+                                return `
+                                    <tr>
+                                        <td>
+                                            <div class="user-name-cell">
+                                                <div class="user-avatar-small">${initial}</div>
+                                                <div class="user-info">
+                                                    <div class="name">${displayName}</div>
+                                                    <div class="company">${user.company || '未填写公司'}</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="tag-industry ${industryClass}">${industry}</span>
+                                        </td>
+                                        <td class="credits-cell ${creditsClass}">${credits}</td>
+                                        <td>${stats.sessions}</td>
+                                        <td>${stats.messages}</td>
+                                        <td>${formatTime(user.created_at)}</td>
+                                        <td>
+                                            <div class="action-btns">
+                                                <button class="action-btn view" onclick="event.stopPropagation(); showUserDetail('${email}')">详情</button>
+                                                <button class="action-btn edit" onclick="event.stopPropagation(); showEditCreditsModal('${email}', ${credits})">积分</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        // 紧凑视图渲染
+        function renderUsersCompact(users) {
+            const container = document.getElementById('usersList');
+
+            // 按注册时间排序（最新的在前）
+            const sortedUsers = [...users].sort((a, b) =>
+                new Date(b.created_at) - new Date(a.created_at)
+            );
+
+            container.innerHTML = `
+                <div class="users-compact-list">
+                    ${sortedUsers.map(user => {
+                        const email = user.email || '未知';
+                        const stats = userStatsCache[email] || { sessions: 0, messages: 0 };
+                        const credits = user.credits || 0;
+                        const industry = getIndustryByKeyword(user.company);
+                        const industryClass = getIndustryClass(industry);
+                        const displayName = user.nickname || email.split('@')[0];
+                        const initial = displayName.charAt(0).toUpperCase();
+
+                        return `
+                            <div class="user-compact-item" onclick="showUserDetail('${email}')">
+                                <div class="avatar">${initial}</div>
+                                <div class="info">
+                                    <div class="name">${displayName}</div>
+                                    <div class="company">${user.company || '未填写公司'}</div>
+                                </div>
+                                <span class="tag-industry ${industryClass}">${industry}</span>
+                                <div class="stats">
+                                    <div class="stat">
+                                        <span>💎</span>
+                                        <span class="stat-value" style="color: ${credits < 20 ? '#f28b82' : '#81C995'};">${credits}</span>
+                                    </div>
+                                    <div class="stat">
+                                        <span>💬</span>
+                                        <span class="stat-value">${stats.sessions}</span>
+                                    </div>
+                                    <div class="stat">
+                                        <span>📝</span>
+                                        <span class="stat-value">${stats.messages}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+
+        // 切换用户视图
+        function switchUserView(view) {
+            currentUserView = view;
+
+            // 更新按钮状态
+            document.querySelectorAll('.view-toggle-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.view === view);
+            });
+
+            // 重新渲染
+            filterUsers();
+        }
+
+        // 表格排序
+        function sortTableBy(field) {
+            if (tableSortField === field) {
+                // 切换排序方向
+                tableSortDirection = tableSortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                tableSortField = field;
+                tableSortDirection = 'desc'; // 默认降序
+            }
+            filterUsers();
+        }
+
+        // 排序用户数据
+        function sortUsersForTable(users) {
+            return [...users].sort((a, b) => {
+                const emailA = a.email || '未知';
+                const emailB = b.email || '未知';
+                const statsA = userStatsCache[emailA] || { sessions: 0, messages: 0 };
+                const statsB = userStatsCache[emailB] || { sessions: 0, messages: 0 };
+
+                let valA, valB;
+
+                switch(tableSortField) {
+                    case 'nickname':
+                        valA = (a.nickname || emailA).toLowerCase();
+                        valB = (b.nickname || emailB).toLowerCase();
+                        break;
+                    case 'industry':
+                        valA = getIndustryByKeyword(a.company);
+                        valB = getIndustryByKeyword(b.company);
+                        break;
+                    case 'credits':
+                        valA = a.credits || 0;
+                        valB = b.credits || 0;
+                        break;
+                    case 'sessions':
+                        valA = statsA.sessions;
+                        valB = statsB.sessions;
+                        break;
+                    case 'messages':
+                        valA = statsA.messages;
+                        valB = statsB.messages;
+                        break;
+                    case 'created_at':
+                    default:
+                        valA = new Date(a.created_at);
+                        valB = new Date(b.created_at);
+                        break;
+                }
+
+                let compare = 0;
+                if (valA < valB) compare = -1;
+                else if (valA > valB) compare = 1;
+
+                return tableSortDirection === 'asc' ? compare : -compare;
+            });
         }
 
         // 筛选用户
