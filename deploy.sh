@@ -28,13 +28,16 @@ ssh -i ~/.ssh/baota_server_key root@118.25.13.91 "
     # 解压代码
     tar -xzf kpi-deploy.tar.gz -C kpi-design-tool-new
 
-    # 保留现有的 data 目录（重要！）
+    # 保留现有的 data 目录（重要！防止嵌套！）
+    mkdir -p kpi-design-tool-new/data
     if [ -d kpi-design-tool/data ]; then
         echo '✅ 保留现有数据目录'
-        cp -r kpi-design-tool/data kpi-design-tool-new/
+        # 复制内容而非目录本身，避免产生 data/data 嵌套
+        cp -r kpi-design-tool/data/* kpi-design-tool-new/data/ 2>/dev/null || true
+        # 清理可能存在的嵌套目录
+        rm -rf kpi-design-tool-new/data/data 2>/dev/null || true
     else
-        echo '⚠️ 创建新数据目录'
-        mkdir -p kpi-design-tool-new/data
+        echo '⚠️ 无现有数据目录'
     fi
 
     # 备份旧版本
