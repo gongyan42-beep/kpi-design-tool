@@ -1165,6 +1165,397 @@ def admin_user_profile_summary():
         }), 500
 
 
+# ========================================
+# 分析缓存机制
+# ========================================
+# 内存缓存：存储分析结果，避免重复调用 AI
+_analysis_cache = {}
+
+def get_analysis_cache(user_email, analysis_type, current_message_count):
+    """获取缓存的分析结果（如果消息数没变）"""
+    cache_key = f"{user_email}:{analysis_type}"
+    if cache_key in _analysis_cache:
+        cached = _analysis_cache[cache_key]
+        if cached.get('message_count') == current_message_count:
+            logger.info(f"命中缓存: {cache_key}, 消息数: {current_message_count}")
+            return cached.get('result')
+    return None
+
+def set_analysis_cache(user_email, analysis_type, message_count, result):
+    """保存分析结果到缓存"""
+    cache_key = f"{user_email}:{analysis_type}"
+    _analysis_cache[cache_key] = {
+        'message_count': message_count,
+        'result': result,
+        'cached_at': datetime.now().isoformat()
+    }
+    logger.info(f"缓存已更新: {cache_key}, 消息数: {message_count}")
+
+
+@app.route('/api/admin/user-insight', methods=['POST'])
+def admin_user_insight():
+    """生成用户洞察（需求摘要）- 支持缓存"""
+    if not session.get('is_admin'):
+        return jsonify({'success': False, 'error': '请先登录管理后台'}), 401
+
+    try:
+        data = request.get_json()
+        user_email = data.get('email')
+        force_refresh = data.get('force_refresh', False)  # 强制刷新参数
+
+        if not user_email:
+            return jsonify({'success': False, 'error': '缺少用户邮箱参数'}), 400
+
+        # 获取该用户的所有会话和消息
+        sessions_data = db.get_all_sessions_for_admin(limit=500)
+        user_sessions = [s for s in sessions_data if s.get('user_email') == user_email]
+
+        if not user_sessions:
+            return jsonify({
+                'success': False,
+                'error': '该用户没有聊天记录'
+            }), 404
+
+        # 计算总消息数（用于缓存判断）
+        total_message_count = sum(len(s.get('messages', [])) for s in user_sessions)
+
+        # 检查缓存（如果不是强制刷新）
+        if not force_refresh:
+            cached_result = get_analysis_cache(user_email, 'user_insight', total_message_count)
+            if cached_result:
+                return jsonify({
+                    'success': True,
+                    'result': cached_result,
+                    'from_cache': True
+                })
+
+        # 收集所有对话（包含完整上下文）
+        all_conversations = []
+        for sess in user_sessions:
+            module = sess.get('module', '未知模块')
+            messages = sess.get('messages', [])
+            if messages:
+                conversation = f"\n--- 对话模块：{module} ---\n"
+                for msg in messages:
+                    role = '用户' if msg.get('role') == 'user' else 'AI'
+                    content = msg.get('content', '')[:1000]  # 限制每条消息长度
+                    conversation += f"{role}：{content}\n"
+                all_conversations.append(conversation)
+
+        # 限制总对话数量，避免 token 过多
+        if len(all_conversations) > 20:
+            all_conversations = all_conversations[-20:]
+
+        # 构建用户洞察提示词
+        insight_prompt = f"""你是一个专业的需求分析专家。请分析以下客户的所有访谈/对话记录，提取需求信息，识别核心洞察，输出结构化文档。
+
+客户邮箱：{user_email}
+对话次数：{len(user_sessions)}
+
+以下是该客户的全部对话记录：
+{''.join(all_conversations)}
+
+---
+
+请按以下格式输出：
+
+# 📋 客户需求摘要
+
+## 基本信息
+
+| 项目 | 内容 |
+|------|------|
+| 客户/店铺 | （从对话中推断）|
+| 需求类型 | （从对话中总结）|
+| 使用场景/平台 | （从对话中推断）|
+| 规模 | （如有相关信息）|
+
+---
+
+## 客户现状
+
+### 当前工作流
+[按步骤描述客户现在怎么做这件事，从对话中提取]
+
+### 痛点
+[客户最不满意的是什么，从对话中提取]
+
+---
+
+## 客户期望
+
+[客户想要达到什么效果，要具体]
+
+---
+
+## 参考对象
+
+[客户提到的参考案例/竞品，为什么参考它，如没有则写"未提及"]
+
+---
+
+## ⭐ 核心洞察（神来之笔）
+
+客户说出的独特观点、判断或发现，这些是 AI 想不到的：
+
+**洞察1**：[一句话概括]
+> 原话："..."
+
+**洞察2**：[一句话概括]
+> 原话："..."
+
+（如果有更多洞察继续列出）
+
+---
+
+## 🔍 可继续追问的点
+
+还没挖清楚的，如果有机会可以继续问：
+
+1.
+2.
+3.
+
+---
+
+## ⚠️ 注意事项
+
+[风险点或需要特别注意的]
+
+---
+
+## 信息完整度
+
+| 维度 | 状态 |
+|------|------|
+| 需求类型 | ✅/⚠️/❌ |
+| 工作流 | ✅/⚠️/❌ |
+| 痛点 | ✅/⚠️/❌ |
+| 期望效果 | ✅/⚠️/❌ |
+| 参考示例 | ✅/❌ |
+| 核心洞察 | ✅/❌ |
+
+请直接输出分析结果，使用 Markdown 格式。"""
+
+        # 调用 AI 进行分析
+        try:
+            from openai import OpenAI
+            import os
+
+            # 使用朋友提供的 API（支持 Gemini 3 Pro）
+            api_key = os.getenv('GEMINI_API_KEY', 'sk-2rGRzA9boGmu5pbdzDNZZhEsHinCSX1Nv0w9TkDhBct1gJbe')
+            base_url = os.getenv('GEMINI_BASE_URL', 'http://54.81.25.253:4000/v1')
+
+            client = OpenAI(api_key=api_key, base_url=base_url)
+
+            response = client.chat.completions.create(
+                model='gemini-3-pro-preview',
+                messages=[
+                    {'role': 'system', 'content': '你是一个专业的需求分析专家，擅长从客户对话中提取核心需求和洞察。请使用 Markdown 格式输出。'},
+                    {'role': 'user', 'content': insight_prompt}
+                ],
+                temperature=0.7,
+                max_tokens=3000
+            )
+
+            ai_response = response.choices[0].message.content.strip()
+            logger.info(f"用户洞察分析完成，用户：{user_email}")
+
+            # 保存到缓存
+            set_analysis_cache(user_email, 'user_insight', total_message_count, ai_response)
+
+            return jsonify({
+                'success': True,
+                'result': ai_response,
+                'from_cache': False
+            })
+
+        except Exception as e:
+            logger.error(f"AI 分析失败: {e}")
+            return jsonify({
+                'success': False,
+                'error': f'AI 分析失败: {str(e)}'
+            }), 500
+
+    except Exception as e:
+        logger.error(f"生成用户洞察失败: {e}")
+        return jsonify({
+            'success': False,
+            'error': f'生成用户洞察失败: {str(e)}'
+        }), 500
+
+
+@app.route('/api/admin/tool-analysis', methods=['POST'])
+def admin_tool_analysis():
+    """生成工具分析（功能需求文档）- 支持缓存"""
+    if not session.get('is_admin'):
+        return jsonify({'success': False, 'error': '请先登录管理后台'}), 401
+
+    try:
+        data = request.get_json()
+        user_email = data.get('email')
+        force_refresh = data.get('force_refresh', False)  # 强制刷新参数
+
+        if not user_email:
+            return jsonify({'success': False, 'error': '缺少用户邮箱参数'}), 400
+
+        # 获取该用户的所有会话和消息
+        sessions_data = db.get_all_sessions_for_admin(limit=500)
+        user_sessions = [s for s in sessions_data if s.get('user_email') == user_email]
+
+        if not user_sessions:
+            return jsonify({
+                'success': False,
+                'error': '该用户没有聊天记录'
+            }), 404
+
+        # 计算总消息数（用于缓存判断）
+        total_message_count = sum(len(s.get('messages', [])) for s in user_sessions)
+
+        # 检查缓存（如果不是强制刷新）
+        if not force_refresh:
+            cached_result = get_analysis_cache(user_email, 'tool_analysis', total_message_count)
+            if cached_result:
+                return jsonify({
+                    'success': True,
+                    'result': cached_result,
+                    'from_cache': True
+                })
+
+        # 收集所有对话（包含完整上下文）
+        all_conversations = []
+        for sess in user_sessions:
+            module = sess.get('module', '未知模块')
+            messages = sess.get('messages', [])
+            if messages:
+                conversation = f"\n--- 对话模块：{module} ---\n"
+                for msg in messages:
+                    role = '用户' if msg.get('role') == 'user' else 'AI'
+                    content = msg.get('content', '')[:1000]
+                    conversation += f"{role}：{content}\n"
+                all_conversations.append(conversation)
+
+        # 限制总对话数量
+        if len(all_conversations) > 20:
+            all_conversations = all_conversations[-20:]
+
+        # 构建工具分析提示词
+        analysis_prompt = f"""你是一个专业的产品经理和需求分析师。请分析以下客户的所有对话记录，提取工具/功能需求，输出一份清晰的功能需求文档。
+
+客户邮箱：{user_email}
+对话次数：{len(user_sessions)}
+
+以下是该客户的全部对话记录：
+{''.join(all_conversations)}
+
+---
+
+请按以下格式输出功能需求文档：
+
+## 需求背景
+
+[一句话说明这个需求是解决什么问题的]
+
+## 用户场景
+
+用户是：[什么人，从对话中推断]
+用户现在的做法是：[当前工作流]
+用户的痛点是：[最不满意什么]
+用户想要的效果是：[期望]
+
+## 功能需求
+
+请实现以下功能：
+
+1. **[功能名称]**
+   - 输入：[用户输入什么]
+   - 处理：[系统做什么]
+   - 输出：[返回什么给用户]
+
+2. **[功能名称]**
+   - 输入：
+   - 处理：
+   - 输出：
+
+3. **[功能名称]**
+   - 输入：
+   - 处理：
+   - 输出：
+
+（根据对话内容列出所有识别到的功能需求）
+
+## 技术要求
+
+- [具体技术要求1]
+- [具体技术要求2]
+- [具体技术要求3]
+
+## 边界条件
+
+- 需要处理的特殊情况：[列出]
+- 不需要处理的：[列出，明确范围]
+
+## 参考信息
+
+[如果对话中有参考的竞品、示例、客户原话等，放在这里]
+
+## 优先级建议
+
+| 功能 | 优先级 | 原因 |
+|------|--------|------|
+| 功能1 | P0/P1/P2 | 原因 |
+| 功能2 | P0/P1/P2 | 原因 |
+
+请直接输出分析结果，使用 Markdown 格式。"""
+
+        # 调用 AI 进行分析
+        try:
+            from openai import OpenAI
+            import os
+
+            # 使用朋友提供的 API（支持 Gemini 3 Pro）
+            api_key = os.getenv('GEMINI_API_KEY', 'sk-2rGRzA9boGmu5pbdzDNZZhEsHinCSX1Nv0w9TkDhBct1gJbe')
+            base_url = os.getenv('GEMINI_BASE_URL', 'http://54.81.25.253:4000/v1')
+
+            client = OpenAI(api_key=api_key, base_url=base_url)
+
+            response = client.chat.completions.create(
+                model='gemini-3-pro-preview',
+                messages=[
+                    {'role': 'system', 'content': '你是一个专业的产品经理，擅长从客户对话中提取功能需求并输出清晰的需求文档。请使用 Markdown 格式输出。'},
+                    {'role': 'user', 'content': analysis_prompt}
+                ],
+                temperature=0.7,
+                max_tokens=3000
+            )
+
+            ai_response = response.choices[0].message.content.strip()
+            logger.info(f"工具分析完成，用户：{user_email}")
+
+            # 保存到缓存
+            set_analysis_cache(user_email, 'tool_analysis', total_message_count, ai_response)
+
+            return jsonify({
+                'success': True,
+                'result': ai_response,
+                'from_cache': False
+            })
+
+        except Exception as e:
+            logger.error(f"AI 分析失败: {e}")
+            return jsonify({
+                'success': False,
+                'error': f'AI 分析失败: {str(e)}'
+            }), 500
+
+    except Exception as e:
+        logger.error(f"生成工具分析失败: {e}")
+        return jsonify({
+            'success': False,
+            'error': f'生成工具分析失败: {str(e)}'
+        }), 500
+
+
 @app.route('/api/admin/users', methods=['GET'])
 def admin_get_users():
     """获取所有用户（从 Supabase 或本地会话推断）"""

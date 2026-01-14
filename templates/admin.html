@@ -449,8 +449,8 @@
             font-size: 14px;
         }
 
-        /* 管理面板 */
-        .admin-panel {
+        /* 管理面板 - 默认隐藏，登录后显示 */
+        #adminPanel {
             display: none;
         }
 
@@ -550,6 +550,82 @@
             background: rgba(161, 161, 170, 0.1);
             border-color: rgba(161, 161, 170, 0.3);
             color: var(--text-secondary);
+        }
+
+        /* 行业标签样式 */
+        .tag-industry {
+            background: rgba(139, 92, 246, 0.1);
+            border-color: rgba(139, 92, 246, 0.3);
+            color: var(--accent-purple);
+        }
+        .tag-industry-tech { background: rgba(34, 211, 238, 0.1); border-color: rgba(34, 211, 238, 0.3); color: var(--accent-cyan); }
+        .tag-industry-manufacture { background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.3); color: var(--accent-amber); }
+        .tag-industry-retail { background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3); color: var(--accent-green); }
+        .tag-industry-education { background: rgba(99, 102, 241, 0.1); border-color: rgba(99, 102, 241, 0.3); color: var(--accent-blue); }
+        .tag-industry-finance { background: rgba(236, 72, 153, 0.1); border-color: rgba(236, 72, 153, 0.3); color: #ec4899; }
+        .tag-industry-medical { background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3); color: var(--accent-red); }
+        .tag-industry-construction { background: rgba(251, 146, 60, 0.1); border-color: rgba(251, 146, 60, 0.3); color: #fb923c; }
+        .tag-industry-service { background: rgba(167, 139, 250, 0.1); border-color: rgba(167, 139, 250, 0.3); color: #a78bfa; }
+        .tag-industry-unknown { background: rgba(113, 113, 122, 0.1); border-color: rgba(113, 113, 122, 0.3); color: var(--text-muted); }
+
+        /* 用户筛选工具栏 */
+        .user-filter-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding: 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            align-items: center;
+        }
+        .user-filter-bar .search-input {
+            flex: 1;
+            min-width: 200px;
+            padding: 10px 14px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .user-filter-bar .search-input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        .user-filter-bar .search-input::placeholder {
+            color: var(--text-muted);
+        }
+        .user-filter-bar .filter-select {
+            padding: 10px 32px 10px 12px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 14px;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23a1a1aa' d='M3 4.5L6 7.5L9 4.5'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            transition: all 0.2s;
+        }
+        .user-filter-bar .filter-select:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+        }
+        .user-filter-bar .filter-select:hover {
+            border-color: var(--border-light);
+        }
+        .filter-count {
+            padding: 6px 12px;
+            background: rgba(99, 102, 241, 0.1);
+            border-radius: 6px;
+            font-size: 13px;
+            color: var(--accent-blue);
         }
 
         .user-stats {
@@ -1477,6 +1553,40 @@
             transform: none;
         }
 
+        .btn-user-insight {
+            padding: 10px 18px;
+            background: linear-gradient(135deg, #06b6d4, #0891b2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: inherit;
+            margin-left: 12px;
+            transition: all 0.2s;
+        }
+
+        .btn-user-insight:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3);
+        }
+
+        .btn-tool-analysis {
+            padding: 10px 18px;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: inherit;
+            margin-left: 12px;
+            transition: all 0.2s;
+        }
+
+        .btn-tool-analysis:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+        }
+
         .btn-export-single {
             padding: 10px 18px;
             background: linear-gradient(135deg, var(--accent-green), #059669);
@@ -1758,6 +1868,88 @@
             padding: 40px;
             color: var(--text-muted);
         }
+
+        /* 图标编辑器样式 */
+        .icon-editor-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        .editable-icon {
+            font-size: 28px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 10px;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px dashed transparent;
+        }
+
+        .editable-icon:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--accent-blue);
+        }
+
+        .editable-icon::after {
+            content: '✏️';
+            font-size: 12px;
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .icon-editor-wrapper:hover .editable-icon::after {
+            opacity: 1;
+        }
+
+        .icon-picker-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            z-index: 1000;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            min-width: 280px;
+        }
+
+        .icon-picker-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 6px;
+        }
+
+        .icon-picker-option {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 20px;
+            transition: all 0.2s;
+            background: transparent;
+        }
+
+        .icon-picker-option:hover {
+            border-color: var(--accent-blue);
+            background: rgba(99, 102, 241, 0.1);
+            transform: scale(1.1);
+        }
+
+        .icon-picker-option.selected {
+            border-color: var(--accent-blue);
+            background: rgba(99, 102, 241, 0.2);
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3);
+        }
     </style>
 </head>
 
@@ -1766,11 +1958,15 @@
     <div class="login-box" id="loginBox">
         <h1>管理后台</h1>
         <p class="login-subtitle">电商管理设计工具</p>
-        <input type="text" id="adminUsername" placeholder="用户名"
-            onkeydown="if(event.key==='Enter')document.getElementById('adminPassword').focus()">
-        <input type="password" id="adminPassword" placeholder="密码"
-            onkeydown="if(event.key==='Enter')adminLogin()">
-        <button onclick="adminLogin()">登录</button>
+        <form id="loginForm" onsubmit="adminLogin(); return false;" autocomplete="on">
+            <input type="text" id="adminUsername" name="username" placeholder="用户名"
+                autocomplete="username"
+                onkeydown="if(event.key==='Enter')document.getElementById('adminPassword').focus()">
+            <input type="password" id="adminPassword" name="password" placeholder="密码"
+                autocomplete="current-password"
+                onkeydown="if(event.key==='Enter')adminLogin()">
+            <button type="submit">登录</button>
+        </form>
         <p class="error-msg" id="loginError"></p>
     </div>
 
@@ -1880,7 +2076,8 @@
                     </div>
                     <div>
                         <button class="btn-back" onclick="hideUserDetail()">← 返回列表</button>
-                        <button class="btn-user-profile" onclick="generateUserProfile()">🎯 生成用户画像</button>
+                        <button class="btn-user-insight" onclick="generateUserInsight()">🔍 用户洞察</button>
+                        <button class="btn-tool-analysis" onclick="generateToolAnalysis()">🛠️ 工具分析</button>
                         <button class="btn-export-single" onclick="exportUserSessions()">导出该用户全部对话</button>
                     </div>
                 </div>
@@ -1917,6 +2114,37 @@
 
             <!-- 用户列表 -->
             <div id="usersTab">
+                <!-- 筛选工具栏 -->
+                <div class="user-filter-bar">
+                    <input type="text" class="search-input" id="userSearchInput" placeholder="搜索用户名、公司、邮箱..." oninput="filterUsers()">
+                    <select class="filter-select" id="industryFilter" onchange="filterUsers()">
+                        <option value="">全部行业</option>
+                        <option value="科技/互联网">科技/互联网</option>
+                        <option value="制造业">制造业</option>
+                        <option value="零售/贸易">零售/贸易</option>
+                        <option value="教育培训">教育培训</option>
+                        <option value="金融">金融</option>
+                        <option value="医疗健康">医疗健康</option>
+                        <option value="建筑/房产">建筑/房产</option>
+                        <option value="服务业">服务业</option>
+                        <option value="未知">未知行业</option>
+                    </select>
+                    <select class="filter-select" id="creditsFilter" onchange="filterUsers()">
+                        <option value="">全部积分</option>
+                        <option value="zero">无积分 (0)</option>
+                        <option value="low">低积分 (<20)</option>
+                        <option value="normal">正常 (20-50)</option>
+                        <option value="high">高积分 (>50)</option>
+                    </select>
+                    <select class="filter-select" id="activityFilter" onchange="filterUsers()">
+                        <option value="">全部活跃度</option>
+                        <option value="inactive">未活跃 (0对话)</option>
+                        <option value="low">低活跃 (1-2对话)</option>
+                        <option value="medium">中活跃 (3-5对话)</option>
+                        <option value="high">高活跃 (>5对话)</option>
+                    </select>
+                    <span class="filter-count" id="filterCount">显示 0 / 0 用户</span>
+                </div>
                 <div id="usersList"></div>
             </div>
 
@@ -1943,7 +2171,14 @@
                     <div class="prompt-editor" id="promptEditor" style="display: none;">
                         <div class="prompt-editor-header">
                             <div class="prompt-editor-title">
-                                <span id="currentModuleIcon" style="font-size: 24px;"></span>
+                                <div class="icon-editor-wrapper">
+                                    <span id="currentModuleIcon" class="editable-icon" onclick="showIconPicker()" title="点击修改图标">📋</span>
+                                    <div id="iconPickerDropdown" class="icon-picker-dropdown" style="display: none;">
+                                        <div class="icon-picker-grid" id="iconPickerGrid">
+                                            <!-- 图标选项会由 JS 动态生成 -->
+                                        </div>
+                                    </div>
+                                </div>
                                 <input type="text" id="currentModuleName" class="module-name-input" value=""
                                     placeholder="模块名称" onblur="saveModuleName()"
                                     onkeydown="if(event.key==='Enter'){this.blur()}">
@@ -2229,7 +2464,7 @@
     <div id="userProfileModal" class="modal-overlay" style="display: none;" onclick="if(event.target === this) hideUserProfileModal()">
         <div class="modal-content user-profile-modal-content">
             <div class="modal-header">
-                <h2>🎯 用户画像分析</h2>
+                <h2 id="userProfileModalTitle">🎯 用户画像分析</h2>
                 <button class="modal-close" onclick="hideUserProfileModal()">✕</button>
             </div>
             <div class="modal-body">
@@ -2393,40 +2628,100 @@
         }
 
         // 渲染用户列表（带统计信息）
-        function renderUsers() {
+        // 行业关键词映射表
+        const industryKeywords = {
+            '科技/互联网': ['科技', '网络', '软件', '信息', '数据', '智能', 'AI', '互联网', '云', '数字', '电子商务', '平台'],
+            '制造业': ['机电', '机械', '设备', '制造', '工业', '材料', '电子', '自动化', '生产', '加工', '精密'],
+            '零售/贸易': ['商贸', '贸易', '电商', '零售', '批发', '超市', '百货', '连锁', '进出口'],
+            '教育培训': ['教育', '培训', '学院', '学校', '大学', '教学', '课程', '在线教育'],
+            '金融': ['金融', '投资', '银行', '保险', '证券', '资本', '基金', '信托', '期货', '财富'],
+            '医疗健康': ['医疗', '医药', '健康', '生物', '医院', '诊所', '制药', '护理', '康复'],
+            '建筑/房产': ['建筑', '地产', '房产', '装饰', '工程', '设计院', '建设', '置业', '物业'],
+            '服务业': ['服务', '咨询', '传媒', '广告', '设计', '文化', '娱乐', '旅游', '酒店', '餐饮']
+        };
+
+        // 行业到 CSS 类名映射
+        const industryClassMap = {
+            '科技/互联网': 'tag-industry-tech',
+            '制造业': 'tag-industry-manufacture',
+            '零售/贸易': 'tag-industry-retail',
+            '教育培训': 'tag-industry-education',
+            '金融': 'tag-industry-finance',
+            '医疗健康': 'tag-industry-medical',
+            '建筑/房产': 'tag-industry-construction',
+            '服务业': 'tag-industry-service',
+            '未知': 'tag-industry-unknown'
+        };
+
+        // 根据公司名关键词匹配行业
+        function getIndustryByKeyword(companyName) {
+            if (!companyName) return '未知';
+            for (const [industry, keywords] of Object.entries(industryKeywords)) {
+                for (const keyword of keywords) {
+                    if (companyName.includes(keyword)) {
+                        return industry;
+                    }
+                }
+            }
+            return '未知';
+        }
+
+        // 获取行业对应的 CSS 类名
+        function getIndustryClass(industry) {
+            return industryClassMap[industry] || 'tag-industry-unknown';
+        }
+
+        // 存储用户统计数据（供筛选使用）
+        let userStatsCache = {};
+
+        function renderUsers(filteredUsers = null) {
             const container = document.getElementById('usersList');
+            const usersToRender = filteredUsers || allUsers;
 
             if (allUsers.length === 0) {
                 container.innerHTML = '<p class="loading">暂无注册用户</p>';
+                document.getElementById('filterCount').textContent = '显示 0 / 0 用户';
                 return;
             }
 
             // 为每个用户统计会话数和消息数
-            const userStats = {};
+            userStatsCache = {};
             allSessions.forEach(s => {
                 const email = s.user_email || '未知';
-                if (!userStats[email]) {
-                    userStats[email] = { sessions: 0, messages: 0 };
+                if (!userStatsCache[email]) {
+                    userStatsCache[email] = { sessions: 0, messages: 0 };
                 }
-                userStats[email].sessions++;
-                userStats[email].messages += (s.messages || []).length;
+                userStatsCache[email].sessions++;
+                userStatsCache[email].messages += (s.messages || []).length;
             });
 
-            container.innerHTML = allUsers.map(user => {
+            // 更新筛选计数
+            document.getElementById('filterCount').textContent = `显示 ${usersToRender.length} / ${allUsers.length} 用户`;
+
+            if (usersToRender.length === 0) {
+                container.innerHTML = '<p class="loading">没有符合条件的用户</p>';
+                return;
+            }
+
+            container.innerHTML = usersToRender.map(user => {
                 const email = user.email || '未知';
-                const stats = userStats[email] || { sessions: 0, messages: 0 };
+                const stats = userStatsCache[email] || { sessions: 0, messages: 0 };
                 const credits = user.credits || 0;
-                // 积分状态：低于 20 显示警告
                 const creditsClass = credits < 20 ? 'tag-credits-low' : 'tag-credits';
 
+                // 获取行业
+                const industry = getIndustryByKeyword(user.company);
+                const industryClass = getIndustryClass(industry);
+
                 return `
-                <div class="user-card" onclick="showUserDetail('${email}')">
+                <div class="user-card" onclick="showUserDetail('${email}')" data-email="${email}" data-company="${user.company || ''}" data-industry="${industry}" data-credits="${credits}" data-sessions="${stats.sessions}">
                     <div class="user-header">
                         <div class="user-info">
                             <div class="user-email">${user.nickname || email}</div>
                             <div class="user-tags">
                                 ${user.company ? `<span class="tag tag-company">🏢 ${user.company}</span>` : ''}
                                 ${user.position ? `<span class="tag tag-position">👤 ${user.position}</span>` : ''}
+                                <span class="tag ${industryClass}">🏭 ${industry}</span>
                                 <span class="tag ${creditsClass}">💎 ${credits} 积分</span>
                                 <span class="tag tag-sessions">💬 ${stats.sessions} 次对话</span>
                             </div>
@@ -2451,6 +2746,61 @@
                     </div>
                 </div>
             `}).join('');
+        }
+
+        // 筛选用户
+        function filterUsers() {
+            const searchText = document.getElementById('userSearchInput').value.toLowerCase().trim();
+            const industryFilter = document.getElementById('industryFilter').value;
+            const creditsFilter = document.getElementById('creditsFilter').value;
+            const activityFilter = document.getElementById('activityFilter').value;
+
+            const filtered = allUsers.filter(user => {
+                const email = user.email || '';
+                const nickname = user.nickname || '';
+                const company = user.company || '';
+                const credits = user.credits || 0;
+                const stats = userStatsCache[email] || { sessions: 0, messages: 0 };
+                const industry = getIndustryByKeyword(company);
+
+                // 搜索过滤
+                if (searchText) {
+                    const matchSearch = email.toLowerCase().includes(searchText) ||
+                                       nickname.toLowerCase().includes(searchText) ||
+                                       company.toLowerCase().includes(searchText);
+                    if (!matchSearch) return false;
+                }
+
+                // 行业过滤
+                if (industryFilter && industry !== industryFilter) {
+                    return false;
+                }
+
+                // 积分过滤
+                if (creditsFilter) {
+                    switch (creditsFilter) {
+                        case 'zero': if (credits !== 0) return false; break;
+                        case 'low': if (credits <= 0 || credits >= 20) return false; break;
+                        case 'normal': if (credits < 20 || credits > 50) return false; break;
+                        case 'high': if (credits <= 50) return false; break;
+                    }
+                }
+
+                // 活跃度过滤
+                if (activityFilter) {
+                    const sessions = stats.sessions;
+                    switch (activityFilter) {
+                        case 'inactive': if (sessions !== 0) return false; break;
+                        case 'low': if (sessions < 1 || sessions > 2) return false; break;
+                        case 'medium': if (sessions < 3 || sessions > 5) return false; break;
+                        case 'high': if (sessions <= 5) return false; break;
+                    }
+                }
+
+                return true;
+            });
+
+            renderUsers(filtered);
         }
 
         // 显示用户详情（该用户的所有对话）
@@ -2553,6 +2903,7 @@
             // 显示模态框和加载状态
             const modal = document.getElementById('userProfileModal');
             const content = document.getElementById('userProfileContent');
+            document.getElementById('userProfileModalTitle').textContent = '🎯 用户画像分析';
             modal.style.display = 'flex';
             content.innerHTML = `
                 <div class="loading-spinner">
@@ -2662,6 +3013,213 @@
         // 隐藏用户画像模态框
         function hideUserProfileModal() {
             document.getElementById('userProfileModal').style.display = 'none';
+        }
+
+        // 生成用户洞察（需求摘要）
+        async function generateUserInsight(forceRefresh = false) {
+            if (!currentUserEmail) {
+                alert('请先选择一个用户');
+                return;
+            }
+
+            // 显示模态框和加载状态
+            const modal = document.getElementById('userProfileModal');
+            const content = document.getElementById('userProfileContent');
+            document.getElementById('userProfileModalTitle').textContent = '🔍 用户洞察';
+            modal.style.display = 'flex';
+            content.innerHTML = `
+                <div class="loading-spinner">
+                    <div class="spinner"></div>
+                    <p>${forceRefresh ? '正在重新分析...' : '正在分析用户需求洞察，请稍候...'}</p>
+                </div>
+            `;
+
+            try {
+                const response = await fetch('/api/admin/user-insight', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: currentUserEmail,
+                        force_refresh: forceRefresh
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    displayInsightResult(data.result, '用户洞察', data.from_cache, 'generateUserInsight');
+                } else {
+                    content.innerHTML = `
+                        <div style="text-align: center; padding: 40px;">
+                            <p style="color: var(--text-secondary); font-size: 16px;">
+                                ❌ ${data.error || '生成用户洞察失败'}
+                            </p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('生成用户洞察失败:', error);
+                content.innerHTML = `
+                    <div style="text-align: center; padding: 40px;">
+                        <p style="color: var(--text-secondary); font-size: 16px;">
+                            ❌ 网络错误或服务器异常
+                        </p>
+                    </div>
+                `;
+            }
+        }
+
+        // 生成工具分析（功能需求文档）
+        async function generateToolAnalysis(forceRefresh = false) {
+            if (!currentUserEmail) {
+                alert('请先选择一个用户');
+                return;
+            }
+
+            // 显示模态框和加载状态
+            const modal = document.getElementById('userProfileModal');
+            const content = document.getElementById('userProfileContent');
+            document.getElementById('userProfileModalTitle').textContent = '🛠️ 工具分析';
+            modal.style.display = 'flex';
+            content.innerHTML = `
+                <div class="loading-spinner">
+                    <div class="spinner"></div>
+                    <p>${forceRefresh ? '正在重新分析...' : '正在分析工具需求，请稍候...'}</p>
+                </div>
+            `;
+
+            try {
+                const response = await fetch('/api/admin/tool-analysis', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: currentUserEmail,
+                        force_refresh: forceRefresh
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    displayInsightResult(data.result, '工具分析', data.from_cache, 'generateToolAnalysis');
+                } else {
+                    content.innerHTML = `
+                        <div style="text-align: center; padding: 40px;">
+                            <p style="color: var(--text-secondary); font-size: 16px;">
+                                ❌ ${data.error || '生成工具分析失败'}
+                            </p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('生成工具分析失败:', error);
+                content.innerHTML = `
+                    <div style="text-align: center; padding: 40px;">
+                        <p style="color: var(--text-secondary); font-size: 16px;">
+                            ❌ 网络错误或服务器异常
+                        </p>
+                    </div>
+                `;
+            }
+        }
+
+        // 显示洞察/分析结果（Markdown 格式）
+        function displayInsightResult(result, title, fromCache = false, refreshFn = null) {
+            const content = document.getElementById('userProfileContent');
+
+            // 简单的 Markdown 到 HTML 转换
+            let htmlContent = result
+                // 先处理代码块
+                .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>')
+                // 处理标题
+                .replace(/^### (.*$)/gm, '<h4>$1</h4>')
+                .replace(/^## (.*$)/gm, '<h3>$1</h3>')
+                .replace(/^# (.*$)/gm, '<h2>$1</h2>')
+                // 处理粗体
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                // 处理表格
+                .replace(/^\|(.+)\|$/gm, (match) => {
+                    const cells = match.split('|').filter(c => c.trim());
+                    return '<tr>' + cells.map(c => `<td>${c.trim()}</td>`).join('') + '</tr>';
+                })
+                // 处理无序列表
+                .replace(/^- (.*$)/gm, '<li>$1</li>')
+                .replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>')
+                // 处理有序列表
+                .replace(/^\d+\. (.*$)/gm, '<li>$1</li>')
+                // 处理引用
+                .replace(/^> (.*$)/gm, '<blockquote>$1</blockquote>')
+                // 处理换行
+                .replace(/\n/g, '<br>');
+
+            // 缓存标识
+            const cacheIndicator = fromCache ? `
+                <span style="
+                    background: linear-gradient(135deg, #10b981, #059669);
+                    color: white;
+                    padding: 2px 8px;
+                    border-radius: 4px;
+                    font-size: 12px;
+                    margin-left: 8px;
+                ">⚡ 秒开缓存</span>
+            ` : '';
+
+            // 刷新按钮
+            const refreshButton = refreshFn ? `
+                <button onclick="${refreshFn}(true)" class="btn-refresh" style="
+                    padding: 8px 16px;
+                    background: var(--bg-card);
+                    border: 1px solid var(--border-color);
+                    border-radius: 6px;
+                    color: var(--text-secondary);
+                    cursor: pointer;
+                    margin-right: 8px;
+                ">🔄 重新分析</button>
+            ` : '';
+
+            content.innerHTML = `
+                <div class="profile-section">
+                    <h3>📋 ${title}${cacheIndicator}</h3>
+                    <div class="profile-content insight-result" style="white-space: pre-wrap; line-height: 1.8;">
+                        ${htmlContent}
+                    </div>
+                    <div style="margin-top: 20px; text-align: right;">
+                        ${refreshButton}
+                        <button onclick="copyInsightResult()" class="btn-copy" style="
+                            padding: 8px 16px;
+                            background: var(--bg-card);
+                            border: 1px solid var(--border-color);
+                            border-radius: 6px;
+                            color: var(--text-secondary);
+                            cursor: pointer;
+                        ">📋 复制内容</button>
+                    </div>
+                </div>
+            `;
+
+            // 保存原始结果用于复制
+            content.dataset.rawResult = result;
+        }
+
+        // 复制分析结果
+        function copyInsightResult() {
+            const content = document.getElementById('userProfileContent');
+            const rawResult = content.dataset.rawResult || '';
+
+            navigator.clipboard.writeText(rawResult).then(() => {
+                const btn = document.querySelector('.btn-copy');
+                btn.textContent = '✅ 已复制';
+                setTimeout(() => {
+                    btn.textContent = '📋 复制内容';
+                }, 2000);
+            }).catch(err => {
+                console.error('复制失败:', err);
+                alert('复制失败，请手动复制');
+            });
         }
 
         // 导出单个用户的所有对话
@@ -3181,6 +3739,104 @@
                     // 更新本地数据并重新渲染列表
                     if (module) {
                         module.name = newName;
+                    }
+                    renderModuleList();
+                } else {
+                    statusEl.textContent = '✗ 保存失败: ' + data.message;
+                    statusEl.style.color = '#ef4444';
+                }
+            } catch (e) {
+                statusEl.textContent = '✗ 网络错误';
+                statusEl.style.color = '#ef4444';
+            }
+        }
+
+        // ========================================
+        // 图标选择器功能
+        // ========================================
+
+        // 可选图标列表
+        const availableIcons = [
+            // 业务相关
+            '📊', '📈', '📉', '💰', '💵', '💎',
+            '🎯', '🏆', '⭐', '🌟', '✨', '🔥',
+            // 人员相关
+            '👥', '👤', '🧑‍💼', '👨‍💼', '👩‍💼', '🤝',
+            // 工具相关
+            '📝', '📋', '✏️', '📌', '🔧', '⚙️',
+            // 分析相关
+            '🔍', '💡', '🧠', '📐', '🗂️', '📁',
+            // 电商相关
+            '🛒', '🛍️', '📦', '🚀', '💼', '🏪',
+            // 策略相关
+            '🎓', '🎖️', '🏅', '📣', '💬', '🗣️',
+            // 其他常用
+            '❤️', '💜', '💙', '💚', '🧡', '💛'
+        ];
+
+        // 显示图标选择器
+        function showIconPicker() {
+            const dropdown = document.getElementById('iconPickerDropdown');
+            const grid = document.getElementById('iconPickerGrid');
+            const currentIcon = document.getElementById('currentModuleIcon').textContent;
+
+            // 生成图标选项
+            grid.innerHTML = availableIcons.map(icon => `
+                <div class="icon-picker-option ${icon === currentIcon ? 'selected' : ''}"
+                     onclick="selectModuleIcon('${icon}')">
+                    ${icon}
+                </div>
+            `).join('');
+
+            // 显示下拉菜单
+            dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+
+            // 点击外部关闭
+            if (dropdown.style.display === 'block') {
+                setTimeout(() => {
+                    document.addEventListener('click', closeIconPickerOnClickOutside);
+                }, 10);
+            }
+        }
+
+        // 点击外部关闭图标选择器
+        function closeIconPickerOnClickOutside(e) {
+            const wrapper = document.querySelector('.icon-editor-wrapper');
+            if (wrapper && !wrapper.contains(e.target)) {
+                document.getElementById('iconPickerDropdown').style.display = 'none';
+                document.removeEventListener('click', closeIconPickerOnClickOutside);
+            }
+        }
+
+        // 选择模块图标
+        async function selectModuleIcon(icon) {
+            if (!currentModuleId) return;
+
+            // 更新 UI
+            document.getElementById('currentModuleIcon').textContent = icon;
+            document.getElementById('iconPickerDropdown').style.display = 'none';
+            document.removeEventListener('click', closeIconPickerOnClickOutside);
+
+            const statusEl = document.getElementById('promptSaveStatus');
+
+            try {
+                statusEl.textContent = '保存图标...';
+                statusEl.style.color = '#6b7280';
+
+                const res = await fetch(`/api/admin/modules/${currentModuleId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ icon })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    statusEl.textContent = '✓ 图标已保存';
+                    statusEl.style.color = '#10b981';
+                    // 更新本地数据并重新渲染列表
+                    const module = allModules.find(m => m.id === currentModuleId);
+                    if (module) {
+                        module.icon = icon;
                     }
                     renderModuleList();
                 } else {
