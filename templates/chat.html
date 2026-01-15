@@ -38,7 +38,7 @@
             min-height: 100vh;
             display: flex;
             overflow: hidden;
-            font-size: 15px;
+            font-size: 16px;
             line-height: 1.6;
             -webkit-font-smoothing: antialiased;
             letter-spacing: 0.01em;
@@ -696,7 +696,7 @@
         }
 
         .message-content {
-            font-size: 15px;
+            font-size: 16px;
             line-height: 1.7;
             max-width: 85%;
         }
@@ -718,7 +718,7 @@
             width: fit-content;
             max-width: 70%;
             word-wrap: break-word;
-            font-size: 15px;
+            font-size: 16px;
             line-height: 1.7;
         }
 
@@ -2283,19 +2283,19 @@
                             <!-- 模型选择器 - Gemini 风格，在右侧 -->
                             <div class="model-selector-wrapper" style="position: relative;">
                                 <button type="button" class="model-selector" onclick="toggleModelDropdown()">
-                                    <span id="currentModelLabel">Flash</span>
+                                    <span id="currentModelLabel">快速</span>
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <polyline points="6 9 12 15 18 9"/>
                                     </svg>
                                 </button>
                                 <div class="model-dropdown" id="modelDropdown">
                                     <div class="model-option active" onclick="selectModel('flash')">
-                                        <span class="model-option-name">Flash</span>
-                                        <span class="model-option-desc">Fast response</span>
+                                        <span class="model-option-name">快速</span>
+                                        <span class="model-option-desc">快速响应</span>
                                     </div>
                                     <div class="model-option" onclick="selectModel('pro')">
-                                        <span class="model-option-name">Pro</span>
-                                        <span class="model-option-desc">Deep thinking</span>
+                                        <span class="model-option-name">深度思考</span>
+                                        <span class="model-option-desc">深度分析</span>
                                     </div>
                                 </div>
                             </div>
@@ -2363,7 +2363,7 @@
             const savedModel = localStorage.getItem('chat_model_preference');
             if (savedModel && (savedModel === 'flash' || savedModel === 'pro')) {
                 currentModel = savedModel;
-                document.getElementById('currentModelLabel').textContent = savedModel === 'flash' ? 'Flash' : 'Pro';
+                document.getElementById('currentModelLabel').textContent = savedModel === 'flash' ? '快速' : '深度思考';
             }
 
             // 加载智能体
@@ -3275,15 +3275,15 @@
 
         function selectModel(model) {
             currentModel = model;
-            document.getElementById('currentModelLabel').textContent = model === 'flash' ? 'Flash' : 'Pro';
+            document.getElementById('currentModelLabel').textContent = model === 'flash' ? '快速' : '深度思考';
             document.getElementById('modelDropdown').classList.remove('show');
             document.querySelector('.model-selector').classList.remove('open');
             document.getElementById('model-select').value = model;
             localStorage.setItem('chat_model_preference', model);
 
             document.querySelectorAll('.model-option').forEach(opt => {
-                const optName = opt.querySelector('.model-option-name').textContent.toLowerCase();
-                opt.classList.toggle('active', optName === (model === 'flash' ? 'flash' : 'pro'));
+                const optName = opt.querySelector('.model-option-name').textContent;
+                opt.classList.toggle('active', optName === (model === 'flash' ? '快速' : '深度思考'));
             });
         }
 
