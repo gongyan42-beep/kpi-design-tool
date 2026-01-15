@@ -3509,15 +3509,22 @@
                 return;
             }
 
-            // 为每个用户统计会话数和消息数
+            // 为每个用户统计会话数、消息数和最后聊天时间
             userStatsCache = {};
             allSessions.forEach(s => {
                 const email = s.user_email || '未知';
                 if (!userStatsCache[email]) {
-                    userStatsCache[email] = { sessions: 0, messages: 0 };
+                    userStatsCache[email] = { sessions: 0, messages: 0, lastChatTime: null };
                 }
                 userStatsCache[email].sessions++;
                 userStatsCache[email].messages += (s.messages || []).length;
+                // 记录最后聊天时间（取最新的 updated_at）
+                const sessionTime = s.updated_at || s.created_at;
+                if (sessionTime) {
+                    if (!userStatsCache[email].lastChatTime || sessionTime > userStatsCache[email].lastChatTime) {
+                        userStatsCache[email].lastChatTime = sessionTime;
+                    }
+                }
             });
 
             // 更新筛选计数
@@ -3546,7 +3553,7 @@
             const container = document.getElementById('usersList');
             container.innerHTML = users.map(user => {
                 const email = user.email || '未知';
-                const stats = userStatsCache[email] || { sessions: 0, messages: 0 };
+                const stats = userStatsCache[email] || { sessions: 0, messages: 0, lastChatTime: null };
                 const credits = user.credits || 0;
                 const creditsClass = credits < 20 ? 'tag-credits-low' : 'tag-credits';
 
@@ -3627,13 +3634,16 @@
                                 <th class="${getSortClass('created_at')}" onclick="sortTableBy('created_at')">
                                     注册时间${sortIcon}
                                 </th>
+                                <th class="${getSortClass('lastChatTime')}" onclick="sortTableBy('lastChatTime')">
+                                    最后聊天${sortIcon}
+                                </th>
                                 <th>操作</th>
                             </tr>
                         </thead>
                         <tbody>
                             ${sortedUsers.map(user => {
                                 const email = user.email || '未知';
-                                const stats = userStatsCache[email] || { sessions: 0, messages: 0 };
+                                const stats = userStatsCache[email] || { sessions: 0, messages: 0, lastChatTime: null };
                                 const credits = user.credits || 0;
                                 const industry = getIndustryByKeyword(user.company);
                                 const industryClass = getIndustryClass(industry);
@@ -3659,6 +3669,7 @@
                                         <td>${stats.sessions}</td>
                                         <td>${stats.messages}</td>
                                         <td>${formatTime(user.created_at)}</td>
+                                        <td>${stats.lastChatTime ? formatTime(stats.lastChatTime) : '-'}</td>
                                         <td>
                                             <div class="action-btns">
                                                 <button class="action-btn view" onclick="event.stopPropagation(); showUserDetail('${email}')">详情</button>
@@ -3687,7 +3698,7 @@
                 <div class="users-compact-list">
                     ${sortedUsers.map(user => {
                         const email = user.email || '未知';
-                        const stats = userStatsCache[email] || { sessions: 0, messages: 0 };
+                        const stats = userStatsCache[email] || { sessions: 0, messages: 0, lastChatTime: null };
                         const credits = user.credits || 0;
                         const industry = getIndustryByKeyword(user.company);
                         const industryClass = getIndustryClass(industry);
@@ -3779,6 +3790,10 @@
                         valA = statsA.messages;
                         valB = statsB.messages;
                         break;
+                    case 'lastChatTime':
+                        valA = statsA.lastChatTime ? new Date(statsA.lastChatTime) : new Date(0);
+                        valB = statsB.lastChatTime ? new Date(statsB.lastChatTime) : new Date(0);
+                        break;
                     case 'created_at':
                     default:
                         valA = new Date(a.created_at);
@@ -3807,7 +3822,7 @@
                 const company = user.company || '';
                 const phone = user.phone || '';
                 const credits = user.credits || 0;
-                const stats = userStatsCache[email] || { sessions: 0, messages: 0 };
+                const stats = userStatsCache[email] || { sessions: 0, messages: 0, lastChatTime: null };
                 const industry = getIndustryByKeyword(company);
 
                 // 搜索过滤
@@ -4838,11 +4853,18 @@
             URL.revokeObjectURL(url);
         }
 
-        // 格式化时间
+        // 格式化时间（直接解析字符串，避免时区转换问题）
         function formatTime(str) {
             if (!str) return '-';
-            const d = new Date(str);
-            return `${d.getMonth() + 1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`;
+            // 格式: 2026-01-15T09:47:00 或 2026-01-15T09:47:00.123456
+            const match = str.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
+            if (!match) {
+                // 兜底：用 Date 解析
+                const d = new Date(str);
+                return `${d.getMonth() + 1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`;
+            }
+            const [, year, month, day, hour, minute] = match;
+            return `${parseInt(month)}/${parseInt(day)} ${hour}:${minute}`;
         }
 
         // HTML 转义

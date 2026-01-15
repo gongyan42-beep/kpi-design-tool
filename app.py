@@ -55,6 +55,77 @@ app.secret_key = Config.SECRET_KEY
 # 限制文件上传大小为 50MB，防止内存耗尽攻击
 app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024
 
+# 🔒 安全配置：CSRF 防护
+app.config['SESSION_COOKIE_SECURE'] = True  # 仅 HTTPS
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  # 防止 CSRF
+
+
+@app.before_request
+def csrf_protect():
+    """
+    CSRF 防护：验证 POST/PUT/DELETE 请求的来源
+    对于 JSON API，检查 Origin 或 Referer 头
+    """
+    # 跳过安全方法
+    if request.method in ('GET', 'HEAD', 'OPTIONS'):
+        return
+
+    # 跳过健康检查
+    if request.path == '/health':
+        return
+
+    # 获取允许的来源
+    allowed_origins = [
+        'http://localhost',
+        'http://127.0.0.1',
+        'https://kpi.longgonghuohuo.com',
+        'http://kpi.longgonghuohuo.com',
+        'https://ai.maoke123.com',
+        'http://ai.maoke123.com',
+        'https://www.ai.maoke123.com',
+        'http://www.ai.maoke123.com',
+        'https://maoke123.com',
+        'http://maoke123.com',
+        'https://www.maoke123.com',
+        'http://www.maoke123.com',
+    ]
+
+    # 本地开发时允许任意端口
+    origin = request.headers.get('Origin', '')
+    referer = request.headers.get('Referer', '')
+
+    # 检查 Origin 头（优先）
+    if origin:
+        # 本地开发：允许 localhost 和 127.0.0.1 的任意端口
+        if origin.startswith('http://localhost:') or origin.startswith('http://127.0.0.1:'):
+            return
+        # 检查是否在允许列表
+        if any(origin.startswith(allowed) for allowed in allowed_origins):
+            return
+        # Origin 不匹配，记录并拒绝
+        logger.warning(f"CSRF 拦截：非法 Origin - {origin}, 路径: {request.path}")
+        return jsonify({'success': False, 'error': '请求来源不合法'}), 403
+
+    # 如果没有 Origin，检查 Referer
+    if referer:
+        if any(referer.startswith(allowed) for allowed in allowed_origins):
+            return
+        if referer.startswith('http://localhost:') or referer.startswith('http://127.0.0.1:'):
+            return
+        logger.warning(f"CSRF 拦截：非法 Referer - {referer}, 路径: {request.path}")
+        return jsonify({'success': False, 'error': '请求来源不合法'}), 403
+
+    # 对于没有 Origin 和 Referer 的请求（如 curl 测试），检查 Content-Type
+    # 浏览器发起的跨站请求通常不会设置 application/json
+    content_type = request.headers.get('Content-Type', '')
+    if 'application/json' in content_type:
+        # JSON 请求通常是安全的（浏览器跨站请求不能设置自定义 Content-Type）
+        return
+
+    # 其他情况：允许（兼容旧客户端）
+    logger.debug(f"CSRF 检查跳过：无 Origin/Referer，路径: {request.path}")
+
 
 # ========================================
 # 页面路由
@@ -687,7 +758,7 @@ def get_user_sessions():
 
 @app.route('/api/session/<session_id>/resume', methods=['POST'])
 def resume_session(session_id):
-    """恢复已有对话"""
+    """恢复已有对话（支持认领无主会话）"""
     user_id = session.get('user_id')
 
     if not user_id:
@@ -698,8 +769,23 @@ def resume_session(session_id):
     if not chat_session:
         return jsonify({'success': False, 'error': '会话不存在'}), 404
 
-    # 验证会话属于当前用户
-    if chat_session.get('user_id') != user_id:
+    session_owner_id = chat_session.get('user_id')
+
+    # 🔴 修复：允许认领无主会话
+    # 场景：用户未登录时创建了会话，后来登录了，应该能继续使用
+    if session_owner_id is None:
+        # 无主会话，当前用户可以认领
+        try:
+            if db.use_supabase:
+                db.supabase.table('sessions').update({
+                    'user_id': user_id,
+                    'user_email': session.get('email', '')
+                }).eq('id', session_id).execute()
+            logger.info(f"用户 {user_id} 认领了无主会话 {session_id}")
+        except Exception as e:
+            logger.warning(f"认领会话失败: {e}")
+    elif session_owner_id != user_id:
+        # 会话属于其他用户，拒绝访问
         return jsonify({'success': False, 'error': '无权访问此会话'}), 403
 
     return jsonify({
