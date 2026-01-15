@@ -92,6 +92,13 @@ class RedeemService:
                 except Exception as log_err:
                     print(f"记录管理员日志失败: {log_err}")
 
+                # 飞书同步：异步备份兑换码
+                try:
+                    from modules.feishu_sync import feishu_sync_service
+                    feishu_sync_service.sync_redeem_code_async(result.data[0])
+                except:
+                    pass  # 飞书同步失败不影响主流程
+
                 return True, "兑换码创建成功", result.data[0]
             else:
                 return False, "创建失败", {}
@@ -233,6 +240,17 @@ class RedeemService:
                     )
                 except Exception as log_err:
                     print(f"记录用户兑换日志失败: {log_err}")
+
+                # 飞书同步：更新兑换码状态
+                try:
+                    from modules.feishu_sync import feishu_sync_service
+                    updated_data = dict(redeem_data)
+                    updated_data['is_used'] = True
+                    updated_data['used_by_user_id'] = user_id
+                    updated_data['used_at'] = datetime.now().isoformat()
+                    feishu_sync_service.sync_redeem_code_async(updated_data)
+                except:
+                    pass  # 飞书同步失败不影响主流程
 
                 return True, f"兑换成功！获得 {credits} 积分（{credits // 2} 次回答机会）", credits
             else:

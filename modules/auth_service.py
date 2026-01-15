@@ -316,6 +316,32 @@ class AuthService:
             except Exception as log_err:
                 print(f"记录初始积分日志失败: {log_err}")
 
+            # 飞书同步：异步备份新用户资料
+            try:
+                from modules.feishu_sync import feishu_sync_service
+                from datetime import datetime
+                feishu_sync_service.sync_profile_async({
+                    'id': user_id,
+                    'nickname': username,
+                    'company': company,
+                    'phone': phone,
+                    'credits': initial_credits,
+                    'cat_coins': cat_coins,
+                    'user_type': user_type,
+                    'created_at': datetime.now().isoformat()
+                })
+                # 同时备份初始积分日志
+                feishu_sync_service.sync_credit_log_async({
+                    'id': f"{user_id}_init",
+                    'user_id': user_id,
+                    'amount': initial_credits,
+                    'balance': initial_credits,
+                    'reason': credit_reason,
+                    'created_at': datetime.now().isoformat()
+                })
+            except:
+                pass  # 飞书同步失败不影响注册
+
             return {
                 'id': user_id,
                 'username': username,
@@ -418,6 +444,21 @@ class AuthService:
                 except Exception as log_err:
                     print(f"记录积分日志失败（不影响扣费）: {log_err}")
 
+                # 飞书同步：异步备份积分变动
+                try:
+                    from modules.feishu_sync import feishu_sync_service
+                    from datetime import datetime
+                    feishu_sync_service.sync_credit_log_async({
+                        'id': f"{user_id}_{datetime.now().strftime('%Y%m%d%H%M%S')}",
+                        'user_id': user_id,
+                        'amount': -amount,
+                        'balance': new_balance,
+                        'reason': reason,
+                        'created_at': datetime.now().isoformat()
+                    })
+                except:
+                    pass  # 飞书同步失败不影响主流程
+
                 return True, f"消耗 {amount} 积分", new_balance
 
             except Exception as e:
@@ -462,6 +503,21 @@ class AuthService:
                     }).execute()
                 except Exception as log_err:
                     print(f"记录积分日志失败（不影响充值）: {log_err}")
+
+                # 飞书同步：异步备份积分变动
+                try:
+                    from modules.feishu_sync import feishu_sync_service
+                    from datetime import datetime
+                    feishu_sync_service.sync_credit_log_async({
+                        'id': f"{user_id}_{datetime.now().strftime('%Y%m%d%H%M%S')}",
+                        'user_id': user_id,
+                        'amount': amount,
+                        'balance': new_balance,
+                        'reason': reason,
+                        'created_at': datetime.now().isoformat()
+                    })
+                except:
+                    pass  # 飞书同步失败不影响主流程
 
                 return True, f"增加 {amount} 积分", new_balance
 

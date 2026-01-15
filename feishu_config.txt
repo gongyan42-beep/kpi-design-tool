@@ -1,0 +1,11 @@
+
+# ========================================
+# 飞书多维表格同步配置
+# ========================================
+FEISHU_BITABLE_APP_TOKEN=VjjkbwtVeaBYDPsof0McApNcnGe
+FEISHU_TABLE_PROFILES=tbln6uiG7X5pPnS2
+FEISHU_TABLE_CREDIT_LOGS=tblXmH7fsC8fULcd
+FEISHU_TABLE_SESSIONS=tbl6xNLpHAJD36Ub
+FEISHU_TABLE_REDEEM_CODES=tblu9WQ7FmgJusQk
+FEISHU_TABLE_ADMIN_LOGS=tblHlrOaIPFzb0nB
+FEISHU_SYNC_ENABLED=true

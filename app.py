@@ -2538,6 +2538,14 @@ if __name__ == '__main__':
     # 确保数据目录存在
     os.makedirs('data', exist_ok=True)
 
+    # 启动飞书同步定时任务
+    try:
+        from modules.feishu_sync import feishu_sync_scheduler
+        feishu_sync_scheduler.start()
+        print("📦 飞书同步调度器已启动")
+    except Exception as e:
+        print(f"⚠️ 飞书同步调度器启动失败（不影响主服务）: {e}")
+
     port = Config.PORT
     print(f"\n🚀 猫课电商管理落地班核心工具")
     print(f"📍 访问地址: http://localhost:{port}")

@@ -37,6 +37,17 @@ class Config:
     SUPABASE_KEY = os.getenv('SUPABASE_KEY')
     SUPABASE_SERVICE_KEY = os.getenv('SUPABASE_SERVICE_KEY')  # 管理员权限 key
 
+    # 飞书多维表格配置（数据备份）
+    FEISHU_APP_ID = os.getenv('FEISHU_APP_ID')
+    FEISHU_APP_SECRET = os.getenv('FEISHU_APP_SECRET')
+    FEISHU_BITABLE_APP_TOKEN = os.getenv('FEISHU_BITABLE_APP_TOKEN')
+    FEISHU_TABLE_PROFILES = os.getenv('FEISHU_TABLE_PROFILES')
+    FEISHU_TABLE_CREDIT_LOGS = os.getenv('FEISHU_TABLE_CREDIT_LOGS')
+    FEISHU_TABLE_SESSIONS = os.getenv('FEISHU_TABLE_SESSIONS')
+    FEISHU_TABLE_REDEEM_CODES = os.getenv('FEISHU_TABLE_REDEEM_CODES')
+    FEISHU_TABLE_ADMIN_LOGS = os.getenv('FEISHU_TABLE_ADMIN_LOGS')
+    FEISHU_SYNC_ENABLED = os.getenv('FEISHU_SYNC_ENABLED', 'true').lower() == 'true'
+
     # 管理后台密码
     ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD', 'admin123')
 
