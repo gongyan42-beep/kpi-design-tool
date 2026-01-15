@@ -297,7 +297,7 @@ class FeishuSyncService:
             return 0
 
     def full_sync_messages(self) -> int:
-        """全量同步对话消息（从 sessions 表提取）"""
+        """全量同步对话消息（从 sessions 表提取，包含用户信息）"""
         if not self.is_enabled():
             return 0
 
@@ -309,11 +309,20 @@ class FeishuSyncService:
             from modules.supabase_client import get_admin
             supabase = get_admin()
 
-            # 获取所有会话及其消息
+            # 1. 先加载所有用户资料到内存（按 user_id 索引）
+            profiles_result = supabase.table('profiles').select('*').execute()
+            profiles_by_id = {}
+            for profile in (profiles_result.data or []):
+                profiles_by_id[profile.get('id', '')] = profile
+            logger.info(f"[飞书同步] 已加载 {len(profiles_by_id)} 个用户资料")
+
+            # 2. 获取所有会话及其消息
             result = supabase.table('sessions').select('*').execute()
 
             total_count = 0
             batch_records = []
+            current_table_id = self.table_ids['messages']
+            table_record_count = self._get_table_record_count(current_table_id)
 
             for session in (result.data or []):
                 messages = session.get('messages', [])
@@ -326,21 +335,34 @@ class FeishuSyncService:
                 if not messages or not isinstance(messages, list):
                     continue
 
+                # 获取用户资料
+                user_id = session.get('user_id', '')
+                user_profile = profiles_by_id.get(user_id)
+
                 # 为每条消息创建记录
                 for idx, msg in enumerate(messages):
                     try:
-                        fields = self.mapper.map_message(msg, session, idx)
+                        fields = self.mapper.map_message(msg, session, idx, user_profile)
                         batch_records.append(fields)
 
                         # 每100条批量插入一次
                         if len(batch_records) >= 100:
+                            # 检查是否需要分表（飞书单表上限5万条）
+                            if table_record_count + len(batch_records) > 45000:
+                                new_table_id = self._create_new_messages_table()
+                                if new_table_id:
+                                    current_table_id = new_table_id
+                                    table_record_count = 0
+                                    logger.info(f"[飞书同步] 已创建新表: {new_table_id}")
+
                             try:
                                 self.client.batch_insert_records(
                                     self.app_token,
-                                    self.table_ids['messages'],
+                                    current_table_id,
                                     batch_records
                                 )
                                 total_count += len(batch_records)
+                                table_record_count += len(batch_records)
                                 logger.info(f"[飞书同步] 已同步 {total_count} 条消息...")
                             except Exception as e:
                                 logger.warning(f"[飞书同步] 批量插入消息失败: {e}")
@@ -354,7 +376,7 @@ class FeishuSyncService:
                 try:
                     self.client.batch_insert_records(
                         self.app_token,
-                        self.table_ids['messages'],
+                        current_table_id,
                         batch_records
                     )
                     total_count += len(batch_records)
@@ -367,6 +389,61 @@ class FeishuSyncService:
         except Exception as e:
             logger.error(f"[飞书同步] 消息全量同步失败: {e}")
             return 0
+
+    def _get_table_record_count(self, table_id: str) -> int:
+        """获取表格当前记录数"""
+        try:
+            import requests
+            token = self.client._get_token()
+            url = f"https://open.feishu.cn/open-apis/bitable/v1/apps/{self.app_token}/tables/{table_id}/records/search"
+            headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+            resp = requests.post(url, headers=headers, json={"page_size": 1}, timeout=15)
+            data = resp.json()
+            return data.get('data', {}).get('total', 0)
+        except:
+            return 0
+
+    def _create_new_messages_table(self) -> str:
+        """创建新的 messages 表（分表）"""
+        try:
+            import requests
+            from datetime import datetime
+
+            token = self.client._get_token()
+            url = f"https://open.feishu.cn/open-apis/bitable/v1/apps/{self.app_token}/tables"
+            headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+
+            table_name = f"对话消息_{datetime.now().strftime('%Y%m%d_%H%M')}"
+            body = {
+                "table": {
+                    "name": table_name,
+                    "default_view_name": "全部消息",
+                    "fields": [
+                        {"field_name": "消息ID", "type": 1, "ui_type": "Text"},
+                        {"field_name": "会话ID", "type": 1, "ui_type": "Text"},
+                        {"field_name": "用户邮箱", "type": 1, "ui_type": "Text"},
+                        {"field_name": "用户昵称", "type": 1, "ui_type": "Text"},
+                        {"field_name": "公司", "type": 1, "ui_type": "Text"},
+                        {"field_name": "手机号", "type": 1, "ui_type": "Text"},
+                        {"field_name": "模块", "type": 3, "ui_type": "SingleSelect"},
+                        {"field_name": "角色", "type": 3, "ui_type": "SingleSelect"},
+                        {"field_name": "消息内容", "type": 1, "ui_type": "Text"},
+                        {"field_name": "消息时间", "type": 5, "ui_type": "DateTime"},
+                    ]
+                }
+            }
+
+            resp = requests.post(url, headers=headers, json=body, timeout=30)
+            data = resp.json()
+
+            if data.get('code') == 0:
+                return data.get('data', {}).get('table_id', '')
+            else:
+                logger.error(f"[飞书同步] 创建分表失败: {data}")
+                return ''
+        except Exception as e:
+            logger.error(f"[飞书同步] 创建分表异常: {e}")
+            return ''
 
     def full_sync_all(self) -> Dict[str, int]:
         """全量同步所有表"""

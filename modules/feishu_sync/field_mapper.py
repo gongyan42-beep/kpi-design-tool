@@ -114,8 +114,8 @@ class FieldMapper:
             "创建时间": self._format_datetime(log.get('created_at')),
         }
 
-    def map_message(self, message: Dict, session: Dict, index: int) -> Dict:
-        """映射单条对话消息"""
+    def map_message(self, message: Dict, session: Dict, index: int, user_profile: Dict = None) -> Dict:
+        """映射单条对话消息（包含用户详细信息）"""
         # 生成消息ID：会话ID + 序号
         session_id = session.get('id', '')
         message_id = f"{session_id}_{index:04d}"
@@ -123,13 +123,24 @@ class FieldMapper:
         # 获取消息时间（优先用消息自带的时间，否则用会话创建时间）
         msg_time = message.get('time') or message.get('timestamp')
         if not msg_time:
-            # 用会话创建时间 + 序号作为近似时间
             msg_time = session.get('created_at')
+
+        # 用户信息（从 profiles 表关联）
+        user_nickname = ''
+        user_company = ''
+        user_phone = ''
+        if user_profile:
+            user_nickname = user_profile.get('nickname', '') or ''
+            user_company = user_profile.get('company', '') or ''
+            user_phone = user_profile.get('phone', '') or ''
 
         return {
             "消息ID": message_id,
             "会话ID": session_id,
             "用户邮箱": session.get('user_email', '') or '',
+            "用户昵称": user_nickname,
+            "公司": user_company,
+            "手机号": user_phone,
             "模块": session.get('module', ''),
             "角色": message.get('role', 'user'),
             "消息内容": self._truncate_text(message.get('content', ''), 50000),
