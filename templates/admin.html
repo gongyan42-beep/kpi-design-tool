@@ -2902,6 +2902,73 @@
                         </div>
                     </div>
 
+                    <!-- 📱 批量手机号充值（新功能） -->
+                    <div class="redeem-form-card" style="margin-bottom: 24px; border: 2px solid rgba(168, 85, 247, 0.3); background: linear-gradient(135deg, rgba(168, 85, 247, 0.05), rgba(88, 28, 135, 0.1));">
+                        <h3 style="display: flex; align-items: center; gap: 8px;">
+                            <span style="font-size: 24px;">📋</span>
+                            批量手机号充值
+                            <span style="font-size: 12px; padding: 2px 8px; background: #a855f7; color: white; border-radius: 4px; margin-left: 8px;">批量</span>
+                        </h3>
+                        <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 16px;">
+                            上传 Excel 或直接输入多个手机号，批量充值积分
+                        </p>
+                        <div class="redeem-form">
+                            <!-- 上传 Excel -->
+                            <div class="form-group">
+                                <label>方式一：上传 Excel 文件</label>
+                                <div style="display: flex; gap: 12px; align-items: center;">
+                                    <input type="file" id="batchExcelFile" accept=".xlsx,.xls" style="display: none;" onchange="handleExcelUpload()">
+                                    <button type="button" onclick="document.getElementById('batchExcelFile').click()"
+                                        style="padding: 12px 20px; background: #282A2C; border: 1px dashed #444746; border-radius: 8px; color: var(--text-secondary); cursor: pointer; flex: 1; text-align: center;">
+                                        📄 点击选择 Excel 文件
+                                    </button>
+                                    <span id="excelFileName" style="color: var(--text-muted); font-size: 13px;"></span>
+                                </div>
+                            </div>
+
+                            <!-- 手动输入 -->
+                            <div class="form-group">
+                                <label>方式二：手动输入手机号</label>
+                                <textarea id="batchPhonesInput" placeholder="每行一个手机号，或用逗号/空格分隔&#10;&#10;示例：&#10;13800138000&#10;13900139000&#10;或 13800138000,13900139000"
+                                    style="width: 100%; min-height: 120px; padding: 12px 16px; background: var(--bg-card-hover); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-size: 14px; font-family: 'Plus Jakarta Sans', monospace; resize: vertical;"
+                                    oninput="parseBatchPhones()"></textarea>
+                            </div>
+
+                            <!-- 识别结果 -->
+                            <div id="batchPhonesSummary" style="padding: 12px 16px; background: rgba(168, 85, 247, 0.1); border-radius: 8px; margin-bottom: 16px; display: none;">
+                                <span style="color: #a855f7; font-weight: 600;">📱 已识别 <span id="batchPhonesCount">0</span> 个手机号</span>
+                                <span id="batchPhonesPreview" style="color: var(--text-muted); font-size: 13px; margin-left: 12px;"></span>
+                            </div>
+
+                            <!-- 充值设置 -->
+                            <div class="form-row" style="display: flex; gap: 16px;">
+                                <div class="form-group" style="flex: 1;">
+                                    <label>统一充值积分</label>
+                                    <input type="number" id="batchCredits" placeholder="输入积分数量" min="1" oninput="updateBatchPreview()">
+                                </div>
+                                <div class="form-group" style="flex: 1;">
+                                    <label>充值原因（可选）</label>
+                                    <input type="text" id="batchReason" placeholder="如：活动赠送、批量发放">
+                                </div>
+                            </div>
+
+                            <div id="batchHint" style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
+                                💡 提示：2积分 ≈ 1次回答机会
+                            </div>
+
+                            <button class="btn-create-code" id="batchRechargeBtn" onclick="batchRechargeCredits()" disabled
+                                style="background: linear-gradient(135deg, #a855f7, #7c3aed);">
+                                📋 开始批量充值
+                            </button>
+                        </div>
+
+                        <!-- 批量充值结果 -->
+                        <div id="batchRechargeResult" class="redeem-result" style="display: none; text-align: left;">
+                            <div style="font-size: 16px; font-weight: 600; margin-bottom: 12px;" id="batchResultTitle"></div>
+                            <div id="batchResultDetails" style="max-height: 200px; overflow-y: auto; background: var(--bg-primary); border-radius: 8px; padding: 12px;"></div>
+                        </div>
+                    </div>
+
                     <div style="border-top: 1px solid var(--border-color); margin: 0 0 24px 0; padding-top: 24px;">
                         <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 16px;">
                             👇 以下为旧版兑换码功能，仍可继续使用
@@ -5506,6 +5573,199 @@
             } catch (e) {
                 console.error('Recharge failed:', e);
                 alert('网络错误');
+            }
+        }
+
+        // ========================================
+        // 批量手机号充值
+        // ========================================
+
+        // 存储解析后的手机号
+        let parsedPhones = [];
+
+        function parseBatchPhones() {
+            const input = document.getElementById('batchPhonesInput').value;
+
+            // 智能分隔：先按换行，再按逗号，再按空格
+            let phones = input
+                .split(/[\n,\s]+/)
+                .map(p => p.trim())
+                .filter(p => p.length === 11 && /^1\d{10}$/.test(p));
+
+            // 去重
+            phones = [...new Set(phones)];
+            parsedPhones = phones;
+
+            updateBatchPhonesSummary();
+        }
+
+        function updateBatchPhonesSummary() {
+            const summaryEl = document.getElementById('batchPhonesSummary');
+            const countEl = document.getElementById('batchPhonesCount');
+            const previewEl = document.getElementById('batchPhonesPreview');
+            const btn = document.getElementById('batchRechargeBtn');
+
+            if (parsedPhones.length > 0) {
+                summaryEl.style.display = 'block';
+                countEl.textContent = parsedPhones.length;
+
+                // 显示前几个手机号预览
+                const preview = parsedPhones.slice(0, 3).join(', ');
+                previewEl.textContent = parsedPhones.length > 3 ? `(${preview}...)` : `(${preview})`;
+
+                // 检查是否可以充值
+                const credits = parseInt(document.getElementById('batchCredits').value) || 0;
+                btn.disabled = credits <= 0;
+            } else {
+                summaryEl.style.display = 'none';
+                btn.disabled = true;
+            }
+        }
+
+        function updateBatchPreview() {
+            const credits = parseInt(document.getElementById('batchCredits').value) || 0;
+            const hint = document.getElementById('batchHint');
+
+            if (credits > 0) {
+                const answers = Math.floor(credits / 2);
+                hint.innerHTML = `💡 每个手机号充值 ${credits} 积分 ≈ ${answers} 次回答机会`;
+            } else {
+                hint.innerHTML = '💡 提示：2积分 ≈ 1次回答机会';
+            }
+
+            updateBatchPhonesSummary();
+        }
+
+        async function handleExcelUpload() {
+            const fileInput = document.getElementById('batchExcelFile');
+            const file = fileInput.files[0];
+
+            if (!file) return;
+
+            document.getElementById('excelFileName').textContent = '上传中...';
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const res = await fetch('/api/admin/upload-excel-phones', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    document.getElementById('excelFileName').textContent = `✅ ${file.name} (${data.count} 个手机号)`;
+
+                    // 将解析的手机号填入文本框
+                    document.getElementById('batchPhonesInput').value = data.phones.join('\n');
+                    parsedPhones = data.phones;
+                    updateBatchPhonesSummary();
+                } else {
+                    document.getElementById('excelFileName').textContent = '';
+                    alert('解析失败: ' + data.error);
+                }
+            } catch (e) {
+                console.error('Excel upload failed:', e);
+                document.getElementById('excelFileName').textContent = '';
+                alert('上传失败');
+            }
+
+            // 清空文件选择，允许重新选择同一文件
+            fileInput.value = '';
+        }
+
+        async function batchRechargeCredits() {
+            if (parsedPhones.length === 0) {
+                alert('请先输入手机号');
+                return;
+            }
+
+            const credits = parseInt(document.getElementById('batchCredits').value) || 0;
+            if (credits <= 0) {
+                alert('请输入充值积分数量');
+                return;
+            }
+
+            const reason = document.getElementById('batchReason').value.trim() || '管理员批量充值';
+
+            // 确认
+            if (!confirm(`确认为 ${parsedPhones.length} 个手机号各充值 ${credits} 积分？\n\n总计：${parsedPhones.length * credits} 积分`)) {
+                return;
+            }
+
+            const btn = document.getElementById('batchRechargeBtn');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = '充值中...';
+
+            try {
+                const res = await fetch('/api/admin/credits/batch-add-by-phone', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        phones: parsedPhones,
+                        credits: credits,
+                        reason: reason
+                    })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    const results = data.results;
+                    const resultEl = document.getElementById('batchRechargeResult');
+                    const titleEl = document.getElementById('batchResultTitle');
+                    const detailsEl = document.getElementById('batchResultDetails');
+
+                    // 设置标题颜色
+                    if (results.fail_count === 0) {
+                        titleEl.style.color = '#10b981';
+                        titleEl.textContent = `✅ 全部成功！共充值 ${results.success_count} 个用户`;
+                    } else if (results.success_count === 0) {
+                        titleEl.style.color = '#ef4444';
+                        titleEl.textContent = `❌ 全部失败！${results.fail_count} 个手机号无法充值`;
+                    } else {
+                        titleEl.style.color = '#f59e0b';
+                        titleEl.textContent = `⚠️ 部分成功：成功 ${results.success_count} 个，失败 ${results.fail_count} 个`;
+                    }
+
+                    // 构建详情
+                    let detailsHtml = '';
+
+                    if (results.success_list.length > 0) {
+                        detailsHtml += '<div style="margin-bottom: 12px;"><strong style="color: #10b981;">成功：</strong></div>';
+                        results.success_list.forEach(item => {
+                            const name = item.nickname || '未注册用户';
+                            detailsHtml += `<div style="font-size: 13px; color: var(--text-secondary); margin-left: 12px;">📱 ${item.phone} → ${name}（余额: ${item.new_balance}）</div>`;
+                        });
+                    }
+
+                    if (results.fail_list.length > 0) {
+                        detailsHtml += '<div style="margin: 12px 0 0;"><strong style="color: #ef4444;">失败：</strong></div>';
+                        results.fail_list.forEach(item => {
+                            detailsHtml += `<div style="font-size: 13px; color: var(--text-muted); margin-left: 12px;">📱 ${item.phone} - ${item.error}</div>`;
+                        });
+                    }
+
+                    detailsEl.innerHTML = detailsHtml;
+                    resultEl.style.display = 'block';
+
+                    // 清空输入
+                    document.getElementById('batchPhonesInput').value = '';
+                    document.getElementById('batchCredits').value = '';
+                    document.getElementById('batchReason').value = '';
+                    parsedPhones = [];
+                    updateBatchPhonesSummary();
+                    updateBatchPreview();
+                } else {
+                    alert('批量充值失败: ' + data.error);
+                }
+            } catch (e) {
+                console.error('Batch recharge failed:', e);
+                alert('网络错误');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
             }
         }
 

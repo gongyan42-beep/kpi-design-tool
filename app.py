@@ -7,6 +7,7 @@ import logging
 from datetime import datetime
 from logging.handlers import RotatingFileHandler
 from flask import Flask, render_template, request, jsonify, send_file, session, Response
+from io import BytesIO
 from config import Config
 from database import db
 from modules.ai_service import ai_service
@@ -2322,6 +2323,116 @@ def admin_add_credits_by_phone():
         })
     else:
         return jsonify({'success': False, 'error': message}), 400
+
+
+@app.route('/api/admin/credits/batch-add-by-phone', methods=['POST'])
+def admin_batch_add_credits_by_phone():
+    """批量通过手机号充值积分"""
+    if not session.get('is_admin'):
+        return jsonify({'success': False, 'error': '请先登录管理后台'}), 401
+
+    data = request.get_json()
+    if not data:
+        return jsonify({'success': False, 'error': '无效的请求数据'}), 400
+
+    phones = data.get('phones', [])
+    credits = data.get('credits', 0)
+    reason = data.get('reason', '管理员批量充值').strip()
+
+    if not phones or not isinstance(phones, list):
+        return jsonify({'success': False, 'error': '请提供手机号列表'}), 400
+
+    try:
+        credits = int(credits)
+    except (ValueError, TypeError):
+        return jsonify({'success': False, 'error': '积分数量格式错误'}), 400
+
+    if credits <= 0:
+        return jsonify({'success': False, 'error': '积分数量必须大于0'}), 400
+
+    if len(phones) > 500:
+        return jsonify({'success': False, 'error': '单次最多充值500个手机号'}), 400
+
+    admin_name = session.get('admin_username', 'admin')
+    results = {
+        'total': len(phones),
+        'success_count': 0,
+        'fail_count': 0,
+        'success_list': [],
+        'fail_list': []
+    }
+
+    for phone in phones:
+        phone = str(phone).strip()
+        if not phone or len(phone) != 11 or not phone.isdigit():
+            results['fail_count'] += 1
+            results['fail_list'].append({'phone': phone, 'error': '手机号格式错误'})
+            continue
+
+        success, message, new_balance, user_data = auth_service.add_credits_by_phone(
+            phone=phone,
+            amount=credits,
+            reason=reason or '管理员批量充值',
+            admin_name=admin_name
+        )
+
+        if success:
+            results['success_count'] += 1
+            results['success_list'].append({
+                'phone': phone,
+                'nickname': user_data.get('nickname') if user_data else None,
+                'new_balance': new_balance
+            })
+        else:
+            results['fail_count'] += 1
+            results['fail_list'].append({'phone': phone, 'error': message})
+
+    return jsonify({'success': True, 'results': results})
+
+
+@app.route('/api/admin/upload-excel-phones', methods=['POST'])
+def admin_upload_excel_phones():
+    """从 Excel 文件解析手机号列表"""
+    if not session.get('is_admin'):
+        return jsonify({'success': False, 'error': '请先登录管理后台'}), 401
+
+    if 'file' not in request.files:
+        return jsonify({'success': False, 'error': '请上传文件'}), 400
+
+    file = request.files['file']
+    if not file.filename:
+        return jsonify({'success': False, 'error': '请选择文件'}), 400
+
+    if not file.filename.endswith(('.xlsx', '.xls')):
+        return jsonify({'success': False, 'error': '请上传 Excel 文件（.xlsx 或 .xls）'}), 400
+
+    try:
+        from openpyxl import load_workbook
+        wb = load_workbook(filename=BytesIO(file.read()), read_only=True)
+        ws = wb.active
+
+        phones = set()
+        for row in ws.iter_rows(values_only=True):
+            for cell in row:
+                if cell:
+                    value = str(cell).strip()
+                    # 检查是否是11位手机号
+                    if len(value) == 11 and value.isdigit() and value[0] == '1':
+                        phones.add(value)
+
+        wb.close()
+
+        if not phones:
+            return jsonify({'success': False, 'error': '未在文件中找到有效的手机号（11位数字，1开头）'}), 400
+
+        return jsonify({
+            'success': True,
+            'phones': list(phones),
+            'count': len(phones)
+        })
+
+    except Exception as e:
+        return jsonify({'success': False, 'error': f'文件解析失败: {str(e)}'}), 400
 
 
 # ========================================
