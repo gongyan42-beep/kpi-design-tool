@@ -36,7 +36,13 @@ class FeishuSyncScheduler:
                 time.sleep(60)  # 每分钟检查一次
                 interval_count += 1
 
-                # 每5分钟执行增量同步
+                # 每1分钟执行消息增量同步
+                try:
+                    feishu_sync_service.sync_messages_incremental()
+                except Exception as e:
+                    logger.debug(f"[飞书同步] 消息增量同步: {e}")
+
+                # 每5分钟执行会话和日志增量同步
                 if interval_count >= 5:
                     interval_count = 0
                     try:

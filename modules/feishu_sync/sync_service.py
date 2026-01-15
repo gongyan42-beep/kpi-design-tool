@@ -149,6 +149,87 @@ class FeishuSyncService:
             logger.error(f"[飞书同步] 会话增量同步失败: {e}")
             return 0
 
+    def sync_messages_incremental(self) -> int:
+        """增量同步消息（每分钟执行，基于 session 更新时间）"""
+        if not self.is_enabled():
+            return 0
+
+        if not self.table_ids.get('messages'):
+            return 0
+
+        try:
+            from modules.supabase_client import get_admin
+            supabase = get_admin()
+
+            # 获取上次同步时间
+            last_sync = self.status_manager.get_last_sync_time('messages')
+
+            # 查询更新过的 sessions
+            query = supabase.table('sessions').select('*')
+            if last_sync:
+                query = query.gt('updated_at', last_sync)
+            result = query.order('updated_at').limit(100).execute()
+
+            if not result.data:
+                return 0
+
+            # 加载用户资料
+            profiles_result = supabase.table('profiles').select('*').execute()
+            profiles_by_id = {p.get('id', ''): p for p in (profiles_result.data or [])}
+
+            total_count = 0
+            batch_records = []
+
+            for session in result.data:
+                messages = session.get('messages', [])
+                if isinstance(messages, str):
+                    try:
+                        messages = json.loads(messages)
+                    except:
+                        messages = []
+
+                if not messages or not isinstance(messages, list):
+                    continue
+
+                user_profile = profiles_by_id.get(session.get('user_id', ''))
+
+                for idx, msg in enumerate(messages):
+                    try:
+                        fields = self.mapper.map_message(msg, session, idx, user_profile)
+                        batch_records.append(fields)
+                    except:
+                        pass
+
+            # 批量插入（使用 upsert 避免重复）
+            if batch_records:
+                # 分批插入，每批100条
+                for i in range(0, len(batch_records), 100):
+                    batch = batch_records[i:i + 100]
+                    try:
+                        self.client.batch_insert_records(
+                            self.app_token,
+                            self.table_ids['messages'],
+                            batch
+                        )
+                        total_count += len(batch)
+                    except Exception as e:
+                        # 可能是重复记录，忽略
+                        logger.debug(f"[飞书同步] 消息批量插入: {e}")
+
+            # 更新同步时间
+            if result.data:
+                latest_time = max(r.get('updated_at', '') for r in result.data if r.get('updated_at'))
+                if latest_time:
+                    self.status_manager.update_last_sync_time('messages', latest_time)
+
+            if total_count > 0:
+                logger.info(f"[飞书同步] 增量同步消息: {total_count} 条")
+            return total_count
+
+        except Exception as e:
+            logger.error(f"[飞书同步] 消息增量同步失败: {e}")
+            return 0
+
     def sync_admin_logs_incremental(self) -> int:
         """增量同步管理员日志"""
         if not self.is_enabled():
