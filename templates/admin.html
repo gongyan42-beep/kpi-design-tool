@@ -5984,6 +5984,20 @@
         // 基于 git log 完整记录
         const versionHistory = [
             {
+                version: '1.2.1',
+                date: '2026-01-15',
+                title: 'CSRF 安全防护 + 用户最后聊天时间',
+                type: 'feature',
+                changes: [
+                    '添加 CSRF 防护中间件，验证 POST/PUT/DELETE 请求来源',
+                    '配置 Session Cookie 安全选项（Secure, HttpOnly, SameSite）',
+                    '用户表格视图添加「最后聊天时间」列',
+                    '支持按最后聊天时间排序',
+                    '支持认领无主会话（未登录用户创建的会话）'
+                ],
+                major: true
+            },
+            {
                 version: '1.2.0',
                 date: '2026-01-14',
                 title: '新增版本历史功能',
