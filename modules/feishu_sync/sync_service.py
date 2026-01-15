@@ -27,6 +27,7 @@ class FeishuSyncService:
         self.table_ids = {
             'profiles': os.getenv('FEISHU_TABLE_PROFILES', ''),
             'sessions': os.getenv('FEISHU_TABLE_SESSIONS', ''),
+            'messages': os.getenv('FEISHU_TABLE_MESSAGES', ''),
             'credit_logs': os.getenv('FEISHU_TABLE_CREDIT_LOGS', ''),
             'redeem_codes': os.getenv('FEISHU_TABLE_REDEEM_CODES', ''),
             'admin_logs': os.getenv('FEISHU_TABLE_ADMIN_LOGS', ''),
@@ -295,6 +296,78 @@ class FeishuSyncService:
             logger.error(f"[飞书同步] 兑换码全量同步失败: {e}")
             return 0
 
+    def full_sync_messages(self) -> int:
+        """全量同步对话消息（从 sessions 表提取）"""
+        if not self.is_enabled():
+            return 0
+
+        if not self.table_ids.get('messages'):
+            logger.warning("[飞书同步] messages 表ID未配置，跳过消息同步")
+            return 0
+
+        try:
+            from modules.supabase_client import get_admin
+            supabase = get_admin()
+
+            # 获取所有会话及其消息
+            result = supabase.table('sessions').select('*').execute()
+
+            total_count = 0
+            batch_records = []
+
+            for session in (result.data or []):
+                messages = session.get('messages', [])
+                if isinstance(messages, str):
+                    try:
+                        messages = json.loads(messages)
+                    except:
+                        messages = []
+
+                if not messages or not isinstance(messages, list):
+                    continue
+
+                # 为每条消息创建记录
+                for idx, msg in enumerate(messages):
+                    try:
+                        fields = self.mapper.map_message(msg, session, idx)
+                        batch_records.append(fields)
+
+                        # 每100条批量插入一次
+                        if len(batch_records) >= 100:
+                            try:
+                                self.client.batch_insert_records(
+                                    self.app_token,
+                                    self.table_ids['messages'],
+                                    batch_records
+                                )
+                                total_count += len(batch_records)
+                                logger.info(f"[飞书同步] 已同步 {total_count} 条消息...")
+                            except Exception as e:
+                                logger.warning(f"[飞书同步] 批量插入消息失败: {e}")
+                            batch_records = []
+
+                    except Exception as e:
+                        logger.warning(f"[飞书同步] 消息映射失败: {e}")
+
+            # 处理剩余记录
+            if batch_records:
+                try:
+                    self.client.batch_insert_records(
+                        self.app_token,
+                        self.table_ids['messages'],
+                        batch_records
+                    )
+                    total_count += len(batch_records)
+                except Exception as e:
+                    logger.warning(f"[飞书同步] 最后批次消息插入失败: {e}")
+
+            logger.info(f"[飞书同步] 全量同步消息: {total_count} 条")
+            return total_count
+
+        except Exception as e:
+            logger.error(f"[飞书同步] 消息全量同步失败: {e}")
+            return 0
+
     def full_sync_all(self) -> Dict[str, int]:
         """全量同步所有表"""
         return {
@@ -302,6 +375,7 @@ class FeishuSyncService:
             'credit_logs': self.full_sync_credit_logs(),
             'redeem_codes': self.full_sync_redeem_codes(),
             'sessions': self.sync_sessions_incremental(),
+            'messages': self.full_sync_messages(),
             'admin_logs': self.sync_admin_logs_incremental(),
         }
 
