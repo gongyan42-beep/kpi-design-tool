@@ -1318,6 +1318,41 @@ def admin_user_profile_summary():
 # ========================================
 # 内存缓存：存储分析结果，避免重复调用 AI
 _analysis_cache = {}
+_CACHE_MAX_SIZE = 100  # 最大缓存数量
+_CACHE_TTL_HOURS = 24  # 缓存过期时间（小时）
+
+def _cleanup_expired_cache():
+    """清理过期的缓存项"""
+    if len(_analysis_cache) < _CACHE_MAX_SIZE:
+        return
+
+    now = datetime.now()
+    expired_keys = []
+    for key, value in _analysis_cache.items():
+        cached_at = value.get('cached_at')
+        if cached_at:
+            try:
+                cached_time = datetime.fromisoformat(cached_at)
+                if (now - cached_time).total_seconds() > _CACHE_TTL_HOURS * 3600:
+                    expired_keys.append(key)
+            except:
+                expired_keys.append(key)
+
+    for key in expired_keys:
+        _analysis_cache.pop(key, None)
+
+    # 如果还是超过限制，删除最老的
+    if len(_analysis_cache) >= _CACHE_MAX_SIZE:
+        # 按时间排序，删除最老的一半
+        sorted_items = sorted(
+            _analysis_cache.items(),
+            key=lambda x: x[1].get('cached_at', ''),
+            reverse=True
+        )
+        _analysis_cache.clear()
+        for key, value in sorted_items[:_CACHE_MAX_SIZE // 2]:
+            _analysis_cache[key] = value
+        logger.info(f"缓存清理完成，当前缓存数: {len(_analysis_cache)}")
 
 def get_analysis_cache(user_email, analysis_type, current_message_count):
     """获取缓存的分析结果（如果消息数没变）"""
@@ -1331,6 +1366,7 @@ def get_analysis_cache(user_email, analysis_type, current_message_count):
 
 def set_analysis_cache(user_email, analysis_type, message_count, result):
     """保存分析结果到缓存"""
+    _cleanup_expired_cache()  # 先清理过期缓存
     cache_key = f"{user_email}:{analysis_type}"
     _analysis_cache[cache_key] = {
         'message_count': message_count,
@@ -1808,7 +1844,7 @@ def admin_upload_research_file():
         if not user_email:
             return jsonify({'success': False, 'error': '缺少用户邮箱'}), 400
 
-        if not file:
+        if not file or not file.filename:
             return jsonify({'success': False, 'error': '请上传文件'}), 400
 
         # 验证文件类型
@@ -1821,6 +1857,11 @@ def admin_upload_research_file():
 
         # 读取文件内容
         file_content = file.read()
+
+        # 检查文件大小（限制 10MB）
+        MAX_FILE_SIZE = 10 * 1024 * 1024
+        if len(file_content) > MAX_FILE_SIZE:
+            return jsonify({'success': False, 'error': '文件过大，最大支持 10MB'}), 413
 
         # 提取文字
         file_text = extract_text_from_file(file_content, file_ext)
@@ -2073,15 +2114,23 @@ def admin_upload_knowledge(module_id):
 
     try:
         # 读取文件内容
+        file_bytes = file.read()
+
+        # 检查文件大小（限制 10MB）
+        MAX_FILE_SIZE = 10 * 1024 * 1024
+        if len(file_bytes) > MAX_FILE_SIZE:
+            return jsonify({'success': False, 'error': '文件过大，最大支持 10MB'}), 413
+
         content = ''
 
         if file_ext in ['txt', 'md']:
-            content = file.read().decode('utf-8')
+            content = file_bytes.decode('utf-8')
         elif file_ext == 'pdf':
             # 使用 PyPDF2 解析 PDF
             try:
                 import PyPDF2
-                reader = PyPDF2.PdfReader(file)
+                from io import BytesIO
+                reader = PyPDF2.PdfReader(BytesIO(file_bytes))
                 for page in reader.pages:
                     content += page.extract_text() + '\n'
             except ImportError:
@@ -2090,7 +2139,8 @@ def admin_upload_knowledge(module_id):
             # 使用 python-docx 解析 DOCX
             try:
                 from docx import Document
-                doc = Document(file)
+                from io import BytesIO
+                doc = Document(BytesIO(file_bytes))
                 for para in doc.paragraphs:
                     content += para.text + '\n'
             except ImportError:
@@ -2407,8 +2457,15 @@ def admin_upload_excel_phones():
         return jsonify({'success': False, 'error': '请上传 Excel 文件（.xlsx 或 .xls）'}), 400
 
     try:
+        file_bytes = file.read()
+
+        # 检查文件大小（限制 5MB）
+        MAX_FILE_SIZE = 5 * 1024 * 1024
+        if len(file_bytes) > MAX_FILE_SIZE:
+            return jsonify({'success': False, 'error': '文件过大，最大支持 5MB'}), 413
+
         from openpyxl import load_workbook
-        wb = load_workbook(filename=BytesIO(file.read()), read_only=True)
+        wb = load_workbook(filename=BytesIO(file_bytes), read_only=True)
         ws = wb.active
 
         phones = set()

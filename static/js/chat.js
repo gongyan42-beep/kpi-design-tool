@@ -243,7 +243,7 @@ async function sendMessage() {
                 aiMessageDiv.remove();
                 return;
             }
-            throw new Error(errorData.error || '请求失败');
+            throw new Error(errorData.error || errorData.message || '请求失败');
         }
 
         // 发送成功，清空输入框
