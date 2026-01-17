@@ -677,7 +677,19 @@ def get_system_prompt(module: str, collected_data: dict = None, user_memory_cont
 
 
 def get_welcome_message(module: str) -> str:
-    """获取模块的欢迎语"""
+    """获取模块的欢迎语（优先数据库自定义，回退默认值）"""
+    # 先尝试从数据库获取自定义欢迎语
+    try:
+        from modules.prompt_service import prompt_service
+        module_info = prompt_service.get_module(module)
+        if module_info:
+            custom_welcome = module_info.get('welcome_message')
+            if custom_welcome:
+                return custom_welcome
+    except Exception as e:
+        print(f"获取自定义欢迎语失败: {e}")
+
+    # 回退到预定义欢迎语
     messages = {
         'market_price': """欢迎使用**市场价模块**！
 
@@ -720,7 +732,7 @@ def get_welcome_message(module: str) -> str:
     if module in messages:
         return messages[module]
 
-    # 对于动态模块，尝试从 Supabase 获取模块信息生成欢迎语
+    # 对于动态模块，根据模块信息生成默认欢迎语
     try:
         from modules.prompt_service import prompt_service
         module_info = prompt_service.get_module(module)
@@ -736,3 +748,15 @@ def get_welcome_message(module: str) -> str:
         print(f"获取动态模块欢迎语失败: {e}")
 
     return '欢迎使用本模块！请告诉我您的需求。'
+
+
+def get_input_guide(module: str) -> str:
+    """获取模块的输入格式引导"""
+    try:
+        from modules.prompt_service import prompt_service
+        module_info = prompt_service.get_module(module)
+        if module_info:
+            return module_info.get('input_guide', '') or ''
+    except Exception as e:
+        print(f"获取输入引导失败: {e}")
+    return ''

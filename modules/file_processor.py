@@ -11,18 +11,42 @@ def extract_text_from_file(file_content: bytes, file_type: str) -> str:
 
     Args:
         file_content: 文件二进制内容
-        file_type: 文件类型（pdf, docx, doc, txt）
+        file_type: 文件类型（pdf, docx, doc, txt, md, rtf）
 
     Returns:
         提取的文本内容
     """
     try:
-        if file_type == 'txt':
-            # TXT 文件直接解码
+        if file_type in ('txt', 'md'):
+            # TXT/MD 文件直接解码
             try:
                 return file_content.decode('utf-8')
             except UnicodeDecodeError:
                 return file_content.decode('gbk', errors='ignore')
+
+        elif file_type == 'rtf':
+            # RTF 文件处理
+            try:
+                from striprtf.striprtf import rtf_to_text
+                try:
+                    text = file_content.decode('utf-8')
+                except UnicodeDecodeError:
+                    text = file_content.decode('gbk', errors='ignore')
+                return rtf_to_text(text)
+            except ImportError:
+                # striprtf 未安装，尝试简单提取
+                try:
+                    text = file_content.decode('utf-8', errors='ignore')
+                except:
+                    text = file_content.decode('gbk', errors='ignore')
+                # 简单去除 RTF 控制符
+                import re
+                text = re.sub(r'\\[a-z]+\d*\s?', '', text)
+                text = re.sub(r'[{}]', '', text)
+                return text.strip()
+            except Exception as e:
+                print(f"RTF 解析失败: {e}")
+                return f"[RTF 解析失败: {e}]"
 
         elif file_type == 'pdf':
             # PDF 文件使用 PyPDF2
@@ -104,7 +128,7 @@ def upload_to_supabase_storage(file_content: bytes, file_name: str, content_type
 
 def get_allowed_extensions():
     """获取允许上传的文件扩展名"""
-    return {'pdf', 'docx', 'doc', 'txt'}
+    return {'pdf', 'docx', 'doc', 'txt', 'md', 'rtf'}
 
 
 def validate_file_type(filename: str) -> bool:

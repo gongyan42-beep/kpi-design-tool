@@ -94,6 +94,10 @@ async function initChat(module) {
         if (data.success) {
             saveSessionId(data.session_id);
             addMessage('assistant', data.welcome_message, true);  // 显示快捷回复按钮
+            // 显示输入格式引导（如果有）
+            if (data.input_guide) {
+                addInputGuide(data.input_guide);
+            }
             // 恢复待发送的消息（如果有）
             restorePendingMessage(module);
         } else {
@@ -452,6 +456,29 @@ function addMessage(role, content, showQuickReplies = false) {
     if (role === 'assistant' && showQuickReplies) {
         createQuickReplyButtons(messageDiv);
     }
+}
+
+/**
+ * 添加输入格式引导框
+ */
+function addInputGuide(guide) {
+    const container = document.getElementById('messages');
+    const div = document.createElement('div');
+    div.className = 'input-guide-box';
+
+    let parsedContent = guide;
+    if (typeof marked !== 'undefined') {
+        parsedContent = marked.parse(guide);
+    } else {
+        parsedContent = guide.replace(/\n/g, '<br>');
+    }
+
+    div.innerHTML = `
+        <div class="input-guide-icon">📝</div>
+        <div class="input-guide-content">${parsedContent}</div>
+    `;
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
 }
 
 /**

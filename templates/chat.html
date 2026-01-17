@@ -1582,6 +1582,48 @@
             box-shadow: var(--md-sys-elevation-1);
         }
 
+        /* 输入格式引导框样式 */
+        .input-guide-box {
+            display: flex;
+            gap: 12px;
+            padding: 16px;
+            margin: 12px 0 12px 52px;
+            background: linear-gradient(135deg, rgba(14, 165, 233, 0.08), rgba(56, 189, 248, 0.05));
+            border-left: 3px solid #0ea5e9;
+            border-radius: 12px;
+            font-size: 14px;
+            color: var(--gemini-on-surface);
+            animation: message-slide-in 0.25s cubic-bezier(0.2, 0, 0, 1);
+        }
+
+        .input-guide-icon {
+            flex-shrink: 0;
+            font-size: 18px;
+        }
+
+        .input-guide-content {
+            flex: 1;
+            line-height: 1.6;
+        }
+
+        .input-guide-content p {
+            margin: 0 0 8px 0;
+        }
+
+        .input-guide-content p:last-child {
+            margin-bottom: 0;
+        }
+
+        .input-guide-content ol,
+        .input-guide-content ul {
+            margin: 8px 0;
+            padding-left: 20px;
+        }
+
+        .input-guide-content li {
+            margin: 4px 0;
+        }
+
         /* 快捷回复 - Gemini Chips 样式（精确复刻）*/
         .quick-replies {
             display: flex;
@@ -2412,7 +2454,7 @@
         </div>
     </main>
 
-    <input type="file" id="file-upload" accept="image/*,.txt,.pdf,.doc,.docx,.md" multiple onchange="handleFileSelect(event)">
+    <input type="file" id="file-upload" accept="image/*,.txt,.pdf,.doc,.docx,.md,.rtf" multiple onchange="handleFileSelect(event)">
     <!-- 隐藏的 select 保持兼容 -->
     <select id="model-select" style="display:none;">
         <option value="flash">Flash</option>
@@ -2762,6 +2804,10 @@
                     // 确保欢迎消息存在，否则使用默认值
                     const welcomeMsg = data.welcome_message || '欢迎使用本模块！请告诉我您的需求。';
                     addMessage('assistant', welcomeMsg, false);
+                    // 显示输入格式引导（如果有）
+                    if (data.input_guide) {
+                        addInputGuide(data.input_guide);
+                    }
                     // 添加欢迎消息的快捷回复
                     addWelcomeQuickReplies(module);
                 } else {
@@ -3142,6 +3188,19 @@
             }
         }
 
+        // 添加输入格式引导
+        function addInputGuide(guide) {
+            const container = document.getElementById('messages');
+            const div = document.createElement('div');
+            div.className = 'input-guide-box';
+            div.innerHTML = `
+                <div class="input-guide-icon">📝</div>
+                <div class="input-guide-content">${safeMarkdown(guide)}</div>
+            `;
+            container.appendChild(div);
+            scrollToBottom();
+        }
+
         // 添加快捷回复
         function addQuickReplies() {
             const existing = document.querySelector('.quick-replies');
@@ -3493,7 +3552,7 @@
                         });
                     };
                     reader.readAsDataURL(file);
-                } else if (file.name.match(/\.(txt|md|doc|docx)$/i)) {
+                } else if (file.name.match(/\.(txt|md|doc|docx|rtf)$/i)) {
                     // 文本文件
                     const reader = new FileReader();
                     reader.onload = (e) => {
@@ -3540,7 +3599,8 @@
                     'doc': '📝',
                     'docx': '📝',
                     'txt': '📃',
-                    'md': '📑'
+                    'md': '📑',
+                    'rtf': '📃'
                 };
                 const icon = iconMap[fileData.type] || '📎';
                 const shortName = fileData.filename.length > 10
@@ -3860,7 +3920,7 @@
                         });
                     };
                     reader.readAsDataURL(file);
-                } else if (file.name.match(/\.(txt|md|doc|docx)$/i)) {
+                } else if (file.name.match(/\.(txt|md|doc|docx|rtf)$/i)) {
                     const reader = new FileReader();
                     reader.onload = (e) => {
                         const ext = file.name.split('.').pop().toLowerCase();

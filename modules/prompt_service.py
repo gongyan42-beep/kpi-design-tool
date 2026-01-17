@@ -224,15 +224,18 @@ class PromptService:
             return False
 
         try:
-            self.client.table('modules').update({
-                'name': module_data.get('name'),
-                'icon': module_data.get('icon'),
-                'color': module_data.get('color'),
-                'description': module_data.get('description'),
-                'subtitle': module_data.get('subtitle'),
-                'is_active': module_data.get('is_active', True),
-                'updated_at': datetime.now().isoformat()
-            }).eq('id', module_id).execute()
+            # 构建更新数据，只更新提供的字段
+            update_data = {'updated_at': datetime.now().isoformat()}
+
+            # 可更新的字段列表
+            updatable_fields = ['name', 'icon', 'color', 'description', 'subtitle',
+                               'welcome_message', 'input_guide', 'is_active']
+
+            for field in updatable_fields:
+                if field in module_data:
+                    update_data[field] = module_data[field]
+
+            self.client.table('modules').update(update_data).eq('id', module_id).execute()
 
             return True
         except Exception as e:

@@ -2814,6 +2814,7 @@
 
                         <div class="prompt-tabs">
                             <button class="prompt-tab-btn active" onclick="switchPromptTab('prompt')">系统提示词</button>
+                            <button class="prompt-tab-btn" onclick="switchPromptTab('welcome')">欢迎引导</button>
                             <button class="prompt-tab-btn" onclick="switchPromptTab('knowledge')">知识库</button>
                         </div>
 
@@ -2821,6 +2822,27 @@
                         <div id="promptContent">
                             <textarea class="prompt-textarea" id="promptTextarea"
                                 placeholder="输入该模块的系统提示词..."></textarea>
+                        </div>
+
+                        <!-- 欢迎引导编辑 -->
+                        <div id="welcomeContent" style="display: none;">
+                            <div class="welcome-section" style="display: flex; flex-direction: column; gap: 20px;">
+                                <div class="form-group">
+                                    <label style="display: block; font-weight: 600; margin-bottom: 8px; color: var(--text-primary);">欢迎语</label>
+                                    <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">用户进入模块时显示的欢迎文字，支持 Markdown 格式</p>
+                                    <textarea class="prompt-textarea" id="welcomeTextarea"
+                                        placeholder="例如：欢迎使用**评价教练**！&#10;&#10;教你写出高转化评价。&#10;&#10;请告诉我您的需求，我会为您提供专业的建议和方案。"
+                                        style="min-height: 150px;"></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label style="display: block; font-weight: 600; margin-bottom: 8px; color: var(--text-primary);">输入格式引导</label>
+                                    <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">固定显示在欢迎语下方，引导用户按正确格式输入信息，支持 Markdown 格式</p>
+                                    <textarea class="prompt-textarea" id="inputGuideTextarea"
+                                        placeholder="例如：请提供以下信息：&#10;1. 产品名称&#10;2. 产品特点&#10;3. 目标用户群体"
+                                        style="min-height: 120px;"></textarea>
+                                </div>
+                                <button class="btn-save-prompt" onclick="saveWelcomeConfig()" style="align-self: flex-start;">保存欢迎配置</button>
+                            </div>
                         </div>
 
                         <!-- 知识库管理 -->
@@ -5057,6 +5079,9 @@
             // 加载提示词
             await loadPrompt(moduleId);
 
+            // 加载欢迎配置
+            await loadWelcomeConfig(moduleId);
+
             // 加载知识库
             await loadKnowledge(moduleId);
         }
@@ -5072,6 +5097,60 @@
                 }
             } catch (e) {
                 console.error('加载提示词失败', e);
+            }
+        }
+
+        // 加载欢迎配置
+        async function loadWelcomeConfig(moduleId) {
+            try {
+                const module = allModules.find(m => m.id === moduleId);
+                if (module) {
+                    document.getElementById('welcomeTextarea').value = module.welcome_message || '';
+                    document.getElementById('inputGuideTextarea').value = module.input_guide || '';
+                }
+            } catch (e) {
+                console.error('加载欢迎配置失败', e);
+            }
+        }
+
+        // 保存欢迎配置
+        async function saveWelcomeConfig() {
+            if (!currentModuleId) return;
+
+            const welcomeMessage = document.getElementById('welcomeTextarea').value;
+            const inputGuide = document.getElementById('inputGuideTextarea').value;
+            const statusEl = document.getElementById('promptSaveStatus');
+
+            try {
+                statusEl.textContent = '保存中...';
+                statusEl.style.color = '#6b7280';
+
+                const res = await fetch(`/api/admin/modules/${currentModuleId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        welcome_message: welcomeMessage,
+                        input_guide: inputGuide
+                    })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    statusEl.textContent = '✓ 欢迎配置保存成功';
+                    statusEl.style.color = '#10b981';
+                    // 更新本地缓存
+                    const moduleIndex = allModules.findIndex(m => m.id === currentModuleId);
+                    if (moduleIndex !== -1) {
+                        allModules[moduleIndex].welcome_message = welcomeMessage;
+                        allModules[moduleIndex].input_guide = inputGuide;
+                    }
+                } else {
+                    statusEl.textContent = '✗ 保存失败: ' + (data.error || '未知错误');
+                    statusEl.style.color = '#ef4444';
+                }
+            } catch (e) {
+                statusEl.textContent = '✗ 网络错误';
+                statusEl.style.color = '#ef4444';
             }
         }
 
@@ -5256,12 +5335,13 @@
             }
         }
 
-        // 切换提示词/知识库标签
+        // 切换提示词/欢迎引导/知识库标签
         function switchPromptTab(tab) {
             document.querySelectorAll('.prompt-tab-btn').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
 
             document.getElementById('promptContent').style.display = tab === 'prompt' ? 'block' : 'none';
+            document.getElementById('welcomeContent').style.display = tab === 'welcome' ? 'block' : 'none';
             document.getElementById('knowledgeContent').style.display = tab === 'knowledge' ? 'block' : 'none';
         }
 

@@ -11,7 +11,7 @@ from io import BytesIO
 from config import Config
 from database import db
 from modules.ai_service import ai_service
-from modules.prompts import get_system_prompt, get_welcome_message
+from modules.prompts import get_system_prompt, get_welcome_message, get_input_guide
 from modules.auth_service import auth_service
 from modules.memory_service import memory_service
 from modules.prompt_service import prompt_service
@@ -284,13 +284,17 @@ def create_session():
     # 获取欢迎语
     welcome_message = get_welcome_message(module)
 
+    # 获取输入格式引导
+    input_guide = get_input_guide(module)
+
     # 保存AI的欢迎消息
     db.add_message(session_id, 'assistant', welcome_message)
 
     return jsonify({
         'success': True,
         'session_id': session_id,
-        'welcome_message': welcome_message
+        'welcome_message': welcome_message,
+        'input_guide': input_guide
     })
 
 
