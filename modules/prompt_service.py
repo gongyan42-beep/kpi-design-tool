@@ -199,6 +199,8 @@ class PromptService:
                 'color': module_data.get('color', '#6b7280'),
                 'description': module_data.get('description', ''),
                 'subtitle': module_data.get('subtitle', ''),
+                'welcome_message': module_data.get('welcome_message', ''),
+                'input_guide': module_data.get('input_guide', ''),
                 'sort_order': module_data.get('sort_order', 99),
                 'is_active': True,
                 'created_at': datetime.now().isoformat()

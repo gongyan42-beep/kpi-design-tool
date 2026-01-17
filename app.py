@@ -486,7 +486,7 @@ def _generate_thinking_steps(module: str, message: str) -> list:
 
 @app.route('/api/chat/stream', methods=['POST'])
 def chat_stream_api():
-    """流式对话 - 逐字返回（打字机效果）- 支持图片"""
+    """流式对话 - 逐字返回（打字机效果）- 支持图片和文档"""
     data = request.get_json()
     if not data:
         return jsonify({'success': False, 'error': '无效的请求数据'}), 400
@@ -495,9 +495,10 @@ def chat_stream_api():
     message = data.get('message', '').strip()
     model = data.get('model', 'flash')
     images = data.get('images', [])  # 图片列表（Base64 格式）
+    documents = data.get('documents', [])  # 文档列表（Base64 格式，包含 type, base64, filename）
 
-    # 必须有文字或图片
-    if not session_id or (not message and not images):
+    # 必须有文字或图片或文档
+    if not session_id or (not message and not images and not documents):
         return jsonify({'success': False, 'error': '缺少必要参数'}), 400
 
     chat_session = db.get_session(session_id)
@@ -547,14 +548,67 @@ def chat_stream_api():
             'admin_wechat': '猫课工作人员'
         }), 402
 
-    # 保存用户消息（如果有图片，附带标记）
-    display_message = message if message else '[图片]'
-    if message and images:
-        display_message = f"{message} [附图{len(images)}张]"
+    # 处理文档文件，提取文本内容
+    document_texts = []
+    if documents:
+        from modules.file_processor import extract_text_from_file
+        import base64
+        for doc in documents:
+            try:
+                doc_type = doc.get('type', '')
+                doc_base64 = doc.get('base64', '')
+                doc_filename = doc.get('filename', '')
+
+                # 从 data URL 中提取实际的 base64 数据
+                if ',' in doc_base64:
+                    doc_base64 = doc_base64.split(',', 1)[1]
+
+                # 解码 base64
+                file_content = base64.b64decode(doc_base64)
+
+                # 提取文本
+                extracted_text = extract_text_from_file(file_content, doc_type)
+                if extracted_text and extracted_text.strip():
+                    document_texts.append(f"【文件：{doc_filename}】\n{extracted_text}")
+            except Exception as e:
+                logger.warning(f"文档文本提取失败: {e}")
+                document_texts.append(f"【文件：{doc.get('filename', '未知文件')}】\n[文档解析失败]")
+
+    # 构建最终的用户消息（包含文档文本）
+    final_message = message
+    if document_texts:
+        doc_content = "\n\n".join(document_texts)
+        if final_message:
+            final_message = f"{final_message}\n\n---\n以下是上传的文档内容：\n{doc_content}"
+        else:
+            final_message = f"请分析以下文档内容：\n{doc_content}"
+
+    # 保存用户消息（如果有图片或文档，附带标记）
+    display_message = message if message else ''
+    attachments = []
+    if images:
+        attachments.append(f"附图{len(images)}张")
+    if documents:
+        attachments.append(f"附文档{len(documents)}个")
+    if attachments:
+        if display_message:
+            display_message = f"{display_message} [{', '.join(attachments)}]"
+        else:
+            display_message = f"[{', '.join(attachments)}]"
+    if not display_message:
+        display_message = '[附件]'
     db.add_message(session_id, 'user', display_message)
 
     # 获取对话历史
     messages = db.get_messages_for_api(session_id)
+
+    # 如果有文档内容，替换最后一条用户消息（用于发送给 AI，包含完整文档文本）
+    if document_texts and messages:
+        # 找到最后一条用户消息并替换其内容
+        for i in range(len(messages) - 1, -1, -1):
+            if messages[i].get('role') == 'user':
+                messages[i] = {'role': 'user', 'content': final_message}
+                break
 
     # 获取用户记忆上下文
     user_memory_context = memory_service.get_memory_context(user_id) if user_id else None

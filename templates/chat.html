@@ -1993,6 +1993,75 @@
             transform: scale(1.02);
         }
 
+        /* 文件图标预览样式 */
+        .file-icon-preview {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #f0f4f9 0%, #e8eef5 100%);
+            gap: 4px;
+        }
+
+        .file-icon-preview .file-icon {
+            font-size: 28px;
+        }
+
+        .file-icon-preview .file-name {
+            font-size: 10px;
+            color: #5f6368;
+            max-width: 70px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            text-align: center;
+        }
+
+        /* 消息中的文件显示样式 */
+        .message-file-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: #f0f4f9;
+            border-radius: 8px;
+            border: 1px solid #dadce0;
+        }
+
+        .message-file-item .file-icon {
+            font-size: 20px;
+        }
+
+        .message-file-item .file-name {
+            font-size: 13px;
+            color: #1f1f1f;
+            max-width: 150px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* 拖拽上传时的高亮样式 */
+        .input-wrapper.drag-over {
+            border-color: var(--gemini-primary);
+            background: rgba(26, 115, 232, 0.08);
+            box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+        }
+
+        .input-wrapper.drag-over::after {
+            content: '松开鼠标上传文件';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 14px;
+            color: var(--gemini-primary);
+            font-weight: 500;
+            pointer-events: none;
+        }
+
         /* 积分用尽弹窗样式 */
         .credits-modal {
             position: fixed;
@@ -2343,7 +2412,7 @@
         </div>
     </main>
 
-    <input type="file" id="file-upload" accept="image/*,.txt,.pdf,.doc,.docx,.md" onchange="handleFileSelect(event)">
+    <input type="file" id="file-upload" accept="image/*,.txt,.pdf,.doc,.docx,.md" multiple onchange="handleFileSelect(event)">
     <!-- 隐藏的 select 保持兼容 -->
     <select id="model-select" style="display:none;">
         <option value="flash">Flash</option>
@@ -2394,6 +2463,9 @@
 
             // 检查登录
             await checkLogin();
+
+            // 初始化拖拽上传
+            initDragAndDrop();
 
             // 页面可见时刷新模块列表
             document.addEventListener('visibilitychange', () => {
@@ -2734,21 +2806,29 @@
             const input = document.getElementById('message-input');
             const message = input.value.trim();
 
-            // 获取待发送的图片
-            const imagesToSend = pendingImages.filter(img => img !== null);
+            // 获取待发送的文件
+            const filesToSend = pendingImages.filter(f => f !== null);
 
-            // 必须有文字或图片
-            if (!message && imagesToSend.length === 0) return;
+            // 分离图片和文档
+            const images = filesToSend.filter(f => f.type === 'image').map(f => f.base64);
+            const documents = filesToSend.filter(f => f.type !== 'image').map(f => ({
+                type: f.type,
+                base64: f.base64,
+                filename: f.filename
+            }));
+
+            // 必须有文字或文件
+            if (!message && filesToSend.length === 0) return;
 
             setLoading(true);
             userScrolledUp = false; // 用户发送消息时重置滚动状态
 
-            // 显示用户消息（包含图片）
-            addMessageWithImages('user', message, imagesToSend);
+            // 显示用户消息（包含文件）
+            addMessageWithImages('user', message, filesToSend);
 
             input.value = '';
             autoResize(input);
-            clearImagePreviews(); // 清空图片预览
+            clearImagePreviews(); // 清空文件预览
             scrollToBottom(true); // 强制滚动
 
             const aiMessage = createStreamingMessage();
@@ -2761,9 +2841,14 @@
                     model: currentModel
                 };
 
-                // 如果有图片，添加到请求体
-                if (imagesToSend.length > 0) {
-                    requestBody.images = imagesToSend.map(img => img.base64);
+                // 添加图片
+                if (images.length > 0) {
+                    requestBody.images = images;
+                }
+
+                // 添加文档
+                if (documents.length > 0) {
+                    requestBody.documents = documents;
                 }
 
                 const res = await fetch('/api/chat/stream', {
@@ -2827,17 +2912,34 @@
             }
         }
 
-        // 添加带图片的消息
-        function addMessageWithImages(role, content, images) {
+        // 添加带文件的消息
+        function addMessageWithImages(role, content, files) {
             const container = document.getElementById('messages');
             const div = document.createElement('div');
             div.className = `message message-${role}`;
 
-            let imagesHtml = '';
-            if (images && images.length > 0) {
-                imagesHtml = `<div class="message-image-container">
-                    ${images.map(img => `<img src="${img.base64}" alt="上传的图片" onclick="showImagePreview(this.src)">`).join('')}
-                </div>`;
+            let filesHtml = '';
+            if (files && files.length > 0) {
+                const fileItems = files.map(f => {
+                    if (f.type === 'image') {
+                        return `<img src="${f.base64}" alt="上传的图片" onclick="showImagePreview(this.src)">`;
+                    } else {
+                        // 文档类型显示图标
+                        const iconMap = {
+                            'pdf': '📄',
+                            'doc': '📝',
+                            'docx': '📝',
+                            'txt': '📃',
+                            'md': '📑'
+                        };
+                        const icon = iconMap[f.type] || '📎';
+                        return `<div class="message-file-item">
+                            <span class="file-icon">${icon}</span>
+                            <span class="file-name">${escapeHtml(f.filename)}</span>
+                        </div>`;
+                    }
+                }).join('');
+                filesHtml = `<div class="message-image-container">${fileItems}</div>`;
             }
 
             if (role === 'assistant') {
@@ -2847,11 +2949,11 @@
                             <path d="M12 0L14.59 8.41L23 11L14.59 13.59L12 22L9.41 13.59L1 11L9.41 8.41L12 0Z"/>
                         </svg>
                     </div>
-                    <div class="message-content">${safeMarkdown(content)}${imagesHtml}</div>
+                    <div class="message-content">${safeMarkdown(content)}${filesHtml}</div>
                 `;
             } else {
                 div.innerHTML = `
-                    <div class="message-content">${content ? escapeHtml(content) : ''}${imagesHtml}</div>
+                    <div class="message-content">${content ? escapeHtml(content) : ''}${filesHtml}</div>
                 `;
             }
 
@@ -3360,24 +3462,52 @@
             if (!files || files.length === 0) return;
 
             for (const file of files) {
+                // 检查文件大小（限制 10MB）
+                if (file.size > 10 * 1024 * 1024) {
+                    showToast('文件大小不能超过 10MB', 'error');
+                    continue;
+                }
+
                 // 检查是否是图片
                 if (file.type.startsWith('image/')) {
-                    // 检查文件大小（限制 10MB）
-                    if (file.size > 10 * 1024 * 1024) {
-                        showToast('图片大小不能超过 10MB', 'error');
-                        continue;
-                    }
-
                     // 读取图片为 Base64
                     const reader = new FileReader();
                     reader.onload = (e) => {
                         const base64 = e.target.result;
-                        addImagePreview(base64, file.name);
+                        addFilePreview({
+                            type: 'image',
+                            base64: base64,
+                            filename: file.name
+                        });
+                    };
+                    reader.readAsDataURL(file);
+                } else if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+                    // PDF 文件
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const base64 = e.target.result;
+                        addFilePreview({
+                            type: 'pdf',
+                            base64: base64,
+                            filename: file.name
+                        });
+                    };
+                    reader.readAsDataURL(file);
+                } else if (file.name.match(/\.(txt|md|doc|docx)$/i)) {
+                    // 文本文件
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const base64 = e.target.result;
+                        const ext = file.name.split('.').pop().toLowerCase();
+                        addFilePreview({
+                            type: ext,
+                            base64: base64,
+                            filename: file.name
+                        });
                     };
                     reader.readAsDataURL(file);
                 } else {
-                    // 非图片文件（文档）暂不处理
-                    showToast('暂时只支持图片上传', 'info');
+                    showToast('不支持的文件格式', 'error');
                 }
             }
 
@@ -3385,12 +3515,9 @@
             event.target.value = '';
         }
 
-        // 添加图片预览
-        function addImagePreview(base64, filename) {
-            pendingImages.push({
-                base64: base64,
-                filename: filename
-            });
+        // 添加文件预览（支持图片和文档）
+        function addFilePreview(fileData) {
+            pendingImages.push(fileData);
 
             const container = document.getElementById('imagePreviewContainer');
             container.classList.add('show');
@@ -3399,15 +3526,44 @@
             const item = document.createElement('div');
             item.className = 'image-preview-item';
             item.dataset.index = index;
-            item.innerHTML = `
-                <img src="${base64}" alt="${escapeHtml(filename)}">
-                <button class="image-preview-remove" onclick="removeImagePreview(${index})" title="移除">×</button>
-            `;
+
+            // 根据文件类型显示不同的预览
+            if (fileData.type === 'image') {
+                item.innerHTML = `
+                    <img src="${fileData.base64}" alt="${escapeHtml(fileData.filename)}">
+                    <button class="image-preview-remove" onclick="removeImagePreview(${index})" title="移除">×</button>
+                `;
+            } else {
+                // PDF 或文档显示图标
+                const iconMap = {
+                    'pdf': '📄',
+                    'doc': '📝',
+                    'docx': '📝',
+                    'txt': '📃',
+                    'md': '📑'
+                };
+                const icon = iconMap[fileData.type] || '📎';
+                const shortName = fileData.filename.length > 10
+                    ? fileData.filename.substring(0, 8) + '...'
+                    : fileData.filename;
+                item.innerHTML = `
+                    <div class="file-icon-preview">
+                        <span class="file-icon">${icon}</span>
+                        <span class="file-name">${escapeHtml(shortName)}</span>
+                    </div>
+                    <button class="image-preview-remove" onclick="removeImagePreview(${index})" title="移除">×</button>
+                `;
+            }
             container.appendChild(item);
 
             // 启用发送按钮
             document.getElementById('sendBtn').disabled = false;
             document.getElementById('sendBtn').classList.add('active');
+        }
+
+        // 保留旧函数名兼容
+        function addImagePreview(base64, filename) {
+            addFilePreview({ type: 'image', base64: base64, filename: filename });
         }
 
         // 移除图片预览
@@ -3628,6 +3784,97 @@
             }).catch(() => {
                 showToast('复制失败，请手动复制', 'error');
             });
+        }
+
+        // 初始化拖拽上传
+        function initDragAndDrop() {
+            const inputWrapper = document.querySelector('.input-wrapper');
+            const chatArea = document.getElementById('chatArea');
+
+            // 阻止默认拖拽行为
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                document.body.addEventListener(eventName, preventDefaults, false);
+            });
+
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            // 拖拽进入时高亮
+            ['dragenter', 'dragover'].forEach(eventName => {
+                inputWrapper.addEventListener(eventName, () => {
+                    inputWrapper.classList.add('drag-over');
+                }, false);
+            });
+
+            // 拖拽离开时取消高亮
+            ['dragleave', 'drop'].forEach(eventName => {
+                inputWrapper.addEventListener(eventName, () => {
+                    inputWrapper.classList.remove('drag-over');
+                }, false);
+            });
+
+            // 处理文件拖放
+            inputWrapper.addEventListener('drop', handleDrop, false);
+            chatArea.addEventListener('drop', handleDrop, false);
+
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+
+                if (files.length > 0) {
+                    // 模拟 file input 的 change 事件
+                    processDroppedFiles(files);
+                }
+            }
+        }
+
+        // 处理拖放的文件
+        function processDroppedFiles(files) {
+            for (const file of files) {
+                // 检查文件大小（限制 10MB）
+                if (file.size > 10 * 1024 * 1024) {
+                    showToast('文件大小不能超过 10MB', 'error');
+                    continue;
+                }
+
+                // 检查是否是图片
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        addFilePreview({
+                            type: 'image',
+                            base64: e.target.result,
+                            filename: file.name
+                        });
+                    };
+                    reader.readAsDataURL(file);
+                } else if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        addFilePreview({
+                            type: 'pdf',
+                            base64: e.target.result,
+                            filename: file.name
+                        });
+                    };
+                    reader.readAsDataURL(file);
+                } else if (file.name.match(/\.(txt|md|doc|docx)$/i)) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const ext = file.name.split('.').pop().toLowerCase();
+                        addFilePreview({
+                            type: ext,
+                            base64: e.target.result,
+                            filename: file.name
+                        });
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    showToast('不支持的文件格式', 'error');
+                }
+            }
         }
     </script>
 </body>
