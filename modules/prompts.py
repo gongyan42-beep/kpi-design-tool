@@ -677,76 +677,27 @@ def get_system_prompt(module: str, collected_data: dict = None, user_memory_cont
 
 
 def get_welcome_message(module: str) -> str:
-    """获取模块的欢迎语（优先数据库自定义，回退默认值）"""
-    # 先尝试从数据库获取自定义欢迎语
-    try:
-        from modules.prompt_service import prompt_service
-        module_info = prompt_service.get_module(module)
-        if module_info:
-            custom_welcome = module_info.get('welcome_message')
-            if custom_welcome:
-                return custom_welcome
-    except Exception as e:
-        print(f"获取自定义欢迎语失败: {e}")
-
-    # 回退到预定义欢迎语
-    messages = {
-        'market_price': """欢迎使用**市场价模块**！
-
-我会帮您确定岗位的市场薪资范围。
-
-请问**您想分析哪个岗位的市场价**？""",
-
-        'kpi': """欢迎使用**KPI模块**！
-
-我会帮您设计岗位的薪资结构和考核指标。
-
-请问**您想为哪个岗位设计KPI**？""",
-
-        'okr': """欢迎使用**OKR模块**！
-
-我会帮您判断是否适合使用OKR，并制定OKR框架。
-
-请问**您想为哪个岗位或员工制定OKR**？""",
-
-        'strategy': """欢迎使用**战略模块**！
-
-我会帮您规划公司的战略增量方向。
-
-请问**您公司目前的年销售额大概是多少**？""",
-
-        'organization': """欢迎使用**组织模块**！
-
-我会帮您规划实现增量目标所需的人才和组织。
-
-请问**您的业绩目标是从多少增长到多少**？""",
-
-        'recruitment': """欢迎使用**招人选人模块**！
-
-我会帮您制定具体的招聘方案和选人标准。
-
-请问**您想招聘什么岗位**？"""
-    }
-
-    # 如果是预定义模块，返回预定义欢迎语
-    if module in messages:
-        return messages[module]
-
-    # 对于动态模块，根据模块信息生成默认欢迎语
+    """获取模块的欢迎语（根据模块名称自动生成）"""
     try:
         from modules.prompt_service import prompt_service
         module_info = prompt_service.get_module(module)
         if module_info:
             name = module_info.get('name', '本模块')
             description = module_info.get('description', '')
-            return f"""欢迎使用**{name}**！
+            if description:
+                return f"""欢迎使用**{name}**！
 
 {description}
 
 请告诉我您的需求，我会为您提供专业的建议和方案。"""
-    except Exception as e:
-        print(f"获取动态模块欢迎语失败: {e}")
+            else:
+                return f"""欢迎使用**{name}**！
 
+请告诉我您的需求，我会为您提供专业的建议和方案。"""
+    except Exception as e:
+        print(f"获取模块信息失败: {e}")
+
+    # 回退到默认欢迎语
     return '欢迎使用本模块！请告诉我您的需求。'
 
 
