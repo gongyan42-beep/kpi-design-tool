@@ -3660,6 +3660,10 @@
                             </div>
                         </div>
                     </div>
+                    <div class="user-card-actions" style="display: flex; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.1);">
+                        <button class="action-btn view" onclick="event.stopPropagation(); showUserChats('${email}')" title="查看聊天记录">查看聊天记录</button>
+                        <button class="action-btn edit" onclick="event.stopPropagation(); showEditCreditsModal('${email}', ${credits})">修改积分</button>
+                    </div>
                 </div>
             `}).join('');
         }
@@ -3739,6 +3743,7 @@
                                         <td>${stats.lastChatTime ? formatTime(stats.lastChatTime) : '-'}</td>
                                         <td>
                                             <div class="action-btns">
+                                                <button class="action-btn view" onclick="event.stopPropagation(); showUserChats('${email}')" title="查看聊天记录">聊天</button>
                                                 <button class="action-btn view" onclick="event.stopPropagation(); showUserDetail('${email}')">详情</button>
                                                 <button class="action-btn edit" onclick="event.stopPropagation(); showEditCreditsModal('${email}', ${credits})">积分</button>
                                             </div>
@@ -3794,6 +3799,7 @@
                                         <span class="stat-value">${stats.messages}</span>
                                     </div>
                                 </div>
+                                <button class="action-btn view" onclick="event.stopPropagation(); showUserChats('${email}')" title="查看聊天记录" style="margin-left: 12px; padding: 4px 10px; font-size: 12px;">聊天</button>
                             </div>
                         `;
                     }).join('')}
@@ -3995,6 +4001,21 @@
 
             // 记录来源标签，用于返回时恢复
             sessionStorage.setItem('userDetailSource', 'sessions');
+        }
+
+        // 从用户列表跳转到聊天记录Tab，并筛选该用户
+        function showUserChats(email) {
+            if (!email) return;
+
+            // 切换到聊天记录Tab
+            switchTab('sessions');
+
+            // 设置搜索框的值并触发搜索
+            const searchInput = document.getElementById('sessionSearchInput');
+            if (searchInput) {
+                searchInput.value = email;
+                handleSessionSearch();
+            }
         }
 
         function hideUserDetail() {
