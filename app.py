@@ -4,7 +4,7 @@
 import os
 import json
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from logging.handlers import RotatingFileHandler
 from flask import Flask, render_template, request, jsonify, send_file, session, Response
 from io import BytesIO
@@ -55,6 +55,9 @@ app = Flask(__name__)
 app.secret_key = Config.SECRET_KEY
 # 限制文件上传大小为 50MB，防止内存耗尽攻击
 app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024
+
+# 🔒 Session 配置：保持登录状态 30 天
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(seconds=Config.PERMANENT_SESSION_LIFETIME)
 
 # 🔒 安全配置：CSRF 防护
 app.config['SESSION_COOKIE_SECURE'] = True  # 仅 HTTPS
@@ -868,6 +871,7 @@ def login():
 
     if success:
         # 保存到 session
+        session.permanent = True  # 保持登录状态 30 天
         session['user_id'] = user_data['user_id']
         session['username'] = user_data['username']
         session['email'] = user_data.get('email')  # 保留兼容
@@ -1023,6 +1027,7 @@ def admin_login():
 
     # 检查是否为主管理员
     if username in super_admins and super_admins[username] == password:
+        session.permanent = True  # 保持登录状态 30 天
         session['is_admin'] = True
         session['admin_username'] = username
         session['admin_role'] = 'super'  # 主管理员
@@ -1036,6 +1041,7 @@ def admin_login():
     # 检查是否为 Supabase 中的普通管理员
     is_valid, admin_data = admin_user_service.verify_admin(username, password)
     if is_valid:
+        session.permanent = True  # 保持登录状态 30 天
         session['is_admin'] = True
         session['admin_username'] = username
         session['admin_role'] = 'normal'  # 普通管理员
@@ -1048,6 +1054,7 @@ def admin_login():
 
     # 检查是否为 .env 中的普通管理员（备用）
     if username in admin_users and admin_users[username] == password:
+        session.permanent = True  # 保持登录状态 30 天
         session['is_admin'] = True
         session['admin_username'] = username
         session['admin_role'] = 'normal'  # 普通管理员

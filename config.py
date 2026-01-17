@@ -29,6 +29,9 @@ class Config:
     SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-key')
     FLASK_ENV = os.getenv('FLASK_ENV', 'development')
 
+    # Session 配置 - 保持登录状态 30 天
+    PERMANENT_SESSION_LIFETIME = 30 * 24 * 60 * 60  # 30天（秒）
+
     # 数据库
     DATABASE_PATH = os.getenv('DATABASE_PATH', 'data/kpi_tool.db')
 
