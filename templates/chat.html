@@ -1681,6 +1681,25 @@
                 transform: translateX(0);
             }
 
+            /* 移动端侧边栏遮罩层 */
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 199;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+            }
+
+            .sidebar-overlay.show {
+                display: block;
+                opacity: 1;
+            }
+
             .main-content {
                 margin-left: 0;
             }
@@ -2156,6 +2175,9 @@
             <a href="/?need_login=1" class="btn">前往登录</a>
         </div>
     </div>
+
+    <!-- 移动端侧边栏遮罩层 -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
 
     <!-- 左侧侧边栏 -->
     <aside class="sidebar" id="sidebar">
@@ -3502,16 +3524,26 @@
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             const mainContent = document.querySelector('.main-content');
+            const overlay = document.getElementById('sidebarOverlay');
 
             // 检测是否是移动端/平板（宽度 <= 900px）
             if (window.innerWidth <= 900) {
                 // 移动端：切换 open class
                 sidebar.classList.toggle('open');
+                overlay.classList.toggle('show');
             } else {
                 // 桌面端：切换 collapsed class
                 sidebar.classList.toggle('collapsed');
                 mainContent.classList.toggle('sidebar-collapsed');
             }
+        }
+
+        // 关闭侧边栏（点击遮罩层时）
+        function closeSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.remove('open');
+            overlay.classList.remove('show');
         }
 
         // 更新发送按钮状态 - 有内容或有图片时高亮
