@@ -2306,17 +2306,17 @@
                             <!-- 模型选择器 - Gemini 风格，在右侧 -->
                             <div class="model-selector-wrapper" style="position: relative;">
                                 <button type="button" class="model-selector" onclick="toggleModelDropdown()">
-                                    <span id="currentModelLabel">快速</span>
+                                    <span id="currentModelLabel">深度思考</span>
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <polyline points="6 9 12 15 18 9"/>
                                     </svg>
                                 </button>
                                 <div class="model-dropdown" id="modelDropdown">
-                                    <div class="model-option active" onclick="selectModel('flash')">
+                                    <div class="model-option" onclick="selectModel('flash')">
                                         <span class="model-option-name">快速</span>
                                         <span class="model-option-desc">快速响应</span>
                                     </div>
-                                    <div class="model-option" onclick="selectModel('pro')">
+                                    <div class="model-option active" onclick="selectModel('pro')">
                                         <span class="model-option-name">深度思考</span>
                                         <span class="model-option-desc">深度分析</span>
                                     </div>
@@ -2361,7 +2361,7 @@
         let sessionId = null;
         let isLoading = false;
         let isInitializing = false;  // 是否正在初始化会话
-        let currentModel = 'flash';
+        let currentModel = 'pro';
         let isLoggedIn = false;
 
         // 安全的 Markdown 解析函数（防止 XSS）

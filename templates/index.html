@@ -109,7 +109,7 @@
             font-size: 14px;
             font-weight: 500;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: background 0.2s, box-shadow 0.2s;
         }
 
         .new-chat-btn:hover {
@@ -205,7 +205,7 @@
             font-family: inherit;
             font-size: 14px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: background 0.2s, color 0.2s;
         }
 
         .sidebar-footer-btn:hover {
@@ -316,7 +316,7 @@
             font-size: 14px;
             font-weight: 500;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: background 0.2s, box-shadow 0.2s;
         }
 
         .login-btn:hover {
@@ -391,7 +391,7 @@
             font-family: inherit;
             font-size: 14px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: background 0.2s, color 0.2s;
         }
 
         .logout-btn:hover {
@@ -409,7 +409,7 @@
             font-size: 13px;
             font-weight: 500;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
 
         .redeem-btn:hover {
@@ -482,7 +482,7 @@
             border: 1px solid var(--gemini-outline);
             border-radius: 16px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: background 0.2s, border-color 0.2s, box-shadow 0.2s, transform 0.2s;
             text-decoration: none;
             color: var(--gemini-on-surface);
         }
@@ -551,7 +551,7 @@
             background: var(--gemini-surface);
             border: 1px solid var(--gemini-outline);
             border-radius: 28px;
-            transition: all 0.2s;
+            transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
         }
 
         .input-wrapper:hover {
@@ -684,6 +684,9 @@
             max-width: 400px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
             animation: modal-slide-in 0.3s ease;
+            overscroll-behavior: contain;
+            max-height: 90vh;
+            overflow-y: auto;
         }
 
         @keyframes modal-slide-in {
@@ -766,7 +769,7 @@
             color: var(--gemini-on-surface);
             font-family: inherit;
             font-size: 16px;
-            transition: all 0.2s;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
 
         .form-group input:focus {
@@ -790,7 +793,7 @@
             font-size: 15px;
             font-weight: 500;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: background 0.2s;
             margin-top: 8px;
         }
 
@@ -837,7 +840,7 @@
             border: 2px solid var(--gemini-outline);
             border-radius: 12px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: border-color 0.2s, background 0.2s;
         }
 
         .user-type-option:hover {
@@ -1030,6 +1033,17 @@
                 font-size: 12px;
             }
         }
+
+        /* 减少动效偏好支持 */
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
     </style>
 </head>
 
@@ -1049,8 +1063,8 @@
     <!-- 左侧边栏 -->
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <button class="hamburger-btn" onclick="toggleSidebar()">
-                <svg viewBox="0 0 24 24" fill="currentColor">
+            <button class="hamburger-btn" onclick="toggleSidebar()" aria-label="切换侧边栏">
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                     <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" />
                 </svg>
             </button>
@@ -1096,8 +1110,8 @@
         <!-- 顶部导航 -->
         <nav class="top-nav">
             <div class="nav-left">
-                <button class="nav-hamburger" onclick="toggleSidebar()">
-                    <svg viewBox="0 0 24 24" fill="currentColor">
+                <button class="nav-hamburger" onclick="toggleSidebar()" aria-label="打开菜单">
+                    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                         <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" />
                     </svg>
                 </button>
@@ -1177,8 +1191,8 @@
                             <path d="M7 10l5 5 5-5z" />
                         </svg>
                     </button>
-                    <button class="mic-btn">
-                        <svg viewBox="0 0 24 24" fill="currentColor">
+                    <button class="mic-btn" aria-label="语音输入">
+                        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                             <path
                                 d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.91-3c-.49 0-.9.36-.98.85C16.52 14.2 14.47 16 12 16s-4.52-1.8-4.93-4.15c-.08-.49-.49-.85-.98-.85-.61 0-1.09.54-1 1.14.49 3 2.89 5.35 5.91 5.78V20c0 .55.45 1 1 1s1-.45 1-1v-2.08c3.02-.43 5.42-2.78 5.91-5.78.1-.6-.39-1.14-1-1.14z" />
                         </svg>
@@ -1193,7 +1207,7 @@
     <div class="auth-modal" id="authModal">
         <div class="auth-overlay" onclick="hideAuthModal()"></div>
         <div class="auth-box">
-            <button class="auth-close" onclick="hideAuthModal()">&times;</button>
+            <button class="auth-close" onclick="hideAuthModal()" aria-label="关闭弹窗">&times;</button>
 
             <!-- 登录表单 -->
             <div class="auth-form" id="loginForm">
@@ -1206,12 +1220,12 @@
                 <p class="auth-subtitle">登录后可追踪积分消耗</p>
                 <div class="form-group">
                     <label>手机号 / 姓名</label>
-                    <input type="text" id="loginUsername" placeholder="输入手机号或姓名"
+                    <input type="text" id="loginUsername" placeholder="输入手机号或姓名" autocomplete="username"
                         onkeydown="if(event.key==='Enter')document.getElementById('loginPassword').focus()">
                 </div>
                 <div class="form-group">
                     <label>密码</label>
-                    <input type="password" id="loginPassword" placeholder="输入密码"
+                    <input type="password" id="loginPassword" placeholder="输入密码" autocomplete="current-password"
                         onkeydown="if(event.key==='Enter')handleLogin()">
                 </div>
                 <button class="btn-submit" onclick="handleLogin()">登录</button>
@@ -1230,27 +1244,27 @@
 
                 <div class="form-group">
                     <label>手机号<span style="color: #ef4444; margin-left: 2px;">*</span></label>
-                    <input type="tel" id="registerPhone" placeholder="11位手机号" maxlength="11">
+                    <input type="tel" id="registerPhone" placeholder="11位手机号" maxlength="11" autocomplete="tel">
                 </div>
                 <div class="form-group">
                     <label>姓名<span style="color: #ef4444; margin-left: 2px;">*</span></label>
-                    <input type="text" id="registerUsername" placeholder="您的姓名">
+                    <input type="text" id="registerUsername" placeholder="您的姓名" autocomplete="name">
                 </div>
                 <div class="form-group">
                     <label>公司名称</label>
-                    <input type="text" id="registerCompany" placeholder="您的公司名称">
+                    <input type="text" id="registerCompany" placeholder="您的公司名称" autocomplete="organization">
                 </div>
                 <div class="form-group">
                     <label>职位</label>
-                    <input type="text" id="registerPosition" placeholder="如：运营总监、店长">
+                    <input type="text" id="registerPosition" placeholder="如：运营总监、店长" autocomplete="organization-title">
                 </div>
                 <div class="form-group">
                     <label>密码<span style="color: #ef4444; margin-left: 2px;">*</span></label>
-                    <input type="password" id="registerPassword" placeholder="至少6位密码">
+                    <input type="password" id="registerPassword" placeholder="至少6位密码" autocomplete="new-password">
                 </div>
                 <div class="form-group">
                     <label>确认密码<span style="color: #ef4444; margin-left: 2px;">*</span></label>
-                    <input type="password" id="registerPasswordConfirm" placeholder="再次输入密码"
+                    <input type="password" id="registerPasswordConfirm" placeholder="再次输入密码" autocomplete="new-password"
                         onkeydown="if(event.key==='Enter')handleRegister()">
                 </div>
                 <button class="btn-submit" onclick="handleRegister()">注册</button>
@@ -1265,7 +1279,7 @@
     <div class="auth-modal" id="redeemModal">
         <div class="auth-overlay" onclick="hideRedeemModal()"></div>
         <div class="auth-box" style="max-width: 480px;">
-            <button class="auth-close" onclick="hideRedeemModal()">&times;</button>
+            <button class="auth-close" onclick="hideRedeemModal()" aria-label="关闭弹窗">&times;</button>
             <div class="auth-header">
                 <svg viewBox="0 0 24 24" fill="url(#sparkle-gradient)" width="32" height="32">
                     <path d="M12 0L14.59 8.41L23 11L14.59 13.59L12 22L9.41 13.59L1 11L9.41 8.41L12 0Z" />
@@ -1284,7 +1298,7 @@
             <div class="form-group">
                 <label>兑换码</label>
                 <div style="display:flex;gap:8px;">
-                    <input type="text" id="redeemCodeInput" placeholder="输入8位兑换码"
+                    <input type="text" id="redeemCodeInput" placeholder="输入8位兑换码" autocomplete="off"
                         style="text-transform:uppercase;letter-spacing:2px;font-family:monospace;flex:1;"
                         onkeydown="if(event.key==='Enter')handleRedeem()">
                     <button class="btn-submit" onclick="handleRedeem()" style="width:auto;padding:14px 20px;">兑换</button>
