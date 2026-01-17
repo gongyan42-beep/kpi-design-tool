@@ -129,20 +129,18 @@ class PromptService:
         return None
 
     def get_prompt(self, module_id: str) -> str:
-        """获取模块的提示词（优先缓存 -> Supabase -> 本地 -> 默认）"""
+        """获取模块的提示词（优先 Supabase -> 本地 -> 默认）
+
+        注意：禁用缓存以确保多 worker 环境下修改即时生效
+        """
         from database import db
 
-        # 先检查缓存
-        if module_id in self._cache:
-            return self._cache[module_id]
-
-        # 尝试从 Supabase 获取
+        # 尝试从 Supabase 获取（不使用缓存，确保即时生效）
         if self.client:
             try:
                 response = self.client.table('module_prompts').select('prompt').eq('module_id', module_id).execute()
                 if response.data:
                     prompt = response.data[0].get('prompt', '')
-                    self._cache[module_id] = prompt
                     return prompt
             except Exception as e:
                 print(f"Supabase 获取提示词失败: {e}")
@@ -150,7 +148,6 @@ class PromptService:
         # 尝试从本地 SQLite 获取
         local_prompt = db.get_local_prompt(module_id)
         if local_prompt:
-            self._cache[module_id] = local_prompt
             return local_prompt
 
         # 回退到默认提示词
@@ -181,21 +178,12 @@ class PromptService:
                         'created_at': datetime.now().isoformat()
                     }).execute()
 
-                # 清除缓存
-                if module_id in self._cache:
-                    del self._cache[module_id]
-
                 return True
             except Exception as e:
                 print(f"Supabase 保存提示词失败，尝试本地保存: {e}")
 
         # 回退到本地 SQLite
-        success = db.save_local_prompt(module_id, prompt)
-        if success:
-            # 清除缓存
-            if module_id in self._cache:
-                del self._cache[module_id]
-        return success
+        return db.save_local_prompt(module_id, prompt)
 
     def create_module(self, module_data: Dict) -> bool:
         """创建新模块"""
