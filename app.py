@@ -1998,7 +1998,7 @@ def admin_create_module():
             print(f"记录日志失败: {log_err}")
         return jsonify({'success': True, 'message': '模块创建成功'})
     else:
-        return jsonify({'success': False, 'error': '创建失败，请检查 Supabase 配置'}), 500
+        return jsonify({'success': False, 'message': '创建失败，请检查 Supabase 配置'}), 500
 
 
 @app.route('/api/admin/modules/<module_id>', methods=['PUT'])

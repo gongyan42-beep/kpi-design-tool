@@ -5009,7 +5009,7 @@
                     // 重新加载模块列表
                     await loadModules();
                 } else {
-                    alert('删除失败: ' + data.message);
+                    alert('删除失败: ' + (data.message || data.error || '未知错误'));
                 }
             } catch (e) {
                 alert('网络错误');
@@ -5076,7 +5076,7 @@
                     statusEl.textContent = '✓ 保存成功';
                     statusEl.style.color = '#10b981';
                 } else {
-                    statusEl.textContent = '✗ 保存失败: ' + data.message;
+                    statusEl.textContent = '✗ 保存失败: ' + (data.message || data.error || '未知错误');
                     statusEl.style.color = '#ef4444';
                 }
             } catch (e) {
@@ -5128,7 +5128,7 @@
                     }
                     renderModuleList();
                 } else {
-                    statusEl.textContent = '✗ 保存失败: ' + data.message;
+                    statusEl.textContent = '✗ 保存失败: ' + (data.message || data.error || '未知错误');
                     statusEl.style.color = '#ef4444';
                 }
             } catch (e) {
@@ -5226,7 +5226,7 @@
                     }
                     renderModuleList();
                 } else {
-                    statusEl.textContent = '✗ 保存失败: ' + data.message;
+                    statusEl.textContent = '✗ 保存失败: ' + (data.message || data.error || '未知错误');
                     statusEl.style.color = '#ef4444';
                 }
             } catch (e) {
@@ -5313,7 +5313,7 @@
                     alert('上传成功');
                     await loadKnowledge(currentModuleId);
                 } else {
-                    alert('上传失败: ' + data.message);
+                    alert('上传失败: ' + (data.message || data.error || '未知错误'));
                 }
             } catch (e) {
                 alert('网络错误');
@@ -5336,7 +5336,7 @@
                 if (data.success) {
                     await loadKnowledge(currentModuleId);
                 } else {
-                    alert('删除失败: ' + data.message);
+                    alert('删除失败: ' + (data.message || data.error || '未知错误'));
                 }
             } catch (e) {
                 alert('网络错误');
@@ -5411,7 +5411,8 @@
                     // 自动选中新模块
                     selectModule(id);
                 } else {
-                    alert('创建失败: ' + data.message);
+                    const errorMsg = data.message || data.error || '未知错误';
+                    alert('创建失败: ' + errorMsg);
                 }
             } catch (e) {
                 alert('网络错误');
